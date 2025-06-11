@@ -9,7 +9,7 @@ from schemas.schemas import UserLogin, Token, UserCreate, UserOut
 from models.models import User, LoginHistory, UserRole
 from middlewares.auth_middleware import get_root_user
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):

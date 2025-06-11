@@ -15,7 +15,7 @@ from config.settings import settings
 import logging
 from sqlalchemy import and_, or_
 
-router = APIRouter(prefix="/orders", tags=["Orders"])
+router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
 # Đảm bảo thư mục upload tồn tại
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)

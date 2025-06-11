@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/api/users", tags=["Users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password):

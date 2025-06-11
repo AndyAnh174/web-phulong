@@ -6,7 +6,7 @@ from models.models import User, Order, Service
 from middlewares.auth_middleware import get_admin_user, get_current_user
 from datetime import datetime, timedelta
 
-router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
 @router.get("/summary")
 async def get_dashboard_summary(current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):

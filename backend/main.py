@@ -71,12 +71,12 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # Đăng ký các routers
-app.include_router(auth.router, prefix="/api", tags=["Authentication"])
-app.include_router(services.router, prefix="/api", tags=["Services"])
-app.include_router(blogs.router, prefix="/api", tags=["Blogs"])
-app.include_router(orders.router, prefix="/api", tags=["Orders"])
-app.include_router(users.router, prefix="/api", tags=["Users"])
-app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
+app.include_router(auth.router, tags=["Authentication"])
+app.include_router(services.router, tags=["Services"])
+app.include_router(blogs.router, tags=["Blogs"])
+app.include_router(orders.router, tags=["Orders"])
+app.include_router(users.router, tags=["Users"])
+app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(config.router, prefix="/api/config", tags=["Configuration"])
 

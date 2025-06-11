@@ -6,7 +6,7 @@ from schemas.schemas import ServiceCreate, ServiceOut, ServiceUpdate, ServiceRev
 from models.models import Service, User, ServiceReview
 from middlewares.auth_middleware import get_current_user, get_admin_user
 
-router = APIRouter(prefix="/services", tags=["Services"])
+router = APIRouter(prefix="/api/services", tags=["Services"])
 
 @router.get("/", response_model=List[ServiceOut])
 async def get_services(

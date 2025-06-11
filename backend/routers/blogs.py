@@ -6,7 +6,7 @@ from schemas.schemas import BlogCreate, BlogOut, BlogUpdate
 from models.models import Blog, User
 from middlewares.auth_middleware import get_current_user, get_admin_user
 
-router = APIRouter(prefix="/blogs", tags=["Blogs"])
+router = APIRouter(prefix="/api/blogs", tags=["Blogs"])
 
 @router.get("/", response_model=List[BlogOut])
 async def get_blogs(db: Session = Depends(get_db), skip: int = 0, limit: int = 10, is_active: bool = None, category: str = None):
