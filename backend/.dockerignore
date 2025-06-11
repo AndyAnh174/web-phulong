@@ -1,0 +1,49 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Git files
+.git
+.gitignore
+
+# IDE files
+.idea
+.vscode
+*.swp
+*.swo
+
+# Docker files
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Local data
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Tests
+tests/
+pytest_cache/
+.pytest_cache/
+
+# Log files
+*.log 

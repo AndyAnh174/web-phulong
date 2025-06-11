@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: phulong_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./static:/app/static
+    depends_on:
+      - db
+    environment:
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=phulong
+      - SECRET_KEY=KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=${SMTP_USERNAME:-hovietanh147@gmail.com}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-sale fvwq ahsn lpmj}
+      - EMAIL_FROM=Phú Long <no-reply@phulong.com>
+      - UPLOAD_DIR=static/uploads
+    restart: always
+
+  db:
+    image: postgres:15
+    container_name: phulong_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=phulong
+    restart: always
+
+volumes:
+  postgres_data: 
