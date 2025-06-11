@@ -15,7 +15,7 @@ import type {
 
 // Tạo instance axios với base URL
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -38,26 +38,26 @@ export const servicesApi = {
     is_active?: boolean;
     featured?: boolean;
     category?: string;
-  }) => api.get<Service[]>('/services', { params }),
+  }) => api.get<Service[]>('/api/services', { params }),
 
-  getById: (id: number) => api.get<Service>(`/services/${id}`),
+  getById: (id: number) => api.get<Service>(`/api/services/${id}`),
 
   getSuggested: (currentId: number) => 
-    api.get<Service[]>(`/services/suggested?current_id=${currentId}`),
+    api.get<Service[]>(`/api/services/suggested?current_id=${currentId}`),
 
   create: (service: Omit<Service, 'id' | 'created_at' | 'updated_at'>) =>
-    api.post<Service>('/services', service),
+    api.post<Service>('/api/services', service),
 
   update: (id: number, service: Partial<Service>) =>
-    api.put<Service>(`/services/${id}`, service),
+    api.put<Service>(`/api/services/${id}`, service),
 
-  delete: (id: number) => api.delete(`/services/${id}`),
+  delete: (id: number) => api.delete(`/api/services/${id}`),
 
   getReviews: (serviceId: number) =>
-    api.get<Review[]>(`/services/${serviceId}/reviews`),
+    api.get<Review[]>(`/api/services/${serviceId}/reviews`),
 
   createReview: (serviceId: number, review: Omit<Review, 'id' | 'service_id' | 'created_at'>) =>
-    api.post<Review>(`/services/${serviceId}/reviews`, review),
+    api.post<Review>(`/api/services/${serviceId}/reviews`, review),
 };
 
 // API Blogs
@@ -67,17 +67,17 @@ export const blogsApi = {
     limit?: number;
     is_active?: boolean;
     category?: string;
-  }) => api.get<Blog[]>('/blogs', { params }),
+  }) => api.get<Blog[]>('/api/blogs', { params }),
 
-  getById: (id: number) => api.get<Blog>(`/blogs/${id}`),
+  getById: (id: number) => api.get<Blog>(`/api/blogs/${id}`),
 
   create: (blog: Omit<Blog, 'id' | 'created_at' | 'updated_at'>) =>
-    api.post<Blog>('/blogs', blog),
+    api.post<Blog>('/api/blogs', blog),
 
   update: (id: number, blog: Partial<Blog>) =>
-    api.put<Blog>(`/blogs/${id}`, blog),
+    api.put<Blog>(`/api/blogs/${id}`, blog),
 
-  delete: (id: number) => api.delete(`/blogs/${id}`),
+  delete: (id: number) => api.delete(`/api/blogs/${id}`),
 };
 
 // API Orders
@@ -90,17 +90,17 @@ export const ordersApi = {
     status?: string;
     start_date?: string;
     end_date?: string;
-  }) => api.get<PaginatedResponse<Order>>('/orders', { params }),
+  }) => api.get<PaginatedResponse<Order>>('/api/orders', { params }),
 
-  getById: (id: number) => api.get<Order>(`/orders/${id}`),
+  getById: (id: number) => api.get<Order>(`/api/orders/${id}`),
 
   create: (formData: FormData) =>
-    api.post<Order>('/orders', formData, {
+    api.post<Order>('/api/orders', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
   updateStatus: (id: number, status: Order['status']) =>
-    api.put<Order>(`/orders/${id}`, { status }),
+    api.put<Order>(`/api/orders/${id}`, { status }),
 
   exportCSV: (params?: {
     customer_name?: string;
@@ -109,71 +109,71 @@ export const ordersApi = {
     start_date?: string;
     end_date?: string;
     token?: string;
-  }) => api.get('/orders/export/csv', { params, responseType: 'blob' }),
+  }) => api.get('/api/orders/export/csv', { params, responseType: 'blob' }),
 };
 
 // API Contact
 export const contactApi = {
   submit: (contact: Omit<Contact, 'id' | 'created_at' | 'status'>) =>
-    api.post<Contact>('/contact/submit', contact),
+    api.post<Contact>('/api/contact/submit', contact),
 
   getAll: (params?: { skip?: number; limit?: number; name?: string; status?: string }) =>
-    api.get<PaginatedResponse<Contact>>('/contact/list', { params }),
+    api.get<PaginatedResponse<Contact>>('/api/contact/list', { params }),
 
-  getById: (id: number) => api.get<Contact>(`/contact/${id}`),
+  getById: (id: number) => api.get<Contact>(`/api/contact/${id}`),
 
-  markAsRead: (id: number) => api.put(`/contact/${id}/mark-read`),
+  markAsRead: (id: number) => api.put(`/api/contact/${id}/mark-read`),
 
-  delete: (id: number) => api.delete(`/contact/${id}`),
+  delete: (id: number) => api.delete(`/api/contact/${id}`),
 
   exportCSV: (params?: {
     name?: string;
     status?: string;
     start_date?: string;
     end_date?: string;
-  }) => api.get('/contact/export/csv', { params, responseType: 'blob' }),
+  }) => api.get('/api/contact/export/csv', { params, responseType: 'blob' }),
 };
 
 // API Auth
 export const authApi = {
   login: (credentials: { username: string; password: string }) =>
-    api.post<AuthResponse>('/auth/login-json', credentials),
+    api.post<AuthResponse>('/api/auth/login-json', credentials),
 
-  me: () => api.get('/users/me'),
+  me: () => api.get('/api/users/me'),
 
   register: (user: {
     username: string;
     email: string;
     password: string;
     role: string;
-  }) => api.post('/auth/register', user),
+  }) => api.post('/api/auth/register', user),
 
-  getLoginHistory: () => api.get('/auth/login-history'),
+  getLoginHistory: () => api.get('/api/auth/login-history'),
 };
 
 // API Users
 export const usersApi = {
-  me: () => api.get('/users/me'),
+  me: () => api.get('/api/users/me'),
   getAll: (params?: { skip?: number; limit?: number }) =>
-    api.get('/users', { params }),
-  getById: (id: number) => api.get(`/users/${id}`),
-  create: (user: unknown) => api.post('/users', user),
-  update: (id: number, user: unknown) => api.put(`/users/${id}`, user),
-  delete: (id: number) => api.delete(`/users/${id}`),
-  deleteByUsername: (username: string) => api.delete(`/users/by-username/${username}`),
+    api.get('/api/users', { params }),
+  getById: (id: number) => api.get(`/api/users/${id}`),
+  create: (user: unknown) => api.post('/api/users', user),
+  update: (id: number, user: unknown) => api.put(`/api/users/${id}`, user),
+  delete: (id: number) => api.delete(`/api/users/${id}`),
+  deleteByUsername: (username: string) => api.delete(`/api/users/by-username/${username}`),
 };
 
 // API Dashboard
 export const dashboardApi = {
-  getSummary: () => api.get<DashboardSummary>('/dashboard/summary'),
-  getRevenueByDate: () => api.get<ChartData>('/dashboard/revenue-by-date'),
-  getOrdersByService: () => api.get<ChartData>('/dashboard/orders-by-service'),
+  getSummary: () => api.get<DashboardSummary>('/api/dashboard/summary'),
+  getRevenueByDate: () => api.get<ChartData>('/api/dashboard/revenue-by-date'),
+  getOrdersByService: () => api.get<ChartData>('/api/dashboard/orders-by-service'),
 };
 
 // API Config
 export const configApi = {
-  getPublicEnv: () => api.get<Config>('/config/env'),
-  getAdminEnv: () => api.get<AdminConfig>('/config/admin-env'),
+  getPublicEnv: () => api.get<Config>('/api/config/env'),
+  getAdminEnv: () => api.get<AdminConfig>('/api/config/admin-env'),
 };
 
 export default api; 
