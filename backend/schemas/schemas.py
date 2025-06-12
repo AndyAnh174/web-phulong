@@ -83,6 +83,7 @@ class ServiceBase(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
     is_active: bool = True
+    featured: bool = False
 
 class ServiceCreate(ServiceBase):
     pass
@@ -94,6 +95,7 @@ class ServiceUpdate(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
     is_active: Optional[bool] = None
+    featured: Optional[bool] = None
 
 class ServiceOut(ServiceBase):
     id: int

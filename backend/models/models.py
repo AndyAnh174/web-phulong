@@ -61,6 +61,7 @@ class Service(Base):
     image_url = Column(String, nullable=True)
     category = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    featured = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

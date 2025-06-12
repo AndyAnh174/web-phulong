@@ -20,7 +20,7 @@ async def get_services(
     """
     Lấy danh sách dịch vụ
     - is_active: Lọc theo trạng thái kích hoạt
-    - featured: Lọc các dịch vụ nổi bật (hiện tại dựa trên is_active = True)
+    - featured: Lọc các dịch vụ nổi bật
     - category: Lọc theo danh mục/tag
     - skip: Số lượng bản ghi bỏ qua (phân trang)
     - limit: Số lượng bản ghi tối đa trả về
@@ -30,10 +30,9 @@ async def get_services(
     if is_active is not None:
         query = query.filter(Service.is_active == is_active)
     
-    # Hiện tại coi tất cả dịch vụ active là "nổi bật"
-    # Có thể mở rộng bằng cách thêm trường featured vào model Service
+    # Lọc theo trường featured
     if featured is not None:
-        query = query.filter(Service.is_active == True)
+        query = query.filter(Service.featured == featured)
     
     # Lọc theo category
     if category is not None:
@@ -44,12 +43,32 @@ async def get_services(
 
 @router.get("/suggested", response_model=List[ServiceOut])
 async def get_suggested_services(current_id: int = Query(...), db: Session = Depends(get_db)):
-    # Lấy tối đa 4 dịch vụ khác với current_id, ưu tiên dịch vụ active
-    services = db.query(Service).filter(Service.id != current_id, Service.is_active == True).limit(4).all()
-    # Nếu chưa đủ 4 dịch vụ, lấy thêm các dịch vụ khác (không cần active)
+    # Lấy tối đa 4 dịch vụ khác với current_id, ưu tiên dịch vụ featured và active
+    services = db.query(Service).filter(
+        Service.id != current_id, 
+        Service.is_active == True,
+        Service.featured == True
+    ).limit(4).all()
+    
+    # Nếu chưa đủ 4 dịch vụ featured, lấy thêm các dịch vụ active khác
     if len(services) < 4:
-        extra = db.query(Service).filter(Service.id != current_id, ~Service.id.in_([s.id for s in services])).limit(4 - len(services)).all()
+        existing_ids = [s.id for s in services]
+        extra = db.query(Service).filter(
+            Service.id != current_id, 
+            Service.is_active == True,
+            ~Service.id.in_(existing_ids)
+        ).limit(4 - len(services)).all()
         services += extra
+        
+    # Nếu vẫn chưa đủ 4, lấy bất kỳ dịch vụ nào khác
+    if len(services) < 4:
+        existing_ids = [s.id for s in services]
+        extra = db.query(Service).filter(
+            Service.id != current_id, 
+            ~Service.id.in_(existing_ids)
+        ).limit(4 - len(services)).all()
+        services += extra
+        
     return services
 
 @router.get("/{service_id}", response_model=ServiceOut)
@@ -72,7 +91,8 @@ async def create_service(service: ServiceCreate, db: Session = Depends(get_db), 
         price=service.price,
         image_url=service.image_url,
         category=service.category,
-        is_active=service.is_active
+        is_active=service.is_active,
+        featured=service.featured
     )
     
     db.add(new_service)
@@ -105,8 +125,12 @@ async def update_service(
         db_service.price = service.price
     if service.image_url is not None:
         db_service.image_url = service.image_url
+    if service.category is not None:
+        db_service.category = service.category
     if service.is_active is not None:
         db_service.is_active = service.is_active
+    if service.featured is not None:
+        db_service.featured = service.featured
     
     db.commit()
     db.refresh(db_service)
