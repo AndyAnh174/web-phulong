@@ -14,3 +14,4 @@ psycopg2-binary==2.9.9
 python-dateutil==2.8.2 
 requests==2.31.0
 fastapi-utils[all]
+Pillow==10.0.1

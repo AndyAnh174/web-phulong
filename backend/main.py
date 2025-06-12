@@ -5,7 +5,7 @@ import logging
 import os
 from datetime import datetime
 import uvicorn
-from routers import services, blogs, orders, users, auth, dashboard, contact, config
+from routers import services, blogs, orders, users, auth, dashboard, contact, config, images
 from middlewares.auth_middleware import get_current_user, get_admin_user, get_root_user
 from middlewares.logging_middleware import AdminLoggingMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -79,6 +79,7 @@ app.include_router(users.router, tags=["Users"])
 app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(config.router, prefix="/api/config", tags=["Configuration"])
+app.include_router(images.router, tags=["Images"])
 
 # Phục vụ tệp tĩnh nếu cần (ví dụ: tệp tải lên)
 app.mount("/static", StaticFiles(directory="static"), name="static")

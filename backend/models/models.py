@@ -127,3 +127,24 @@ class Contact(Base):
     message = Column(Text, nullable=False)
     status = Column(String, default="new")  # new, read
     created_at = Column(DateTime, default=datetime.utcnow) 
+
+class Image(Base):
+    __tablename__ = "images"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String, nullable=False)  # Tên file gốc
+    file_path = Column(String, nullable=False)  # Đường dẫn file trên server
+    url = Column(String, nullable=False)  # URL để truy cập ảnh
+    alt_text = Column(String, nullable=True)  # Mô tả ảnh (cho SEO)
+    file_size = Column(Integer, nullable=True)  # Kích thước file (bytes)
+    mime_type = Column(String, nullable=True)  # Loại file (image/jpeg, image/png, etc.)
+    width = Column(Integer, nullable=True)  # Chiều rộng ảnh
+    height = Column(Integer, nullable=True)  # Chiều cao ảnh
+    is_visible = Column(Boolean, default=True)  # Có hiển thị hay không
+    category = Column(String, nullable=True)  # Danh mục ảnh (portfolio, blog, service, etc.)
+    uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # Người upload
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    uploader = relationship("User", backref="uploaded_images") 

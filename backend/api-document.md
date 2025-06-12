@@ -611,3 +611,110 @@ Authorization: Bearer {token}
 - **404 Not Found**: Không tìm thấy tài nguyên
 - **400 Bad Request**: Dữ liệu không hợp lệ
 - **500 Internal Server Error**: Lỗi server
+
+## Quản lý ảnh (Images)
+
+### Upload ảnh
+
+- **URL**: `/api/images/upload`
+- **Method**: `POST`
+- **Description**: Upload ảnh mới (Chỉ ADMIN mới có quyền)
+- **Authentication**: Required (ADMIN)
+- **Content-Type**: `multipart/form-data`
+- **Request Body**: Form data
+  - `file` (required): File ảnh (jpg, png, gif, webp, bmp, tối đa 10MB)
+  - `alt_text` (optional): Mô tả ảnh
+  - `category` (optional): Danh mục ảnh
+  - `is_visible` (optional): Có hiển thị hay không (default: true)
+- **Response**:
+  ```json
+  {
+    "message": "Upload ảnh thành công",
+    "image": {
+      "id": 1,
+      "filename": "example.jpg",
+      "file_path": "/path/to/file",
+      "url": "/static/images/uploads/uuid.jpg",
+      "alt_text": "Mô tả ảnh",
+      "file_size": 1024000,
+      "mime_type": "image/jpeg",
+      "width": 1920,
+      "height": 1080,
+      "is_visible": true,
+      "category": "portfolio",
+      "uploaded_by": 1,
+      "created_at": "2023-01-01T00:00:00.000Z",
+      "updated_at": "2023-01-01T00:00:00.000Z"
+    }
+  }
+  ```
+
+### Lấy danh sách ảnh
+
+- **URL**: `/api/images`
+- **Method**: `GET`
+- **Description**: Lấy danh sách ảnh
+- **Parameters**:
+  - `skip` (query): Số lượng bản ghi bỏ qua (phân trang)
+  - `limit` (query): Số lượng bản ghi tối đa trả về
+  - `is_visible` (query): Lọc theo trạng thái hiển thị
+  - `category` (query): Lọc theo danh mục
+- **Response**: Danh sách ảnh
+
+### Chi tiết ảnh
+
+- **URL**: `/api/images/{image_id}`
+- **Method**: `GET`
+- **Description**: Lấy thông tin chi tiết của ảnh
+- **Parameters**:
+  - `image_id` (path): ID ảnh
+- **Response**: Chi tiết ảnh
+
+### Cập nhật ảnh
+
+- **URL**: `/api/images/{image_id}`
+- **Method**: `PUT`
+- **Description**: Cập nhật thông tin ảnh (Chỉ ADMIN mới có quyền)
+- **Authentication**: Required (ADMIN)
+- **Parameters**:
+  - `image_id` (path): ID ảnh
+- **Request Body**:
+  ```json
+  {
+    "alt_text": "string",
+    "is_visible": true,
+    "category": "string"
+  }
+  ```
+- **Response**: Chi tiết ảnh đã cập nhật
+
+### Xóa ảnh
+
+- **URL**: `/api/images/{image_id}`
+- **Method**: `DELETE`
+- **Description**: Xóa ảnh (Chỉ ADMIN mới có quyền)
+- **Authentication**: Required (ADMIN)
+- **Parameters**:
+  - `image_id` (path): ID ảnh
+- **Response**: 
+  ```json
+  {
+    "message": "Đã xóa ảnh example.jpg thành công"
+  }
+  ```
+
+### Lấy danh sách danh mục ảnh
+
+- **URL**: `/api/images/categories/list`
+- **Method**: `GET`
+- **Description**: Lấy danh sách các danh mục ảnh có sẵn
+- **Response**: Danh sách các danh mục
+
+### Download ảnh
+
+- **URL**: `/api/images/download/{image_id}`
+- **Method**: `GET`
+- **Description**: Download ảnh trực tiếp
+- **Parameters**:
+  - `image_id` (path): ID ảnh
+- **Response**: File ảnh
