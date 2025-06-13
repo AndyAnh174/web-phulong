@@ -100,11 +100,14 @@ async def upload_image(
         # Lấy thông tin ảnh
         image_info = get_image_info(file_path)
         
-        # Tạo URL cho ảnh - sử dụng absolute URL thay vì relative
+        # Tạo URL cho ảnh - sử dụng absolute HTTPS URL
         if hasattr(settings, 'BACKEND_URL') and settings.BACKEND_URL:
-            file_url = f"{settings.BACKEND_URL}/static/images/uploads/{unique_filename}"
+            backend_url = settings.BACKEND_URL
+            if not backend_url.startswith("http"):
+                backend_url = f"https://{backend_url}"
+            file_url = f"{backend_url}/static/images/uploads/{unique_filename}"
         else:
-            file_url = f"/static/images/uploads/{unique_filename}"
+            file_url = f"https://demoapi.andyanh.id.vn/static/images/uploads/{unique_filename}"
         
         # Lưu thông tin vào database
         new_image = Image(

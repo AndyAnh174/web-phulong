@@ -17,6 +17,10 @@ from fastapi_utils.tasks import repeat_every
 from utils.tasks import cleanup_expired_access_logs
 from config.settings import settings
 import json
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Tạo thư mục logs nếu chưa tồn tại
 logs_dir = "logs"
@@ -48,13 +52,13 @@ app = FastAPI(
     openapi_url=None  # Tắt endpoint OpenAPI mặc định
 )
 
-# CORS middleware
+# CORS middleware - CHỈ DÙNG MỘT CÁCH
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Cho phép tất cả origins
+    allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["*"],  # Cho phép tất cả methods
-    allow_headers=["*"],  # Cho phép tất cả headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Đăng ký Admin Logging Middleware
@@ -103,8 +107,12 @@ app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(config.router, prefix="/api/config", tags=["Configuration"])
 app.include_router(images.router, tags=["Images"])
 
-# Phục vụ tệp tĩnh nếu cần (ví dụ: tệp tải lên)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Static files
+static_dir = "static"
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir)
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Background task xóa log cũ định kỳ (chạy mỗi ngày lúc 0h00)
 @app.on_event("startup")
@@ -115,9 +123,8 @@ async def cleanup_logs_task():
     logging.info("Hoàn thành tác vụ xóa log admin hết hạn")
 
 @app.get("/")
-async def root():
-    logger.info("Root endpoint accessed")
-    return {"message": "Chào mừng đến với API của Phú Long"}
+async def read_root():
+    return {"message": "Phú Long API is running!"}
 
 def custom_openapi():
     if app.openapi_schema:
