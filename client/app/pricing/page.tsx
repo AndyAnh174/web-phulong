@@ -27,6 +27,9 @@ import { motion } from "framer-motion"
 import { useToast } from "@/hooks/use-toast"
 import Footer from "@/components/layout/footer"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
+import { ensureHttps, processImageUrls } from "@/lib/utils"
+
 // Interface definitions
 interface Service {
   id: number
@@ -291,10 +294,11 @@ export default function PricingPage() {
       const response = await fetch(`${API_BASE_URL}/images?is_visible=true&category=printing&limit=100`)
       if (!response.ok) throw new Error('Failed to fetch images')
       const data = await response.json()
-      setPrintingImages(Array.isArray(data) ? data.map((img:any)=>({
+      const processedImages = Array.isArray(data) ? data.map((img:any)=>({
         ...img,
-        full_url: img.file_path ? `${IMAGE_BASE_URL}/${img.file_path}` : img.filename ? `${IMAGE_BASE_URL}/uploads/${img.filename}` : img.url
-      })) : [])
+        full_url: ensureHttps(img.file_path ? `${IMAGE_BASE_URL}/${img.file_path}` : img.filename ? `${IMAGE_BASE_URL}/uploads/${img.filename}` : img.url)
+      })) : []
+      setPrintingImages(processedImages)
     } catch (error) {
       console.error('Error fetching images:', error)
       toast({ title: 'Lỗi', description: 'Không thể tải ảnh in ấn', variant: 'destructive' })
@@ -449,7 +453,7 @@ export default function PricingPage() {
                           {service.image_url ? (
                             <div className="w-16 h-16 rounded-xl mx-auto mb-4 overflow-hidden group-hover:scale-110 transition-transform duration-300 shadow-md">
                               <img 
-                                src={service.image_url} 
+                                src={ensureHttps(service.image_url)} 
                                 alt={service.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {

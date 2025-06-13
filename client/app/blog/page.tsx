@@ -34,6 +34,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
+import { ensureHttps } from "@/lib/utils"
 
 interface Blog {
   id: number
@@ -607,7 +608,7 @@ export default function BlogPage() {
                             {/* Enhanced Image Container */}
                             <div className="relative h-56 overflow-hidden">
                               <Image
-                                src={blog.image_url || "/api/placeholder/400/250"}
+                                src={ensureHttps(blog.image_url) || "/api/placeholder/400/250"}
                                 alt={blog.title}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"

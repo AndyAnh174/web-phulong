@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
+import { ensureHttps } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -230,7 +231,7 @@ export default function ServiceDetailPage() {
                 transition={{ duration: 0.3 }}
               >
                 <Image
-                  src={service.image_url || "/placeholder.svg?height=500&width=700"}
+                  src={ensureHttps(service.image_url) || "/placeholder.svg?height=500&width=700"}
                   alt={service.name}
                   width={700}
                   height={500}
@@ -558,7 +559,7 @@ export default function ServiceDetailPage() {
                     <CardHeader className="p-0">
                       <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
                         <Image
-                          src={suggestedService.image_url || "/placeholder.svg?height=240&width=400"}
+                          src={ensureHttps(suggestedService.image_url) || "/placeholder.svg?height=240&width=400"}
                           alt={suggestedService.name}
                           width={400}
                           height={240}

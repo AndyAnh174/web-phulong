@@ -44,6 +44,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
+import { ensureHttps } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -219,7 +220,11 @@ export default function AdminServicesPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        setImages(Array.isArray(data) ? data.map((img:any)=>({...img, full_url: img.file_path? `${API_URL}/${img.file_path}`: `${API_URL}/uploads/${img.filename}`})) : [])
+        const processedImages = Array.isArray(data) ? data.map((img:any)=>({
+          ...img, 
+          full_url: ensureHttps(img.file_path? `${API_URL}/${img.file_path}`: `${API_URL}/uploads/${img.filename}`)
+        })) : []
+        setImages(processedImages)
       } else {
         toast({ title: "Lỗi", description: "Không thể tải danh sách ảnh", variant: "destructive" })
       }

@@ -1,4 +1,48 @@
+import { ensureHttps } from "./utils"
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
+
+// Ensure API base URL uses HTTPS
+export const SECURE_API_BASE_URL = ensureHttps(API_BASE_URL)
+
+// Helper function to make secure API calls
+export async function secureApiFetch(endpoint: string, options?: RequestInit) {
+  const url = `${SECURE_API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+  return fetch(ensureHttps(url), options)
+}
+
+// Helper function to process API responses with image URLs
+export function processApiResponse(data: any): any {
+  if (!data) return data
+  
+  if (Array.isArray(data)) {
+    return data.map(processApiResponse)
+  }
+  
+  if (typeof data === 'object') {
+    const processed = { ...data }
+    
+    // Process common image URL fields
+    if (processed.image_url) {
+      processed.image_url = ensureHttps(processed.image_url)
+    }
+    if (processed.url) {
+      processed.url = ensureHttps(processed.url)
+    }
+    if (processed.file_path && SECURE_API_BASE_URL) {
+      const baseUrl = SECURE_API_BASE_URL.replace(/\/api$/, '')
+      processed.full_url = ensureHttps(`${baseUrl}/${processed.file_path}`)
+    }
+    if (processed.filename && SECURE_API_BASE_URL) {
+      const baseUrl = SECURE_API_BASE_URL.replace(/\/api$/, '')
+      processed.full_url = ensureHttps(`${baseUrl}/uploads/${processed.filename}`)
+    }
+    
+    return processed
+  }
+  
+  return data
+}
 
 export interface Service {
   id: number

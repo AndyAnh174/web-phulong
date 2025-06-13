@@ -54,6 +54,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
+import { ensureHttps } from "@/lib/utils"
 
 interface Blog {
   id: number
@@ -509,7 +510,7 @@ export default function BlogDetailPage() {
       <div className="my-8">
         <div className="relative overflow-hidden rounded-lg shadow-lg border border-gray-200 group">
           <img 
-            src={src}
+            src={ensureHttps(src) || "/api/placeholder/800/400"}
             alt={alt}
             className="max-w-full h-auto mx-auto transition-transform duration-300 group-hover:scale-105" 
             {...props}
@@ -646,7 +647,7 @@ export default function BlogDetailPage() {
         <meta name="author" content={blog.author} />
         <meta property="og:title" content={blog.title} />
         <meta property="og:description" content={blog.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...'} />
-        <meta property="og:image" content={blog.image_url} />
+        <meta property="og:image" content={ensureHttps(blog.image_url)} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${blog.id}`} />
         <meta property="article:author" content={blog.author} />
@@ -657,7 +658,7 @@ export default function BlogDetailPage() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={blog.title} />
         <meta name="twitter:description" content={blog.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...'} />
-        <meta name="twitter:image" content={blog.image_url} />
+        <meta name="twitter:image" content={ensureHttps(blog.image_url)} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="canonical" href={`/blog/${blog.id}`} />
         <script type="application/ld+json">
@@ -665,7 +666,7 @@ export default function BlogDetailPage() {
             "@context": "https://schema.org",
             "@type": "Article",
             "headline": blog.title,
-            "image": blog.image_url,
+            "image": ensureHttps(blog.image_url),
             "author": {
               "@type": "Person",
               "name": blog.author
@@ -799,7 +800,7 @@ export default function BlogDetailPage() {
           {/* Featured Image */}
           <div className="relative h-64 md:h-80 group">
             <Image
-              src={blog.image_url || "/api/placeholder/800/400"}
+              src={ensureHttps(blog.image_url) || "/api/placeholder/800/400"}
               alt={blog.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -1047,7 +1048,7 @@ export default function BlogDetailPage() {
                           <Card className="h-full hover:shadow-xl transition-all duration-300 group border border-gray-200 hover:-translate-y-1">
                             <div className="relative h-48 overflow-hidden">
                               <Image
-                                src={relatedBlog.image_url || "/api/placeholder/400/250"}
+                                src={ensureHttps(relatedBlog.image_url) || "/api/placeholder/400/250"}
                                 alt={relatedBlog.title}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-500"

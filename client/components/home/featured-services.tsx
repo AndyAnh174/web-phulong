@@ -21,6 +21,7 @@ import {
   Heart
 } from "lucide-react"
 import { motion } from "framer-motion"
+import { ensureHttps } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -223,7 +224,7 @@ export default function FeaturedServices() {
                   <div className="relative overflow-hidden">
                     <div className="relative h-64 bg-gray-100">
                       <Image
-                        src={service.image_url || "/placeholder.svg?height=256&width=400"}
+                        src={ensureHttps(service.image_url) || "/placeholder.svg?height=256&width=400"}
                         alt={service.name}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-700"

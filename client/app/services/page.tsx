@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
+import { ensureHttps } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -355,7 +356,7 @@ export default function ServicesPage() {
                           <div className="relative overflow-hidden rounded-t-xl">
                             <div className="relative h-64 bg-gray-100">
                               <Image
-                                src={service.image_url || "/placeholder.svg?height=256&width=400"}
+                                src={ensureHttps(service.image_url) || "/placeholder.svg?height=256&width=400"}
                                 alt={service.name}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -464,7 +465,7 @@ export default function ServicesPage() {
                         <div className="flex items-center p-6">
                           <div className="relative w-32 h-32 rounded-lg overflow-hidden mr-6 shrink-0">
                             <Image
-                              src={service.image_url || "/placeholder.svg?height=128&width=128"}
+                              src={ensureHttps(service.image_url) || "/placeholder.svg?height=128&width=128"}
                               alt={service.name}
                               fill
                               className="object-cover group-hover:scale-110 transition-transform duration-500"

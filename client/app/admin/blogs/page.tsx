@@ -49,6 +49,7 @@ import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { ensureHttps } from "@/lib/utils"
 
 // Import MDEditor dynamically to avoid SSR issues
 const MDEditor = dynamic(
@@ -496,7 +497,7 @@ export default function AdminBlogsPage() {
       <div className="relative overflow-hidden rounded-t-lg">
         {blog.image_url ? (
           <Image
-            src={blog.image_url}
+            src={ensureHttps(blog.image_url)}
             alt={blog.title}
             width={400}
             height={200}
