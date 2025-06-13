@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # Backend URL for absolute paths
     BACKEND_URL: str = os.getenv("BACKEND_URL", "")
     
+    # Frontend host for API URL
+    FRONTEND_HOST: str = os.getenv("FRONTEND_HOST", "")
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
