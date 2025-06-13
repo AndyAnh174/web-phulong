@@ -9,15 +9,13 @@ from config.settings import settings
 router = APIRouter()
 
 @router.get("/env")
-def get_public_env():
-    """
-    Trả về các biến môi trường công khai cho frontend
-    """
+async def get_public_env():
+    """Lấy các biến môi trường công khai cho frontend"""
     return {
-        "API_URL": f"https://{settings.FRONTEND_HOST}/api" if hasattr(settings, 'FRONTEND_HOST') else "/api",
+        "API_URL": f"{settings.BACKEND_URL}/api" if settings.BACKEND_URL else "/api",
         "SITE_NAME": "Phú Long In Ấn",
         "SITE_DESCRIPTION": "Dịch vụ in ấn chất lượng cao",
-        "CONTACT_EMAIL": settings.ADMIN_EMAIL,
+        "CONTACT_EMAIL": "inphulong@gmail.com",
         "CONTACT_PHONE": "0123456789",
         "CONTACT_ADDRESS": "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh",
         "ITEMS_PER_PAGE": 10,
