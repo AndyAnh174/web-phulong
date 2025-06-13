@@ -51,11 +51,16 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Cho phép tất cả origins
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],  # Cho phép tất cả methods
+    allow_origins=[
+        "https://demo.andyanh.id.vn",
+        "https://demoapi.andyanh.id.vn", 
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "*"
+    ],
+    allow_credentials=False,  # Đặt False khi dùng allow_origins=["*"]
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=[
-        "*",  # Cho phép tất cả headers
         "Accept",
         "Accept-Language", 
         "Content-Language",
@@ -65,18 +70,33 @@ app.add_middleware(
         "Origin",
         "Access-Control-Request-Method",
         "Access-Control-Request-Headers",
+        "Cache-Control",
+        "Pragma",
     ],
     expose_headers=[
         "Content-Length",
         "Content-Type", 
         "Content-Disposition",
         "Access-Control-Allow-Origin",
-        "Access-Control-Allow-Credentials",
     ]
 )
 
 # Đăng ký Admin Logging Middleware
 app.add_middleware(AdminLoggingMiddleware)
+
+# Middleware để handle preflight requests
+@app.middleware("http")
+async def cors_handler(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={})
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Content-Language, Content-Type, Authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Cache-Control, Pragma"
+        response.headers["Access-Control-Max-Age"] = "86400"
+        return response
+    
+    response = await call_next(request)
+    return response
 
 # Global exception handler
 @app.exception_handler(Exception)
