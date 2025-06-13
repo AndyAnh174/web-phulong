@@ -29,6 +29,7 @@ import Footer from "@/components/layout/footer"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { ensureHttps, processImageUrls } from "@/lib/utils"
+import { SECURE_API_BASE_URL } from "@/lib/api"
 
 // Interface definitions
 interface Service {
@@ -161,10 +162,9 @@ export default function PricingPage() {
     try {
       setLoading(true)
       // Get all active services at once with proper API parameters
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
       
       // Fetch a large number to get all services (or implement proper pagination)
-      const response = await fetch(`${API_BASE_URL}/services?is_active=true&limit=1000`, {
+      const response = await fetch(`${SECURE_API_BASE_URL}/services?is_active=true&limit=1000`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -289,9 +289,8 @@ export default function PricingPage() {
 
   const fetchPrintingImages = async () => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
-      const IMAGE_BASE_URL = API_BASE_URL.replace(/\/api$/, '')
-      const response = await fetch(`${API_BASE_URL}/images?is_visible=true&category=printing&limit=100`)
+      const IMAGE_BASE_URL = SECURE_API_BASE_URL.replace(/\/api$/, '')
+      const response = await fetch(`${SECURE_API_BASE_URL}/images?is_visible=true&category=printing&limit=100`)
       if (!response.ok) throw new Error('Failed to fetch images')
       const data = await response.json()
       const processedImages = Array.isArray(data) ? data.map((img:any)=>({

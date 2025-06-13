@@ -29,6 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
 import { ensureHttps } from "@/lib/utils"
+import { SECURE_API_BASE_URL } from "@/lib/api"
 
 interface Service {
   id: number
@@ -40,8 +41,6 @@ interface Service {
   featured: boolean
   is_active: boolean
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
@@ -62,7 +61,7 @@ export default function ServicesPage() {
   const fetchServices = useCallback(async () => {
     try {
       setLoading(true)
-      let url = API_BASE_URL + "/services?"
+      let url = `${SECURE_API_BASE_URL}/services?`
 
       if (selectedCategory !== "all") {
         url += `category=${selectedCategory}&`
