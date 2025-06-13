@@ -25,6 +25,7 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD:-sale fvwq ahsn lpmj}
       - EMAIL_FROM=Phú Long <no-reply@phulong.com>
       - UPLOAD_DIR=static/uploads
+      - BACKEND_URL=https://demoapi.andyanh.id.vn
     restart: always
 
   db:

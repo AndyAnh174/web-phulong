@@ -83,7 +83,7 @@ app.add_middleware(
 )
 
 # Thêm middleware xử lý OPTIONS requests
-@app.middleware("http")
+@app.middleware("https")
 async def cors_handler(request: Request, call_next):
     if request.method == "OPTIONS":
         response = JSONResponse(content={})
