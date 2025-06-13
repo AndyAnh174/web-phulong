@@ -51,10 +51,28 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Cho phép tất cả origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],  # Cho phép tất cả methods
+    allow_headers=[
+        "*",  # Cho phép tất cả headers
+        "Accept",
+        "Accept-Language", 
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+    ],
+    expose_headers=[
+        "Content-Length",
+        "Content-Type", 
+        "Content-Disposition",
+        "Access-Control-Allow-Origin",
+        "Access-Control-Allow-Credentials",
+    ]
 )
 
 # Đăng ký Admin Logging Middleware
