@@ -7,6 +7,9 @@ COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
+COPY .env.production .env.local
+
+RUN rm -f .env.local
 
 RUN npm run build
 
