@@ -52,7 +52,7 @@ app = FastAPI(
     openapi_url=None  # Tắt endpoint OpenAPI mặc định
 )
 
-# CORS middleware - CHỈ DÙNG MỘT CÁCH
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -64,27 +64,16 @@ app.add_middleware(
 # Đăng ký Admin Logging Middleware
 app.add_middleware(AdminLoggingMiddleware)
 
-# Middleware để handle preflight requests
-@app.middleware("http")
-async def cors_handler(request: Request, call_next):
-    # Chỉ xử lý preflight OPTIONS requests
-    if request.method == "OPTIONS":
-        response = JSONResponse(content={})
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        response.headers["Access-Control-Max-Age"] = "86400"
-        return response
-    
-    # Cho phép request bình thường đi qua
-    response = await call_next(request)
-    
-    # Thêm CORS headers cho tất cả responses
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    
-    return response
+# Static files
+static_dir = "static"
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir)
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/")
+async def read_root():
+    return {"message": "Phú Long API is running!"}
 
 # Global exception handler
 @app.exception_handler(Exception)
@@ -106,25 +95,6 @@ app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(config.router, prefix="/api/config", tags=["Configuration"])
 app.include_router(images.router, tags=["Images"])
-
-# Static files
-static_dir = "static"
-if not os.path.exists(static_dir):
-    os.makedirs(static_dir)
-
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-# Background task xóa log cũ định kỳ (chạy mỗi ngày lúc 0h00)
-@app.on_event("startup")
-@repeat_every(seconds=60 * 60 * 24)  # 24 giờ
-async def cleanup_logs_task():
-    logging.info("Đang chạy tác vụ xóa log admin hết hạn...")
-    cleanup_expired_access_logs()
-    logging.info("Hoàn thành tác vụ xóa log admin hết hạn")
-
-@app.get("/")
-async def read_root():
-    return {"message": "Phú Long API is running!"}
 
 def custom_openapi():
     if app.openapi_schema:
