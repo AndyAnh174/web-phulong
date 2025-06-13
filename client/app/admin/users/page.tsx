@@ -47,7 +47,7 @@ interface FormErrors {
   role?: string
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])

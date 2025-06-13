@@ -73,6 +73,8 @@ interface ImageItem {
   full_url: string
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
 export default function AdminServicesPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,7 +129,7 @@ export default function AdminServicesPage() {
       }
       
       const skip = (currentPage - 1) * itemsPerPage
-      let url = `http://localhost:8000/api/services?skip=${skip}&limit=${itemsPerPage}`
+      let url = `${API_URL}/api/services?skip=${skip}&limit=${itemsPerPage}`
       
       // Add filters to URL (search is handled on frontend)
       if (categoryFilter !== "all") {
@@ -212,13 +214,12 @@ export default function AdminServicesPage() {
   const fetchImages = async () => {
     try {
       setImageLoading(true)
-      const API_BASE = 'http://localhost:8000'
-      const res = await fetch(`${API_BASE}/api/images?category=printing&limit=100`, {
+      const res = await fetch(`${API_URL}/api/images?category=printing&limit=100`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (res.ok) {
         const data = await res.json()
-        setImages(Array.isArray(data) ? data.map((img:any)=>({...img, full_url: img.file_path? `${API_BASE}/${img.file_path}`: `${API_BASE}/uploads/${img.filename}`})) : [])
+        setImages(Array.isArray(data) ? data.map((img:any)=>({...img, full_url: img.file_path? `${API_URL}/${img.file_path}`: `${API_URL}/uploads/${img.filename}`})) : [])
       } else {
         toast({ title: "Lỗi", description: "Không thể tải danh sách ảnh", variant: "destructive" })
       }
@@ -237,7 +238,7 @@ export default function AdminServicesPage() {
       fd.append("alt_text", uploadFormData.alt_text)
       fd.append("category", "printing")
       fd.append("is_visible", String(uploadFormData.is_visible))
-      const res = await fetch("http://localhost:8000/api/images/upload", {
+      const res = await fetch(`${API_URL}/api/images/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: fd
@@ -256,7 +257,7 @@ export default function AdminServicesPage() {
   const handleUpdateImage = async () => {
     if (!selectedImage) return
     try {
-      const res = await fetch(`http://localhost:8000/api/images/${selectedImage.id}`, {
+      const res = await fetch(`${API_URL}/api/images/${selectedImage.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -275,7 +276,7 @@ export default function AdminServicesPage() {
   const handleDeleteImage = async (img: ImageItem) => {
     if (!confirm("Xóa ảnh này?")) return
     try {
-      const res = await fetch(`http://localhost:8000/api/images/${img.id}`, {
+      const res = await fetch(`${API_URL}/api/images/${img.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -322,7 +323,7 @@ export default function AdminServicesPage() {
       
       console.log('Creating service with body:', requestBody)
       
-      const response = await fetch("http://localhost:8000/api/services", {
+      const response = await fetch(`${API_URL}/api/services`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -378,7 +379,7 @@ export default function AdminServicesPage() {
       console.log('Updating service with body:', requestBody)
       console.log('Original service featured value:', selectedService.featured)
       
-      const response = await fetch(`http://localhost:8000/api/services/${selectedService.id}`, {
+      const response = await fetch(`${API_URL}/api/services/${selectedService.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -422,7 +423,7 @@ export default function AdminServicesPage() {
     if (!selectedService) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/services/${selectedService.id}`, {
+      const response = await fetch(`${API_URL}/api/services/${selectedService.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -538,7 +539,7 @@ export default function AdminServicesPage() {
       )
       
       // Call API với PUT và full data + is_active
-      const response = await fetch(`http://localhost:8000/api/services/${service.id}`, {
+      const response = await fetch(`${API_URL}/api/services/${service.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -617,7 +618,7 @@ export default function AdminServicesPage() {
       )
       
       // Thử call API với PATCH method trước
-      let response = await fetch(`http://localhost:8000/api/services/${service.id}`, {
+      let response = await fetch(`${API_URL}/api/services/${service.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -631,7 +632,7 @@ export default function AdminServicesPage() {
       // Nếu PATCH không work, thử PUT với full data + featured
       if (!response.ok) {
         console.log('PATCH failed, trying PUT with full data...')
-        response = await fetch(`http://localhost:8000/api/services/${service.id}`, {
+        response = await fetch(`${API_URL}/api/services/${service.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

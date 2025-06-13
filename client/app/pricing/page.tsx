@@ -158,7 +158,7 @@ export default function PricingPage() {
     try {
       setLoading(true)
       // Get all active services at once with proper API parameters
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
       
       // Fetch a large number to get all services (or implement proper pagination)
       const response = await fetch(`${API_BASE_URL}/services?is_active=true&limit=1000`, {
@@ -286,7 +286,7 @@ export default function PricingPage() {
 
   const fetchPrintingImages = async () => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
       const IMAGE_BASE_URL = API_BASE_URL.replace(/\/api$/, '')
       const response = await fetch(`${API_BASE_URL}/images?is_visible=true&category=printing&limit=100`)
       if (!response.ok) throw new Error('Failed to fetch images')

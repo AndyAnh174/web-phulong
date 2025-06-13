@@ -41,6 +41,7 @@ export default function AdminContactsPage() {
   const { toast } = useToast()
   const { token } = useAuth()
   const itemsPerPage = 10
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
 
   useEffect(() => {
     if (token) {
@@ -52,7 +53,7 @@ export default function AdminContactsPage() {
     try {
       setLoading(true)
       const skip = (currentPage - 1) * itemsPerPage
-      const response = await fetch(`http://localhost:8000/api/contact/list?skip=${skip}&limit=${itemsPerPage}`, {
+      const response = await fetch(`${API_URL}/api/contact/list?skip=${skip}&limit=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -87,7 +88,7 @@ export default function AdminContactsPage() {
     if (!selectedContact) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/contact/${selectedContact.id}`, {
+      const response = await fetch(`${API_URL}/api/contact/${selectedContact.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

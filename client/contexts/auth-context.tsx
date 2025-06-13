@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
 
   // Kiểm tra token khi component mount - chỉ chạy 1 lần
   useEffect(() => {
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Kiểm tra token có hợp lệ không
   const checkAuthWithToken = async (tokenToCheck: string): Promise<boolean> => {
     try {
-      const response = await fetch("http://localhost:8000/api/users/me", {
+      const response = await fetch(`${API_URL}/users/me`, {
         headers: {
           Authorization: `Bearer ${tokenToCheck}`,
         },
@@ -100,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true)
     try {
-      const response = await fetch("http://localhost:8000/api/auth/login-json", {
+      const response = await fetch(`${API_URL}/auth/login-json`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(data.access_token)
 
         // Lấy thông tin user
-        const userResponse = await fetch("http://localhost:8000/api/users/me", {
+        const userResponse = await fetch(`${API_URL}/users/me`, {
           headers: {
             Authorization: `Bearer ${data.access_token}`,
           },

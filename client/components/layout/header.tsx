@@ -20,7 +20,8 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/config/env")
+    const API_URL = process.env.NEXT_PUBLIC_API_URL
+    fetch(`${API_URL}/api/config/env`)
       .then((res) => res.json())
       .then((data) => setConfig(data))
       .catch(console.error)

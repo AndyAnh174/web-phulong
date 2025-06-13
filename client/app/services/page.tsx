@@ -40,6 +40,8 @@ interface Service {
   is_active: boolean
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api'
+
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,7 +61,7 @@ export default function ServicesPage() {
   const fetchServices = useCallback(async () => {
     try {
       setLoading(true)
-      let url = "http://localhost:8000/api/services?"
+      let url = API_BASE_URL + "/services?"
 
       if (selectedCategory !== "all") {
         url += `category=${selectedCategory}&`

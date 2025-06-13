@@ -106,7 +106,7 @@ export default function BlogPage() {
         setLoadingMore(true)
       }
 
-      let url = "http://localhost:8000/api/blogs?is_active=true"
+      let url = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/blogs?is_active=true` : '/api/blogs?is_active=true'
       
       // Add pagination
       const page = reset ? 1 : currentPage

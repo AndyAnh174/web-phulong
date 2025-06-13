@@ -53,6 +53,8 @@ interface Review {
   created_at: string
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
 export default function ServiceDetailPage() {
   const params = useParams()
   const [service, setService] = useState<Service | null>(null)
@@ -73,7 +75,7 @@ export default function ServiceDetailPage() {
 
   const fetchServiceDetail = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/services/${params.id}`)
+      const response = await fetch(`${API_URL}/api/services/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setService(data)
@@ -98,7 +100,7 @@ export default function ServiceDetailPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/services/${params.id}/reviews`)
+      const response = await fetch(`${API_URL}/api/services/${params.id}/reviews`)
       if (response.ok) {
         const data = await response.json()
         setReviews(data)
@@ -110,7 +112,7 @@ export default function ServiceDetailPage() {
 
   const fetchSuggestedServices = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/services/suggested?current_id=${params.id}`)
+      const response = await fetch(`${API_URL}/api/services/suggested?current_id=${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setSuggestedServices(data)

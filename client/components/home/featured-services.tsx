@@ -33,6 +33,8 @@ interface Service {
   is_active: boolean
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
 export default function FeaturedServices() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,7 +43,7 @@ export default function FeaturedServices() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/services?featured=true&limit=6")
+        const response = await fetch(`${API_URL}/api/services?featured=true&limit=6`)
         const data = await response.json()
         setServices(data)
       } catch (error) {

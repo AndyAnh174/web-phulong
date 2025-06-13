@@ -96,6 +96,8 @@ export default function AdminDashboardPage() {
   const { toast } = useToast()
   const { token } = useAuth()
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+
   const fetchDashboardData = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -110,9 +112,9 @@ export default function AdminDashboardPage() {
 
       // Fetch all data in parallel for better performance
       const [summaryResponse, ordersResponse, servicesResponse] = await Promise.all([
-        fetch("http://localhost:8000/api/dashboard/summary", { headers }),
-        fetch("http://localhost:8000/api/dashboard/recent-orders?limit=5", { headers }),
-        fetch("http://localhost:8000/api/dashboard/popular-services?limit=5", { headers })
+        fetch(`${API_URL}/api/dashboard/summary`, { headers }),
+        fetch(`${API_URL}/api/dashboard/recent-orders?limit=5`, { headers }),
+        fetch(`${API_URL}/api/dashboard/popular-services?limit=5`, { headers })
       ])
 
       if (summaryResponse.ok) {
@@ -159,7 +161,7 @@ export default function AdminDashboardPage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [token, toast])
+  }, [token, toast, API_URL])
 
   useEffect(() => {
     if (token) {

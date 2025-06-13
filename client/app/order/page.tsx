@@ -49,6 +49,8 @@ interface Service {
   features?: string[]
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
 export default function OrderPage() {
   const searchParams = useSearchParams()
   const [services, setServices] = useState<Service[]>([])
@@ -85,7 +87,7 @@ export default function OrderPage() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/services?is_active=true")
+      const response = await fetch(`${API_URL}/api/services?is_active=true`)
       const data = await response.json()
       setServices(data)
     } catch (error) {
@@ -189,7 +191,7 @@ export default function OrderPage() {
         submitData.append("design_file", designFile)
       }
 
-      const response = await fetch("http://localhost:8000/api/orders", {
+      const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         body: submitData,
       })
