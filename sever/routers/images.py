@@ -13,6 +13,7 @@ from config.database import get_db
 from schemas.schemas import ImageOut, ImageCreate, ImageUpdate, ImageUploadResponse
 from models.models import Image, User
 from middlewares.auth_middleware import get_current_user, get_admin_user
+from config.settings import settings
 
 router = APIRouter(prefix="/api/images", tags=["Images"])
 
@@ -99,8 +100,11 @@ async def upload_image(
         # Lấy thông tin ảnh
         image_info = get_image_info(file_path)
         
-        # Tạo URL cho ảnh
-        file_url = f"/static/images/uploads/{unique_filename}"
+        # Tạo URL cho ảnh - sử dụng absolute URL thay vì relative
+        if hasattr(settings, 'BACKEND_URL') and settings.BACKEND_URL:
+            file_url = f"{settings.BACKEND_URL}/static/images/uploads/{unique_filename}"
+        else:
+            file_url = f"/static/images/uploads/{unique_filename}"
         
         # Lưu thông tin vào database
         new_image = Image(

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import pandas as pd
@@ -14,6 +14,8 @@ from utils.email import send_order_confirmation
 from config.settings import settings
 import logging
 from sqlalchemy import and_, or_
+import uuid
+import io
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
@@ -62,7 +64,7 @@ async def create_order(
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(design_file.file, buffer)
             
-            design_file_url = f"/static/uploads/{filename}"
+            design_file_url = f"{settings.BACKEND_URL}/static/uploads/{filename}" if settings.BACKEND_URL else f"/static/uploads/{filename}"
             logging.info(f"Đã lưu file thiết kế thành công: {design_file_url}")
         
         # Tạo đơn hàng mới

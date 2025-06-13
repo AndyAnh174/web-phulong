@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # Upload settings
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "static/uploads")
     
+    # Backend URL for absolute paths
+    BACKEND_URL: str = os.getenv("BACKEND_URL", "")
+    
     class Config:
         env_file = ".env"
         case_sensitive = True

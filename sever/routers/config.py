@@ -14,7 +14,7 @@ def get_public_env():
     Trả về các biến môi trường công khai cho frontend
     """
     return {
-        "API_URL": f"http://{settings.FRONTEND_HOST}/api" if hasattr(settings, 'FRONTEND_HOST') else "/api",
+        "API_URL": f"https://{settings.FRONTEND_HOST}/api" if hasattr(settings, 'FRONTEND_HOST') else "/api",
         "SITE_NAME": "Phú Long In Ấn",
         "SITE_DESCRIPTION": "Dịch vụ in ấn chất lượng cao",
         "CONTACT_EMAIL": settings.ADMIN_EMAIL,
