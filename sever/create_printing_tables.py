@@ -1,6 +1,9 @@
 """
-Script để tạo các table cho Printing API
-Chạy script này để thêm bảng printings và printing_images vào database
+Script để tạo các table cho Printing API với Upload Ảnh Trực Tiếp
+Chạy script này để:
+- Tạo bảng printings và printing_images 
+- Tạo thư mục upload ảnh
+- Tạo dữ liệu mẫu (tùy chọn)
 """
 
 import sys
@@ -8,6 +11,7 @@ import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+from pathlib import Path
 
 # Thêm thư mục gốc vào Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -15,6 +19,78 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from config.database import engine, Base, get_db
 from models.models import Printing, PrintingImage, User, Image
 from config.settings import settings
+
+def setup_upload_directories():
+    """Tạo thư mục upload ảnh"""
+    try:
+        print("📁 Thiết lập thư mục upload ảnh...")
+        
+        # Tạo thư mục static và uploads
+        upload_dirs = [
+            "static",
+            "static/images", 
+            "static/images/uploads"
+        ]
+        
+        for dir_path in upload_dirs:
+            Path(dir_path).mkdir(parents=True, exist_ok=True)
+            print(f"   ✅ {dir_path}/")
+        
+        # Tạo file .gitkeep để giữ thư mục trống trong git
+        gitkeep_file = Path("static/images/uploads/.gitkeep")
+        if not gitkeep_file.exists():
+            gitkeep_file.touch()
+            print("   ✅ .gitkeep file created")
+        
+        print("✅ Thư mục upload đã sẵn sàng!")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Lỗi khi tạo thư mục upload: {str(e)}")
+        return False
+
+def check_dependencies():
+    """Kiểm tra các dependencies cần thiết"""
+    try:
+        print("🔍 Kiểm tra dependencies...")
+        
+        required_packages = [
+            ("PIL", "Pillow - xử lý ảnh"),
+            ("fastapi", "FastAPI framework"),
+            ("python-multipart", "Upload file support")
+        ]
+        
+        missing_packages = []
+        
+        for package, description in required_packages:
+            try:
+                if package == "PIL":
+                    from PIL import Image as PILImage
+                elif package == "fastapi":
+                    import fastapi
+                elif package == "python-multipart":
+                    import multipart
+                    
+                print(f"   ✅ {package} - {description}")
+            except ImportError:
+                missing_packages.append((package, description))
+                print(f"   ❌ {package} - {description} (MISSING)")
+        
+        if missing_packages:
+            print("\n⚠️  Thiếu dependencies. Cài đặt bằng lệnh:")
+            for package, _ in missing_packages:
+                if package == "PIL":
+                    print(f"   pip install Pillow")
+                else:
+                    print(f"   pip install {package}")
+            return False
+        
+        print("✅ Tất cả dependencies đều có sẵn!")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Lỗi khi kiểm tra dependencies: {str(e)}")
+        return False
 
 def create_printing_tables():
     """Tạo các table cho Printing"""
@@ -25,8 +101,11 @@ def create_printing_tables():
         Base.metadata.create_all(bind=engine)
         
         print("✅ Đã tạo thành công các bảng:")
-        print("   - printings")
-        print("   - printing_images")
+        print("   - printings (bài đăng in ấn)")
+        print("   - printing_images (ảnh đính kèm)")
+        print("   - images (thông tin ảnh)")
+        print("   - users (người dùng)")
+        print("   - và các bảng khác nếu chưa có...")
         
         # Kiểm tra và hiển thị thông tin bảng
         with engine.connect() as connection:
@@ -59,13 +138,18 @@ def create_printing_tables():
                 print(f"   - {row[0]}: {row[1]} {nullable}{default}")
         
         print("\n🎉 Hoàn thành! Bạn có thể sử dụng Printing API ngay bây giờ.")
-        print("\n📚 Các endpoint có sẵn:")
-        print("   - GET    /api/printing           - Lấy danh sách bài đăng")
-        print("   - GET    /api/printing/{id}      - Lấy chi tiết bài đăng")
-        print("   - POST   /api/printing           - Tạo bài đăng mới (ADMIN)")
-        print("   - PUT    /api/printing/{id}      - Cập nhật bài đăng (ADMIN)")
+        print("\n📚 Các endpoint có sẵn (WITH UPLOAD ẢNH TRỰC TIẾP):")
+        print("   - GET    /api/printing           - Lấy danh sách bài đăng (PUBLIC)")
+        print("   - GET    /api/printing/{id}      - Lấy chi tiết bài đăng (PUBLIC)")
+        print("   - POST   /api/printing           - Tạo bài đăng + upload ảnh (ADMIN)")
+        print("   - PUT    /api/printing/{id}      - Cập nhật bài đăng + ảnh (ADMIN)")
         print("   - DELETE /api/printing/{id}      - Xóa bài đăng (ADMIN)")
         print("   - PATCH  /api/printing/{id}/visibility - Ẩn/hiện bài đăng (ADMIN)")
+        print("\n🌟 TÍNH NĂNG MỚI:")
+        print("   ✨ Upload ảnh trực tiếp khi tạo/cập nhật bài đăng")
+        print("   ✨ Hỗ trợ multipart/form-data")
+        print("   ✨ Tối đa 3 ảnh/bài đăng, 10MB/ảnh")
+        print("   ✨ Auto resize và optimize ảnh")
         
         return True
         
@@ -136,11 +220,44 @@ def create_sample_data():
     finally:
         db.close()
 
+def interactive_menu():
+    """Menu tương tác cho người dùng"""
+    print("\n🎛️  MENU THIẾT LẬP")
+    print("=" * 40)
+    print("1. ✅ Chỉ tạo bảng database")
+    print("2. 📁 Chỉ thiết lập thư mục upload")
+    print("3. 📝 Chỉ tạo dữ liệu mẫu") 
+    print("4. 🚀 Thiết lập hoàn chỉnh (recommended)")
+    print("5. ❌ Thoát")
+    print("=" * 40)
+    
+    while True:
+        try:
+            choice = input("👉 Chọn tùy chọn (1-5): ").strip()
+            
+            if choice == "1":
+                return ["tables"]
+            elif choice == "2":
+                return ["directories"]
+            elif choice == "3":
+                return ["sample_data"]
+            elif choice == "4":
+                return ["dependencies", "directories", "tables", "sample_data"]
+            elif choice == "5":
+                print("👋 Tạm biệt!")
+                return []
+            else:
+                print("❌ Vui lòng chọn từ 1-5")
+                
+        except KeyboardInterrupt:
+            print("\n👋 Thoát bằng Ctrl+C")
+            return []
+
 def main():
     """Hàm chính"""
-    print("=" * 60)
-    print("🏗️  SCRIPT TẠO BẢNG CHO PRINTING API")
-    print("=" * 60)
+    print("=" * 70)
+    print("🏗️  SCRIPT TẠO PRINTING API VỚI UPLOAD ẢNH TRỰC TIẾP")
+    print("=" * 70)
     
     # Kiểm tra kết nối database
     try:
@@ -152,27 +269,50 @@ def main():
         print("💡 Kiểm tra lại cấu hình database trong file .env")
         return
     
-    # Tạo bảng
-    if not create_printing_tables():
+    # Menu tương tác
+    selected_tasks = interactive_menu()
+    
+    if not selected_tasks:
         return
     
-    # Hỏi có muốn tạo dữ liệu mẫu không
-    while True:
-        choice = input("\n❓ Bạn có muốn tạo dữ liệu mẫu không? (y/n): ").lower().strip()
-        if choice in ['y', 'yes']:
-            create_sample_data()
-            break
-        elif choice in ['n', 'no']:
-            print("ℹ️  Bỏ qua tạo dữ liệu mẫu.")
-            break
-        else:
-            print("❌ Vui lòng nhập 'y' hoặc 'n'")
+    print(f"\n🚀 Bắt đầu thực hiện {len(selected_tasks)} task(s)...")
     
-    print("\n" + "=" * 60)
-    print("🎊 HOÀN THÀNH THIẾT LẬP PRINTING API!")
-    print("=" * 60)
+    # Thực hiện các task được chọn
+    success_count = 0
+    
+    for task in selected_tasks:
+        if task == "dependencies":
+            if check_dependencies():
+                success_count += 1
+            else:
+                print("⚠️  Một số dependencies thiếu, nhưng vẫn tiếp tục...")
+                
+        elif task == "directories":
+            if setup_upload_directories():
+                success_count += 1
+                
+        elif task == "tables":
+            if create_printing_tables():
+                success_count += 1
+                
+        elif task == "sample_data":
+            print("\n📝 Tạo dữ liệu mẫu...")
+            if create_sample_data():
+                success_count += 1
+    
+    # Tổng kết
+    print("\n" + "=" * 70)
+    if success_count == len(selected_tasks):
+        print("🎊 HOÀN THÀNH THIẾT LẬP PRINTING API!")
+        print("✅ Tất cả task đều thành công!")
+    else:
+        print(f"⚠️  HOÀN THÀNH VỚI {success_count}/{len(selected_tasks)} TASK THÀNH CÔNG")
+        
+    print("=" * 70)
     print("📖 Swagger Documentation: http://localhost:8000/api/docs")
     print("🔗 API Base URL: http://localhost:8000/api/printing")
+    print("📂 Upload Directory: ./static/images/uploads/")
+    print("\n💡 Lưu ý: Để test upload ảnh, chạy: python test_printing_upload.py")
 
 if __name__ == "__main__":
     main() 

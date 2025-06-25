@@ -28,7 +28,10 @@ class PrintingBase(BaseModel):
     is_visible: bool = Field(default=True, description="Ẩn/hiện bài đăng")
 
 class PrintingCreate(PrintingBase):
-    image_ids: Optional[List[int]] = Field(default=[], description="Danh sách ID ảnh (tối đa 3)")
+    """
+    Schema cho tạo bài đăng mới.
+    Lưu ý: Không sử dụng image_ids nữa, ảnh sẽ được upload trực tiếp qua multipart/form-data
+    """
     
     class Config:
         json_schema_extra = {
@@ -36,17 +39,19 @@ class PrintingCreate(PrintingBase):
                 "title": "In ấn name card cao cấp",
                 "time": "1-2 ngày",
                 "content": "Dịch vụ in ấn name card với chất lượng cao, thiết kế đẹp mắt...",
-                "is_visible": True,
-                "image_ids": [1, 2, 3]
+                "is_visible": True
             }
         }
 
 class PrintingUpdate(BaseModel):
+    """
+    Schema cho cập nhật bài đăng.
+    Lưu ý: Không sử dụng image_ids nữa, ảnh sẽ được upload trực tiếp qua multipart/form-data
+    """
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     time: Optional[str] = Field(None, min_length=1, max_length=100)
     content: Optional[str] = Field(None, min_length=1)
     is_visible: Optional[bool] = None
-    image_ids: Optional[List[int]] = Field(None, description="Danh sách ID ảnh mới (tối đa 3)")
 
 class PrintingOut(PrintingBase):
     id: int

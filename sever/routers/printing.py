@@ -1,6 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import os
+import uuid
+from datetime import datetime
+import shutil
+from PIL import Image as PILImage
+from pathlib import Path
 from config.database import get_db
 from schemas.printing import (
     PrintingCreate, PrintingOut, PrintingUpdate, 
@@ -8,9 +14,100 @@ from schemas.printing import (
 )
 from models.models import Printing, PrintingImage, User, Image
 from middlewares.auth_middleware import get_current_user, get_admin_user
+from config.settings import settings
 import logging
 
 router = APIRouter(prefix="/api/printing", tags=["Printing"])
+
+# Cấu hình upload ảnh
+UPLOAD_DIR = "static/images/uploads"
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"}
+
+# Tạo thư mục upload nếu chưa tồn tại
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def validate_image_file(file: UploadFile) -> bool:
+    """Kiểm tra file ảnh hợp lệ"""
+    if not file.content_type or file.content_type not in ALLOWED_MIME_TYPES:
+        return False
+    
+    if not file.filename:
+        return False
+        
+    file_ext = Path(file.filename).suffix.lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        return False
+        
+    return True
+
+def get_image_info(file_path: str) -> dict:
+    """Lấy thông tin ảnh (width, height)"""
+    try:
+        with PILImage.open(file_path) as img:
+            return {
+                "width": img.width,
+                "height": img.height
+            }
+    except Exception:
+        return {"width": None, "height": None}
+
+async def save_uploaded_image(file: UploadFile, user_id: int, db: Session) -> Image:
+    """Lưu ảnh upload và tạo record trong database"""
+    # Đọc nội dung file
+    file_content = await file.read()
+    
+    # Reset file pointer cho việc sử dụng sau
+    await file.seek(0)
+    
+    # Kiểm tra kích thước file
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File quá lớn. Kích thước tối đa là {MAX_FILE_SIZE // (1024*1024)}MB"
+        )
+    
+    # Tạo tên file unique
+    file_ext = Path(file.filename).suffix.lower()
+    unique_filename = f"{uuid.uuid4()}{file_ext}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    # Lưu file
+    with open(file_path, "wb") as buffer:
+        buffer.write(file_content)
+    
+    # Lấy thông tin ảnh
+    image_info = get_image_info(file_path)
+    
+    # Tạo URL cho ảnh
+    if hasattr(settings, 'BACKEND_URL') and settings.BACKEND_URL:
+        backend_url = settings.BACKEND_URL
+        if not backend_url.startswith("http"):
+            backend_url = f"https://{backend_url}"
+        file_url = f"{backend_url}/static/images/uploads/{unique_filename}"
+    else:
+        file_url = f"/static/images/uploads/{unique_filename}"
+    
+    # Tạo record trong database
+    new_image = Image(
+        filename=file.filename,
+        file_path=file_path,
+        url=file_url,
+        alt_text=None,  # Có thể thêm tham số alt_text sau
+        file_size=len(file_content),
+        mime_type=file.content_type,
+        width=image_info["width"],
+        height=image_info["height"],
+        is_visible=True,
+        category="printing",
+        uploaded_by=user_id
+    )
+    
+    db.add(new_image)
+    db.flush()  # Để lấy ID
+    
+    return new_image
 
 @router.get("/", response_model=PrintingListResponse)
 async def get_printings(
@@ -64,62 +161,82 @@ async def get_printing(printing_id: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=PrintingResponse)
 async def create_printing(
-    printing: PrintingCreate, 
+    title: str = Form(..., description="Tiêu đề bài đăng"),
+    time: str = Form(..., description="Thời gian in ấn (VD: 1-2 ngày)"),
+    content: str = Form(..., description="Nội dung bài đăng"),
+    is_visible: bool = Form(True, description="Ẩn/hiện bài đăng"),
+    images: List[UploadFile] = File(default=[], description="Upload ảnh (tối đa 3 ảnh)"),
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_admin_user)
 ):
     """
-    Tạo bài đăng in ấn mới (Chỉ ADMIN mới có quyền)
-    - Có thể đính kèm 1-3 ảnh
+    Tạo bài đăng in ấn mới với upload ảnh trực tiếp (Chỉ ADMIN mới có quyền)
+    - Hỗ trợ upload 1-3 ảnh cùng lúc
+    - Sử dụng multipart/form-data
     """
     try:
         # Kiểm tra số lượng ảnh (tối đa 3)
-        if len(printing.image_ids) > 3:
+        if len(images) > 3:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Chỉ được đính kèm tối đa 3 ảnh cho mỗi bài đăng"
             )
         
-        # Kiểm tra các ảnh có tồn tại không
-        if printing.image_ids:
-            existing_images = db.query(Image).filter(Image.id.in_(printing.image_ids)).all()
-            existing_image_ids = [img.id for img in existing_images]
-            
-            missing_images = [img_id for img_id in printing.image_ids if img_id not in existing_image_ids]
-            if missing_images:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Không tìm thấy ảnh với ID: {missing_images}"
-                )
+        # Validate các file ảnh
+        for file in images:
+            if file.filename:  # Chỉ validate nếu có file
+                if not validate_image_file(file):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"File {file.filename} không hợp lệ. Chỉ chấp nhận file ảnh (jpg, png, gif, webp, bmp)"
+                    )
         
         # Tạo bài đăng mới
         new_printing = Printing(
-            title=printing.title,
-            time=printing.time,
-            content=printing.content,
-            is_visible=printing.is_visible,
+            title=title,
+            time=time,
+            content=content,
+            is_visible=is_visible,
             created_by=current_user.id
         )
         
         db.add(new_printing)
         db.flush()  # Để lấy ID của printing mới tạo
         
-        # Thêm ảnh vào bài đăng
-        for index, image_id in enumerate(printing.image_ids, 1):
-            printing_image = PrintingImage(
-                printing_id=new_printing.id,
-                image_id=image_id,
-                order=index
-            )
-            db.add(printing_image)
+        # Upload và lưu ảnh
+        uploaded_images = []
+        for file in images:
+            if file.filename:  # Chỉ xử lý nếu có file
+                try:
+                    # Upload và tạo record ảnh
+                    new_image = await save_uploaded_image(file, current_user.id, db)
+                    uploaded_images.append(new_image)
+                    
+                    # Tạo liên kết giữa printing và image
+                    printing_image = PrintingImage(
+                        printing_id=new_printing.id,
+                        image_id=new_image.id,
+                        order=len(uploaded_images)
+                    )
+                    db.add(printing_image)
+                    
+                except Exception as e:
+                    # Nếu có lỗi upload ảnh, xóa các file đã upload
+                    for img in uploaded_images:
+                        if os.path.exists(img.file_path):
+                            os.remove(img.file_path)
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Lỗi khi upload ảnh {file.filename}: {str(e)}"
+                    )
         
         db.commit()
         db.refresh(new_printing)
         
-        logging.info(f"Đã tạo bài đăng in ấn mới: {new_printing.title} (ID: {new_printing.id})")
+        logging.info(f"Đã tạo bài đăng in ấn mới: {new_printing.title} (ID: {new_printing.id}) với {len(uploaded_images)} ảnh")
         
         return PrintingResponse(
-            message="Tạo bài đăng thành công",
+            message=f"Tạo bài đăng thành công với {len(uploaded_images)} ảnh",
             printing=new_printing
         )
         
@@ -136,13 +253,19 @@ async def create_printing(
 @router.put("/{printing_id}", response_model=PrintingResponse)
 async def update_printing(
     printing_id: int,
-    printing_update: PrintingUpdate,
+    title: Optional[str] = Form(None, description="Tiêu đề bài đăng"),
+    time: Optional[str] = Form(None, description="Thời gian in ấn"),
+    content: Optional[str] = Form(None, description="Nội dung bài đăng"),
+    is_visible: Optional[bool] = Form(None, description="Ẩn/hiện bài đăng"),
+    images: List[UploadFile] = File(default=[], description="Upload ảnh mới (tối đa 3 ảnh, sẽ thay thế ảnh cũ)"),
+    keep_existing_images: bool = Form(False, description="Giữ lại ảnh cũ (nếu True, ảnh mới sẽ được thêm vào)"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
     """
-    Cập nhật bài đăng in ấn (Chỉ ADMIN mới có quyền)
-    - Có thể cập nhật thông tin và ảnh đính kèm
+    Cập nhật bài đăng in ấn với upload ảnh trực tiếp (Chỉ ADMIN mới có quyền)
+    - Có thể cập nhật thông tin và upload ảnh mới
+    - Sử dụng multipart/form-data
     """
     try:
         # Tìm bài đăng
@@ -155,55 +278,90 @@ async def update_printing(
             )
         
         # Cập nhật các trường nếu được cung cấp
-        if printing_update.title is not None:
-            db_printing.title = printing_update.title
-        if printing_update.time is not None:
-            db_printing.time = printing_update.time
-        if printing_update.content is not None:
-            db_printing.content = printing_update.content
-        if printing_update.is_visible is not None:
-            db_printing.is_visible = printing_update.is_visible
+        if title is not None:
+            db_printing.title = title
+        if time is not None:
+            db_printing.time = time
+        if content is not None:
+            db_printing.content = content
+        if is_visible is not None:
+            db_printing.is_visible = is_visible
         
-        # Cập nhật ảnh nếu được cung cấp
-        if printing_update.image_ids is not None:
-            # Kiểm tra số lượng ảnh (tối đa 3)
-            if len(printing_update.image_ids) > 3:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Chỉ được đính kèm tối đa 3 ảnh cho mỗi bài đăng"
-                )
-            
-            # Kiểm tra các ảnh có tồn tại không
-            if printing_update.image_ids:
-                existing_images = db.query(Image).filter(Image.id.in_(printing_update.image_ids)).all()
-                existing_image_ids = [img.id for img in existing_images]
-                
-                missing_images = [img_id for img_id in printing_update.image_ids if img_id not in existing_image_ids]
-                if missing_images:
+        # Xử lý ảnh nếu có upload mới
+        uploaded_images = []
+        if images and any(img.filename for img in images):
+            # Validate file ảnh
+            for file in images:
+                if file.filename and not validate_image_file(file):
                     raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"Không tìm thấy ảnh với ID: {missing_images}"
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"File {file.filename} không hợp lệ. Chỉ chấp nhận file ảnh (jpg, png, gif, webp, bmp)"
                     )
             
-            # Xóa tất cả ảnh cũ
-            db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).delete()
+            # Lấy số ảnh hiện tại nếu giữ lại ảnh cũ
+            current_image_count = 0
+            if keep_existing_images:
+                current_image_count = db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).count()
             
-            # Thêm ảnh mới
-            for index, image_id in enumerate(printing_update.image_ids, 1):
-                printing_image = PrintingImage(
-                    printing_id=printing_id,
-                    image_id=image_id,
-                    order=index
+            # Kiểm tra tổng số ảnh (cũ + mới) không quá 3
+            new_image_count = len([img for img in images if img.filename])
+            total_images = current_image_count + new_image_count
+            
+            if total_images > 3:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Tổng số ảnh không được quá 3. Hiện tại: {current_image_count}, thêm mới: {new_image_count}"
                 )
-                db.add(printing_image)
+            
+            # Nếu không giữ ảnh cũ, xóa tất cả ảnh cũ
+            if not keep_existing_images:
+                old_images = db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).all()
+                for old_img_relation in old_images:
+                    # Xóa file vật lý (tùy chọn, có thể comment nếu muốn giữ file)
+                    old_img = db.query(Image).filter(Image.id == old_img_relation.image_id).first()
+                    if old_img and os.path.exists(old_img.file_path):
+                        try:
+                            os.remove(old_img.file_path)
+                        except:
+                            pass  # Không quan trọng nếu không xóa được file
+                
+                # Xóa các record
+                db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).delete()
+            
+            # Upload ảnh mới
+            for file in images:
+                if file.filename:
+                    try:
+                        new_image = await save_uploaded_image(file, current_user.id, db)
+                        uploaded_images.append(new_image)
+                        
+                        # Tạo liên kết
+                        next_order = current_image_count + len(uploaded_images) if keep_existing_images else len(uploaded_images)
+                        printing_image = PrintingImage(
+                            printing_id=printing_id,
+                            image_id=new_image.id,
+                            order=next_order
+                        )
+                        db.add(printing_image)
+                        
+                    except Exception as e:
+                        # Cleanup nếu có lỗi
+                        for img in uploaded_images:
+                            if os.path.exists(img.file_path):
+                                os.remove(img.file_path)
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Lỗi khi upload ảnh {file.filename}: {str(e)}"
+                        )
         
         db.commit()
         db.refresh(db_printing)
         
-        logging.info(f"Đã cập nhật bài đăng in ấn: {db_printing.title} (ID: {db_printing.id})")
+        image_msg = f" và {len(uploaded_images)} ảnh mới" if uploaded_images else ""
+        logging.info(f"Đã cập nhật bài đăng in ấn: {db_printing.title} (ID: {db_printing.id}){image_msg}")
         
         return PrintingResponse(
-            message="Cập nhật bài đăng thành công",
+            message=f"Cập nhật bài đăng thành công{image_msg}",
             printing=db_printing
         )
         
