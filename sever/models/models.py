@@ -147,4 +147,33 @@ class Image(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationship
-    uploader = relationship("User", backref="uploaded_images") 
+    uploader = relationship("User", backref="uploaded_images")
+
+class Printing(Base):
+    __tablename__ = "printings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False, index=True)  # Tiêu đề bài đăng
+    time = Column(String, nullable=False)  # Thời gian in ấn (VD: "1-2 ngày")
+    content = Column(Text, nullable=False)  # Nội dung bài đăng
+    is_visible = Column(Boolean, default=True)  # Ẩn/hiện bài đăng
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # Người tạo
+    
+    # Relationship
+    creator = relationship("User", backref="printings")
+    images = relationship("PrintingImage", back_populates="printing", cascade="all, delete-orphan")
+
+class PrintingImage(Base):
+    __tablename__ = "printing_images"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    printing_id = Column(Integer, ForeignKey("printings.id"))
+    image_id = Column(Integer, ForeignKey("images.id"))
+    order = Column(Integer, default=1)  # Thứ tự ảnh (1-3)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    printing = relationship("Printing", back_populates="images")
+    image = relationship("Image") 

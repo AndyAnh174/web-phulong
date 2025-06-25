@@ -5,7 +5,7 @@ import logging
 import os
 from datetime import datetime
 import uvicorn
-from routers import services, blogs, orders, users, auth, dashboard, contact, config, images
+from routers import services, blogs, orders, users, auth, dashboard, contact, config, images, printing
 from middlewares.auth_middleware import get_current_user, get_admin_user, get_root_user
 from middlewares.logging_middleware import AdminLoggingMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -130,6 +130,7 @@ app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(config.router, prefix="/api/config", tags=["Configuration"])
 app.include_router(images.router, tags=["Images"])
+app.include_router(printing.router, tags=["Printing"])
 
 def custom_openapi():
     if app.openapi_schema:
