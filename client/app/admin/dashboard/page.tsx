@@ -96,8 +96,6 @@ export default function AdminDashboardPage() {
   const { toast } = useToast()
   const { token } = useAuth()
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL
-
   const fetchDashboardData = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -112,9 +110,9 @@ export default function AdminDashboardPage() {
 
       // Fetch all data in parallel for better performance
       const [summaryResponse, ordersResponse, servicesResponse] = await Promise.all([
-        fetch(`${API_URL}/api/dashboard/summary`, { headers }),
-        fetch(`${API_URL}/api/dashboard/recent-orders?limit=5`, { headers }),
-        fetch(`${API_URL}/api/dashboard/popular-services?limit=5`, { headers })
+        fetch("http://14.187.180.6:12122/api/dashboard/summary", { headers }),
+        fetch("http://14.187.180.6:12122/api/dashboard/recent-orders?limit=5", { headers }),
+        fetch("http://14.187.180.6:12122/api/dashboard/popular-services?limit=5", { headers })
       ])
 
       if (summaryResponse.ok) {
@@ -161,7 +159,7 @@ export default function AdminDashboardPage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [token, toast, API_URL])
+  }, [token, toast])
 
   useEffect(() => {
     if (token) {
@@ -459,49 +457,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Additional Analytics Cards */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-purple-800">Tỷ lệ chuyển đổi</CardTitle>
-              <BarChart3 className="h-5 w-5 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-900 mb-2">
-                {stats?.conversion_rate || 0}%
-              </div>
-              <Progress value={stats?.conversion_rate || 0} className="h-2" />
-              <p className="text-xs text-purple-700 mt-2">Từ lượt xem thành đơn hàng</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-indigo-800">Hài lòng khách hàng</CardTitle>
-              <Star className="h-5 w-5 text-indigo-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-indigo-900 mb-2">
-                {stats?.customer_satisfaction || 0}%
-              </div>
-              <Progress value={stats?.customer_satisfaction || 0} className="h-2" />
-              <p className="text-xs text-indigo-700 mt-2">Đánh giá tích cực</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-teal-800">Thời gian xử lý</CardTitle>
-              <Timer className="h-5 w-5 text-teal-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-teal-900 mb-2">
-                {stats?.processing_time || 0}h
-              </div>
-              <Progress value={100 - (stats?.processing_time || 0) * 3} className="h-2" />
-              <p className="text-xs text-teal-700 mt-2">Trung bình mỗi đơn hàng</p>
-            </CardContent>
-          </Card>
-        </div>
+      
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Enhanced Recent Orders */}

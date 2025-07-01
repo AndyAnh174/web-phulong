@@ -26,7 +26,7 @@ export default function Hero() {
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Enhanced Background with White Gray Red theme */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[url('https://i.imgur.com/WXSBk46.png')] bg-cover bg-center opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('https://i.imgur.com/WXSBk46.png')] bg-cover bg-center opacity-20"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-gray-50/90 to-red-50/80"></div>
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-5"></div>
       </div>
@@ -115,10 +115,7 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Chúng tôi cung cấp giải pháp in ấn toàn diện với 
-              <span className="text-red-600 font-semibold"> công nghệ hiện đại</span>, 
-              đảm bảo chất lượng và thời gian giao hàng 
-              <span className="text-gray-700 font-semibold"> nhanh chóng</span>.
+              Thành lập từ <span className="text-red-600 font-semibold">2016</span>, <span className="text-red-700 font-semibold">Phú Long</span> đã phục vụ hơn <span className="text-red-600 font-semibold">1000 khách hàng</span> trên toàn quốc với phương châm <span className="text-red-700 font-semibold">trách nhiệm</span>, <span className="text-red-700 font-semibold">uy tín</span> và <span className="text-red-700 font-semibold">tận tâm</span>. Sở hữu <span className="text-red-600 font-semibold">3 phân xưởng hiện đại</span>, chúng tôi đáp ứng <span className="text-red-700 font-semibold">đa dạng</span> và <span className="text-red-700 font-semibold">nhanh chóng</span> mọi nhu cầu in ấn trên giấy, từ thiết kế đến thành phẩm.
             </motion.p>
 
             {/* Action Buttons - Updated with new colors */}
@@ -133,7 +130,7 @@ export default function Hero() {
                 size="lg"
                 className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-6 text-base lg:text-lg rounded-xl shadow-xl hover:shadow-red-500/25 hover:scale-105 transition-all duration-300 group"
               >
-                <Link href="/dat-hang" className="flex items-center justify-center">
+                <Link href="/pricing" className="flex items-center justify-center">
                   <Phone className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                   Đặt in ngay
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />

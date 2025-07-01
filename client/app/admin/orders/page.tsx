@@ -83,8 +83,6 @@ interface OrderStats {
   totalRevenue: number
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -156,7 +154,7 @@ export default function AdminOrdersPage() {
       if (statusFilter !== 'all') params.append('status', statusFilter)
       if (serviceFilter !== 'all') params.append('service_id', serviceFilter)
 
-      const response = await fetch(`${API_URL}/api/orders?${params}`, {
+      const response = await fetch(`http://14.187.180.6:12122/api/orders?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -202,7 +200,7 @@ export default function AdminOrdersPage() {
     if (!token) return
     
     try {
-      const response = await fetch(`${API_URL}/api/services?limit=100`, {
+      const response = await fetch('http://14.187.180.6:12122/api/services?limit=100', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -268,7 +266,7 @@ export default function AdminOrdersPage() {
     if (!selectedOrder || !newStatus) return
 
     try {
-      const response = await fetch(`${API_URL}/api/orders/${selectedOrder.id}`, {
+      const response = await fetch(`http://14.187.180.6:12122/api/orders/${selectedOrder.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -312,7 +310,7 @@ export default function AdminOrdersPage() {
       if (serviceFilter !== 'all') params.append('service_id', serviceFilter)
       params.append('token', token!)
 
-      const response = await fetch(`${API_URL}/api/orders/export/csv?${params}`, {
+      const response = await fetch(`http://14.187.180.6:12122/api/orders/export/csv?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

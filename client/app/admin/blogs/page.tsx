@@ -49,8 +49,6 @@ import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import Image from "next/image"
 import dynamic from "next/dynamic"
-import { ensureHttps } from "@/lib/utils"
-import { SECURE_API_BASE_URL } from "@/lib/api"
 
 // Import MDEditor dynamically to avoid SSR issues
 const MDEditor = dynamic(
@@ -93,9 +91,11 @@ interface FormErrors {
   category?: string
 }
 
+const API_BASE_URL =  'http://14.187.180.6:12122/api'
+
 export default function AdminBlogsPage() {
   // Debug API URL
-  console.log("API_BASE_URL:", SECURE_API_BASE_URL)
+  console.log("API_BASE_URL:", API_BASE_URL)
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -192,7 +192,7 @@ export default function AdminBlogsPage() {
       }
       
       const skip = (currentPage - 1) * itemsPerPage
-      const fetchUrl = `${SECURE_API_BASE_URL}/blogs?skip=${skip}&limit=${itemsPerPage}`
+      const fetchUrl = `${API_BASE_URL}/blogs?skip=${skip}&limit=${itemsPerPage}`
       console.log("Fetching blogs from:", fetchUrl)
       
       const response = await fetch(fetchUrl, {
@@ -262,10 +262,10 @@ export default function AdminBlogsPage() {
       }
 
       console.log("Creating blog with data:", requestBody)
-      console.log("API URL:", `${SECURE_API_BASE_URL}/blogs`)
+      console.log("API URL:", `${API_BASE_URL}/blogs`)
       console.log("Token available:", !!token)
 
-      const response = await fetch(`${SECURE_API_BASE_URL}/blogs`, {
+      const response = await fetch(`${API_BASE_URL}/blogs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -329,7 +329,7 @@ export default function AdminBlogsPage() {
         is_active: formData.is_active,
       }
 
-      const response = await fetch(`${SECURE_API_BASE_URL}/blogs/${selectedBlog.id}`, {
+      const response = await fetch(`${API_BASE_URL}/blogs/${selectedBlog.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -372,7 +372,7 @@ export default function AdminBlogsPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch(`${SECURE_API_BASE_URL}/blogs/${selectedBlog.id}`, {
+      const response = await fetch(`${API_BASE_URL}/blogs/${selectedBlog.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -496,7 +496,7 @@ export default function AdminBlogsPage() {
       <div className="relative overflow-hidden rounded-t-lg">
         {blog.image_url ? (
           <Image
-            src={ensureHttps(blog.image_url)}
+            src={blog.image_url}
             alt={blog.title}
             width={400}
             height={200}

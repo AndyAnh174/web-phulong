@@ -22,7 +22,6 @@ import { Plus, Search, MoreVertical, Edit, Trash, ChevronLeft, ChevronRight, Use
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import { motion, AnimatePresence } from "framer-motion"
-import { SECURE_API_BASE_URL } from "@/lib/api"
 
 interface User {
   id: number
@@ -47,6 +46,8 @@ interface FormErrors {
   password?: string
   role?: string
 }
+
+const API_BASE_URL =  'http://14.187.180.6:12122/api'
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])
@@ -120,7 +121,7 @@ export default function AdminUsersPage() {
     try {
       setLoading(true)
       const skip = (currentPage - 1) * itemsPerPage
-      const response = await fetch(`${SECURE_API_BASE_URL}/users?skip=${skip}&limit=${itemsPerPage}`, {
+      const response = await fetch(`${API_BASE_URL}/users?skip=${skip}&limit=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -165,7 +166,7 @@ export default function AdminUsersPage() {
         role: formData.role,
       }
 
-      const response = await fetch(`${SECURE_API_BASE_URL}/users`, {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -220,7 +221,7 @@ export default function AdminUsersPage() {
         requestBody.password = formData.password
       }
 
-      const response = await fetch(`${SECURE_API_BASE_URL}/users/${selectedUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedUser.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -263,7 +264,7 @@ export default function AdminUsersPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch(`${SECURE_API_BASE_URL}/users/${selectedUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedUser.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -49,8 +49,6 @@ interface Service {
   features?: string[]
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-
 export default function OrderPage() {
   const searchParams = useSearchParams()
   const [services, setServices] = useState<Service[]>([])
@@ -87,7 +85,7 @@ export default function OrderPage() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/services?is_active=true`)
+      const response = await fetch("http://14.187.180.6:12122/api/services?is_active=true")
       const data = await response.json()
       setServices(data)
     } catch (error) {
@@ -191,7 +189,7 @@ export default function OrderPage() {
         submitData.append("design_file", designFile)
       }
 
-      const response = await fetch(`${API_URL}/api/orders`, {
+      const response = await fetch("http://14.187.180.6:12122/api/orders", {
         method: "POST",
         body: submitData,
       })
@@ -323,6 +321,22 @@ export default function OrderPage() {
         <div className="absolute bottom-0 right-0 w-1/4 h-2/3 bg-gradient-to-tl from-gray-900/50 to-transparent rounded-full blur-3xl"></div>
 
         <div className="max-w-6xl mx-auto px-4 lg:px-6 text-center relative z-10">
+          {/* Logo Phú Long */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mb-8"
+          >
+            <div className="inline-flex items-center justify-center p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+              <img
+                src="https://i.imgur.com/WXSBk46.png"
+                alt="Phú Long"
+                className="h-12 w-auto object-contain"
+              />
+            </div>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -495,8 +509,8 @@ export default function OrderPage() {
                         <Package className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <span className="text-xl">Chọn dịch vụ</span>
-                        <p className="text-sm text-gray-500 font-normal">Lựa chọn dịch vụ phù hợp với nhu cầu</p>
+                        <span className="text-xl">Chọn thiết kế</span>
+                        <p className="text-sm text-gray-500 font-normal">Lựa thiết kế phù hợp với nhu cầu</p>
                       </div>
                     </CardTitle>
                   </CardHeader>
@@ -514,7 +528,7 @@ export default function OrderPage() {
                         }}
                       >
                         <SelectTrigger className={`h-12 transition-all duration-300 ${errors.service_id ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-400'}`}>
-                          <SelectValue placeholder="Chọn dịch vụ in ấn" />
+                          <SelectValue placeholder="Chọn thiết kế" />
                         </SelectTrigger>
                         <SelectContent>
                           {services.map((service) => (
@@ -664,6 +678,17 @@ export default function OrderPage() {
               <div className="space-y-6">
                 <Card className="sticky top-4 border-0 shadow-xl bg-white/95 backdrop-blur-sm">
                   <CardHeader className="pb-4">
+                    {/* Logo Phú Long */}
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-red-50 to-gray-50 rounded-xl border border-red-200/50">
+                        <img
+                          src="https://i.imgur.com/WXSBk46.png"
+                          alt="Phú Long"
+                          className="h-8 w-auto object-contain"
+                        />
+                      </div>
+                    </div>
+                    
                     <CardTitle className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
                         <Calculator className="h-5 w-5 text-white" />
@@ -788,11 +813,11 @@ export default function OrderPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-center space-x-2">
                         <Phone className="h-4 w-4 text-green-600" />
-                        <span className="font-medium">Hotline: 1900-xxxx</span>
+                        <span className="font-medium">Hotline: 0977007763</span>
                       </div>
                       <div className="flex items-center justify-center space-x-2">
                         <Mail className="h-4 w-4 text-blue-600" />
-                        <span>support@phulong.vn</span>
+                        <span>inphulong@gmail.com</span>
                       </div>
                     </div>
                   </CardContent>
@@ -803,6 +828,7 @@ export default function OrderPage() {
         </div>
       </section>
       <Footer />
+      
     </div>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -121,7 +122,7 @@ export default function ContactCTA() {
             transition={{ duration: 0.8 }}
             className="max-w-xl"
           >
-            {/* Header */}
+            {/* Header with Logo */}
             <div className="mb-8">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -130,6 +131,14 @@ export default function ContactCTA() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-red-100 to-gray-100 border border-red-200/50 mb-6"
               >
+                <div className="relative w-5 h-5 mr-2">
+                  <Image
+                    src="https://i.imgur.com/WXSBk46.png"
+                    alt="Phú Long"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
                 <Headphones className="h-5 w-5 text-red-600 mr-2" />
                 <span className="text-sm font-semibold bg-gradient-to-r from-red-700 to-gray-700 bg-clip-text text-transparent">
                   Liên hệ ngay
@@ -196,143 +205,150 @@ export default function ContactCTA() {
                 size="lg"
                 className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-6 text-base lg:text-lg rounded-xl shadow-xl hover:scale-105 transition-all duration-300 group"
               >
-                <Link href="/dat-hang" className="flex items-center justify-center">
+                <Link href="/order" className="flex items-center justify-center">
                   <Send className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                  Đặt in ngay
+                  Đặt hàng ngay
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </Button>
-              
               <Button
                 asChild
                 variant="outline"
                 size="lg"
-                className="border-2 border-gray-300 text-gray-700 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-300 px-8 py-6 text-base lg:text-lg rounded-xl shadow-xl hover:scale-105 transition-all duration-300 group"
+                className="border-2 border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:text-red-600 hover:border-red-300 px-8 py-6 text-base lg:text-lg rounded-xl shadow-xl hover:scale-105 transition-all duration-300 group"
               >
                 <Link href="/contact" className="flex items-center justify-center">
-                  <Phone className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                  Tư vấn miễn phí
+                  <MessageCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+                  Liên hệ tư vấn
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </Button>
             </motion.div>
 
-            {/* Premium Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+            {/* Stats */}
+            <motion.div 
+              className="grid grid-cols-3 gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 1 }}
-              className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-red-50 to-red-100 border border-red-200/50 shadow-lg"
             >
-              <Sparkles className="h-4 w-4 text-red-600 mr-2 animate-pulse" />
-              <span className="text-sm font-semibold text-red-700">
-                Ưu đãi đặc biệt cho khách hàng mới
-              </span>
-              <Star className="h-4 w-4 text-red-500 ml-2" />
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={index}
+                  className="text-center group"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 1.2 + index * 0.1 }}
+                >
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg mx-auto w-12 h-12 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <stat.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Contact Methods */}
+          {/* Right Content */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="max-w-lg mx-auto"
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="space-y-6"
           >
-            <div className="space-y-6">
-              {contactMethods.map((method, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.4 + index * 0.2 }}
-                  whileHover={{ scale: 1.02, y: -5 }}
-                  className="group"
-                >
-                  <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-500 bg-white/90 backdrop-blur-sm group-hover:bg-white">
-                    <div className="flex items-center space-x-4">
-                      <div className={`p-4 rounded-2xl bg-gradient-to-br ${method.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        <method.icon className="h-6 w-6 text-white" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-800 mb-1 group-hover:text-red-600 transition-colors duration-300">
-                          {method.title}
-                        </h3>
-                        <p className="text-lg font-semibold text-red-600 mb-1">
-                          {method.content}
-                        </p>
-                        <p className="text-sm text-gray-600 mb-3">
-                          {method.description}
-                        </p>
-                        
-                        <Button
-                          asChild
-                          size="sm"
-                          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white group-hover:scale-105 transition-all duration-300"
-                        >
-                          <Link href={method.href} className="flex items-center">
-                            {method.action}
-                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Bottom Stats Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-20 pt-12 border-t border-gray-200"
-        >
-          <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
-            {stats.map((stat, index) => (
+            {/* Contact Methods */}
+            {contactMethods.map((method, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.9 + index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                whileHover={{ scale: 1.02, y: -5 }}
                 className="group"
               >
-                <div className="flex flex-col items-center">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <stat.icon className="h-6 w-6 text-white" />
+                <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-4 rounded-xl bg-gradient-to-br ${method.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <method.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1 group-hover:text-red-600 transition-colors duration-300">
+                        {method.title}
+                      </h3>
+                      <div className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-1">
+                        {method.content}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {method.description}
+                      </p>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-md hover:scale-105 transition-all duration-300"
+                      >
+                        <Link href={method.href} className="flex items-center">
+                          {method.action}
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-red-700 bg-clip-text text-transparent mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-600 font-medium">{stat.label}</div>
-                </div>
+                </Card>
               </motion.div>
             ))}
-          </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="text-center mt-8"
-          >
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              <span className="text-red-600 font-semibold">Phú Long</span> - 
-              Đối tác đáng tin cậy cho mọi nhu cầu in ấn của bạn. 
-              Liên hệ ngay để nhận tư vấn và báo giá tốt nhất!
-            </p>
+            {/* Brand Trust Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 1 }}
+              className="bg-gradient-to-r from-red-50 to-gray-50 rounded-2xl p-6 border border-red-200/50"
+            >
+              <div className="text-center space-y-4">
+                <div className="flex justify-center items-center gap-3 mb-4">
+                  <div className="relative w-12 h-12 bg-white rounded-lg shadow-md p-2 border border-red-200/50">
+                    <Image
+                      src="https://i.imgur.com/WXSBk46.png"
+                      alt="Phú Long"
+                      fill
+                      className="object-contain p-1"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold bg-gradient-to-r from-red-700 to-gray-700 bg-clip-text text-transparent">
+                      Thương hiệu uy tín
+                    </h3>
+                    <p className="text-sm text-gray-600">Được tin tưởng bởi hàng ngàn khách hàng</p>
+                  </div>
+                </div>
+                <div className="flex justify-center items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <span>5 sao</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-red-500" />
+                    <span>Chất lượng ISO</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Award className="h-4 w-4 text-red-500" />
+                    <span>10+ năm kinh nghiệm</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

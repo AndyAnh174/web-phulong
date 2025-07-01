@@ -30,8 +30,8 @@ import {
   PrinterIcon
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useFavorites } from "@/hooks/use-favorites"
 import { motion } from "framer-motion"
-import { ensureHttps } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -54,17 +54,15 @@ interface Review {
   created_at: string
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-
 export default function ServiceDetailPage() {
   const params = useParams()
   const [service, setService] = useState<Service | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [suggestedServices, setSuggestedServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
-  const [liked, setLiked] = useState(false)
   const [viewCount, setViewCount] = useState(1247)
   const { toast } = useToast()
+  const { toggleFavorite, isFavorite } = useFavorites()
 
   useEffect(() => {
     if (params.id) {
@@ -76,7 +74,7 @@ export default function ServiceDetailPage() {
 
   const fetchServiceDetail = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/services/${params.id}`)
+      const response = await fetch(`http://14.187.180.6:12122/api/services/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setService(data)
@@ -101,7 +99,7 @@ export default function ServiceDetailPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/services/${params.id}/reviews`)
+      const response = await fetch(`http://14.187.180.6:12122/api/services/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setReviews(data)
@@ -113,7 +111,7 @@ export default function ServiceDetailPage() {
 
   const fetchSuggestedServices = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/services/suggested?current_id=${params.id}`)
+      const response = await fetch(`http://14.187.180.6:12122//api/services/suggested?current_id=${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setSuggestedServices(data)
@@ -127,10 +125,19 @@ export default function ServiceDetailPage() {
     reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0
 
   const handleLike = () => {
-    setLiked(!liked)
+    if (!service) return
+    
+    const isNowFavorite = toggleFavorite({
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      image_url: service.image_url,
+      category: service.category
+    })
+    
     toast({
-      title: liked ? "Đã bỏ yêu thích" : "Đã thêm vào yêu thích",
-      description: liked ? "Dịch vụ đã được bỏ khỏi danh sách yêu thích" : "Dịch vụ đã được thêm vào danh sách yêu thích",
+      title: isNowFavorite ? "Đã thêm vào yêu thích" : "Đã bỏ yêu thích",
+      description: isNowFavorite ? "Dịch vụ đã được thêm vào danh sách yêu thích" : "Dịch vụ đã được bỏ khỏi danh sách yêu thích",
     })
   }
 
@@ -187,7 +194,7 @@ export default function ServiceDetailPage() {
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Không tìm thấy dịch vụ</h1>
           <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed">Dịch vụ bạn tìm kiếm không tồn tại hoặc đã bị xóa</p>
           <Button asChild className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg">
-            <Link href="/services">
+            <Link href="/pricing">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Quay lại danh sách
             </Link>
@@ -208,7 +215,7 @@ export default function ServiceDetailPage() {
           transition={{ duration: 0.5 }}
         >
           <Button variant="ghost" asChild className="mb-4 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-300 group p-2 sm:p-3">
-            <Link href="/services" className="flex items-center text-sm sm:text-base">
+            <Link href="/pricing" className="flex items-center text-sm sm:text-base">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
               <span className="hidden xs:inline">Quay lại danh sách dịch vụ</span>
               <span className="xs:hidden">Quay lại</span>
@@ -231,7 +238,7 @@ export default function ServiceDetailPage() {
                 transition={{ duration: 0.3 }}
               >
                 <Image
-                  src={ensureHttps(service.image_url) || "/placeholder.svg?height=500&width=700"}
+                  src={service.image_url || "/placeholder.svg?height=500&width=700"}
                   alt={service.name}
                   width={700}
                   height={500}
@@ -261,11 +268,7 @@ export default function ServiceDetailPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
-                  <Badge variant="outline" className="bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-700 text-xs sm:text-sm">
-                    <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
-                    <span className="hidden sm:inline">{viewCount.toLocaleString()} lượt xem</span>
-                    <span className="sm:hidden">{(viewCount/1000).toFixed(1)}k</span>
-                  </Badge>
+                  
                 </motion.div>
               </motion.div>
             </div>
@@ -277,26 +280,17 @@ export default function ServiceDetailPage() {
                 size="sm"
                 onClick={handleLike}
                 className={`transition-all duration-300 text-xs sm:text-sm p-2 sm:p-3 ${
-                  liked 
+                  service && isFavorite(service.id) 
                     ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100" 
                     : "hover:bg-red-50 hover:border-red-200 hover:text-red-600"
                 }`}
               >
-                <Heart className={`mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 ${liked ? "fill-current" : ""}`} />
-                <span className="hidden sm:inline">{liked ? "Đã yêu thích" : "Yêu thích"}</span>
+                <Heart className={`mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 ${service && isFavorite(service.id) ? "fill-current" : ""}`} />
+                <span className="hidden sm:inline">{service && isFavorite(service.id) ? "Đã yêu thích" : "Yêu thích"}</span>
                 <span className="sm:hidden">❤️</span>
               </Button>
               
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleShare}
-                className="hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-300 text-xs sm:text-sm p-2 sm:p-3"
-              >
-                <Share2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Chia sẻ</span>
-                <span className="sm:hidden">📤</span>
-              </Button>
+            
               
               <Button 
                 variant="outline" 
@@ -304,7 +298,7 @@ export default function ServiceDetailPage() {
                 className="hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all duration-300 text-xs sm:text-sm p-2 sm:p-3"
               >
                 <Download className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Tải mẫu</span>
+               
                 <span className="sm:hidden">⬇️</span>
               </Button>
             </div>
@@ -415,24 +409,9 @@ export default function ServiceDetailPage() {
                 </Button>
                 
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10"
-                  >
-                    <Phone className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="hidden sm:inline">Gọi tư vấn</span>
-                    <span className="sm:hidden">Gọi</span>
-                  </Button>
+               
                   
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-all duration-300 group text-xs sm:text-sm h-8 sm:h-10"
-                  >
-                    <MessageCircle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:rotate-12 transition-transform duration-300" />
-                    Chat
-                  </Button>
+                  
                 </div>
               </div>
             </motion.div>
@@ -559,7 +538,7 @@ export default function ServiceDetailPage() {
                     <CardHeader className="p-0">
                       <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
                         <Image
-                          src={ensureHttps(suggestedService.image_url) || "/placeholder.svg?height=240&width=400"}
+                          src={suggestedService.image_url || "/placeholder.svg?height=240&width=400"}
                           alt={suggestedService.name}
                           width={400}
                           height={240}
@@ -616,7 +595,7 @@ export default function ServiceDetailPage() {
           </motion.div>
         )}
       </div>
-      <Footer />
+     
     </div>
   )
 }

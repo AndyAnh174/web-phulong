@@ -1,13 +1,17 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  client:
-    build: .
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextjs-app
     ports:
       - "8080:8080"
-    env_file:
-      - .env.production
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://demoapi.andyanh.id.vn
-      - NEXT_PUBLIC_SITE_URL=https://demo.andyanh.id.vn
-    restart: unless-stopped 
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

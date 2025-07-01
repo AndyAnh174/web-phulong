@@ -125,7 +125,7 @@ export default function GalleryPreview() {
       </div>
 
       <div className="container mx-auto px-6 lg:px-8 max-w-7xl relative z-10">
-        {/* Header */}
+        {/* Header with Logo */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -140,6 +140,14 @@ export default function GalleryPreview() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-red-100 to-gray-100 border border-red-200/50 mb-6"
           >
+            <div className="relative w-5 h-5 mr-2">
+              <Image
+                src="https://i.imgur.com/WXSBk46.png"
+                alt="Phú Long"
+                fill
+                className="object-contain"
+              />
+            </div>
             <Palette className="h-5 w-5 text-red-600 mr-2" />
             <span className="text-sm font-semibold bg-gradient-to-r from-red-700 to-gray-700 bg-clip-text text-transparent">
               Thư viện mẫu thiết kế
@@ -201,90 +209,106 @@ export default function GalleryPreview() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -10 }}
+              transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
+              whileHover={{ y: -10, scale: 1.02 }}
               className="group"
             >
-              <Card className="relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white/90 backdrop-blur-sm h-full">
-                {/* Featured badge */}
-                {item.featured && (
-                  <div className="absolute top-4 left-4 z-20">
-                    <Badge className="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg">
-                      <Star className="h-3 w-3 mr-1" />
-                      Nổi bật
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Image container */}
+              <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white/90 backdrop-blur-sm">
+                {/* Image Container */}
                 <div className="relative h-64 overflow-hidden">
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  
-                  {/* Action buttons on hover */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="flex space-x-3">
-                      <button className="p-3 bg-white/90 hover:bg-white rounded-full shadow-lg hover:scale-110 transition-all duration-300">
-                        <Eye className="h-5 w-5 text-gray-700" />
-                      </button>
-                      <button 
-                        onClick={() => handleLike(item.id)}
-                        className={`p-3 rounded-full shadow-lg hover:scale-110 transition-all duration-300 ${
-                          likedItems.includes(item.id)
-                            ? "bg-red-500 text-white"
-                            : "bg-white/90 hover:bg-white text-gray-700"
-                        }`}
-                      >
-                        <Heart className={`h-5 w-5 ${likedItems.includes(item.id) ? "fill-current" : ""}`} />
-                      </button>
-                      <button className="p-3 bg-white/90 hover:bg-white rounded-full shadow-lg hover:scale-110 transition-all duration-300">
-                        <Share2 className="h-5 w-5 text-gray-700" />
-                      </button>
+                  {/* Logo overlay on hover */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg"
+                  >
+                    <div className="relative w-8 h-8">
+                      <Image
+                        src="https://i.imgur.com/WXSBk46.png"
+                        alt="Phú Long"
+                        fill
+                        className="object-contain"
+                      />
                     </div>
+                  </motion.div>
+
+                  {/* Category Badge */}
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-red-600/90 backdrop-blur-sm text-white border-0 hover:bg-red-700/90 transition-colors duration-300">
+                      {item.category}
+                    </Badge>
+                  </div>
+
+                  {/* Featured Badge */}
+                  {item.featured && (
+                    <div className="absolute top-4 left-20">
+                      <Badge className="bg-yellow-500/90 backdrop-blur-sm text-white border-0">
+                        <Star className="h-3 w-3 mr-1" />
+                        Nổi bật
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white hover:text-red-600 rounded-lg shadow-lg"
+                      onClick={() => handleLike(item.id)}
+                    >
+                      <Heart className={`h-4 w-4 ${likedItems.includes(item.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white hover:text-red-600 rounded-lg shadow-lg"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white hover:text-red-600 rounded-lg shadow-lg"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">
-                      {item.category}
-                    </Badge>
-                    <div className="flex items-center text-gray-500 text-sm">
-                      <Heart className="h-4 w-4 mr-1" />
-                      {item.likes + (likedItems.includes(item.id) ? 1 : 0)}
-                    </div>
-                  </div>
-                  
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors duration-300">
                     {item.title}
                   </h3>
-                  
                   <p className="text-gray-600 mb-4 leading-relaxed">
                     {item.description}
                   </p>
-
-                  <div className="flex space-x-2">
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Heart className="h-4 w-4" />
+                      <span>{item.likes} lượt thích</span>
+                    </div>
                     <Button
+                      asChild
                       size="sm"
-                      className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+                      className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-md hover:scale-105 transition-all duration-300"
                     >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Xem chi tiết
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                    >
-                      <Download className="h-4 w-4" />
+                      <Link href={`/services?category=${item.category}`} className="flex items-center">
+                        <Eye className="mr-2 h-4 w-4" />
+                        Xem thêm
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -293,25 +317,50 @@ export default function GalleryPreview() {
           ))}
         </motion.div>
 
-        {/* View More Button */}
+        {/* Brand Trust Footer */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          transition={{ duration: 0.8, delay: 1 }}
           className="text-center"
         >
-          <Button
-            asChild
-            size="lg"
-            className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-10 py-6 text-lg rounded-xl shadow-xl hover:scale-105 transition-all duration-300 group"
-          >
-            <Link href="/gallery" className="flex items-center">
-              <Palette className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
-              Xem tất cả mẫu thiết kế
-              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </Link>
-          </Button>
+          <div className="bg-gradient-to-r from-red-50 to-gray-50 rounded-2xl p-8 border border-red-200/50 max-w-4xl mx-auto">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="relative w-16 h-16 bg-white rounded-xl shadow-lg p-3 border border-red-200/50">
+                <Image
+                  src="https://i.imgur.com/WXSBk46.png"
+                  alt="Phú Long"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div className="text-left">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-red-700 to-gray-700 bg-clip-text text-transparent">
+                  Thiết kế chuyên nghiệp
+                </h3>
+                <p className="text-gray-600">Đội ngũ thiết kế giàu kinh nghiệm và sáng tạo</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm text-gray-600">
+              <div className="flex items-center gap-2 justify-center">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span>Thiết kế độc quyền</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <Palette className="h-4 w-4 text-red-500" />
+                <span>Màu sắc chính xác</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <Eye className="h-4 w-4 text-red-500" />
+                <span>Chất lượng cao</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <Sparkles className="h-4 w-4 text-red-500" />
+                <span>Sáng tạo không giới hạn</span>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

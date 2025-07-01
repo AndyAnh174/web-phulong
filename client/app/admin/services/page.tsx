@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -39,12 +39,14 @@ import {
   Calendar,
   TrendingUp,
   Image as ImageIcon,
-  Upload
+  Upload,
+  Loader2
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
-import { ensureHttps } from "@/lib/utils"
+import ReactMarkdown from "react-markdown"
+import dynamic from "next/dynamic"
 
 interface Service {
   id: number
@@ -74,7 +76,51 @@ interface ImageItem {
   full_url: string
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+interface PrintingPost {
+  id: number;
+  title: string;
+  time: string;
+  content: string;
+  is_visible: boolean;
+  created_at: string;
+  updated_at: string;
+  image_urls?: string[];
+  creator?: {
+    username: string;
+    email: string;
+    role: string;
+    id: number;
+    is_active: boolean;
+    created_at: string;
+  };
+  images?: {
+    id: number;
+    printing_id: number;
+    image_id: number;
+    order: number;
+    created_at: string;
+    image: {
+      id: number;
+      filename: string;
+      url: string;
+      alt_text: string;
+      width: number;
+      height: number;
+      is_visible: boolean;
+      category: string;
+    };
+  }[];
+}
+
+interface PrintingImage {
+  id: number
+  filename: string
+  alt_text?: string
+  is_visible: boolean
+  full_url: string
+}
+
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false })
 
 export default function AdminServicesPage() {
   const [services, setServices] = useState<Service[]>([])
@@ -106,12 +152,26 @@ export default function AdminServicesPage() {
     is_active: true,
   })
 
-  const [images, setImages] = useState<ImageItem[]>([])
+  const [posts, setPosts] = useState<PrintingPost[]>([])
   const [imageLoading, setImageLoading] = useState(true)
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
-  const [isEditImageDialogOpen, setIsEditImageDialogOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
-  const [uploadFormData, setUploadFormData] = useState<{file: File | null; alt_text: string; is_visible: boolean}>({file: null, alt_text: "", is_visible: true})
+
+  const [printingForm, setPrintingForm] = useState({
+    id: null as number | null,
+    title: '',
+    time: '',
+    content: '',
+    is_visible: true,
+    images: [] as File[],
+    keep_existing_images: true, // Cho edit mode
+  });
+  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<'create'|'edit'>('create');
+  const [existingImages, setExistingImages] = useState<any[]>([]); // Lưu ảnh hiện có khi edit
+
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [toggleActiveLoading, setToggleActiveLoading] = useState<number | null>(null)
+  const [toggleFeaturedLoading, setToggleFeaturedLoading] = useState<number | null>(null)
+
 
   const router = useRouter()
   const { toast } = useToast()
@@ -130,7 +190,7 @@ export default function AdminServicesPage() {
       }
       
       const skip = (currentPage - 1) * itemsPerPage
-      let url = `${API_URL}/api/services?skip=${skip}&limit=${itemsPerPage}`
+      let url = `http://14.187.180.6:12122/api/services?skip=${skip}&limit=${itemsPerPage}`
       
       // Add filters to URL (search is handled on frontend)
       if (categoryFilter !== "all") {
@@ -212,91 +272,33 @@ export default function AdminServicesPage() {
     }
   }, [currentPage, categoryFilter, statusFilter, token, itemsPerPage, toast])
 
-  const fetchImages = async () => {
+  const fetchPosts = async () => {
     try {
       setImageLoading(true)
-      const res = await fetch(`${API_URL}/api/images?category=printing&limit=100`, {
+      const API_BASE = 'http://14.187.180.6:12122'
+      const res = await fetch(`${API_BASE}/api/printing?limit=100`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (res.ok) {
         const data = await res.json()
-        const processedImages = Array.isArray(data) ? data.map((img:any)=>({
-          ...img, 
-          full_url: ensureHttps(img.file_path? `${API_URL}/${img.file_path}`: `${API_URL}/uploads/${img.filename}`)
-        })) : []
-        setImages(processedImages)
+        setPosts(Array.isArray(data.items) ? data.items : [])
       } else {
-        toast({ title: "Lỗi", description: "Không thể tải danh sách ảnh", variant: "destructive" })
+        toast({ title: "Lỗi", description: "Không thể tải danh sách bài đăng", variant: "destructive" })
       }
     } catch (error) {
-      console.error("Error fetch images", error)
+      console.error("Error fetch posts", error)
     } finally {
       setImageLoading(false)
     }
   }
 
-  const handleUploadImage = async () => {
-    if (!uploadFormData.file) return
-    try {
-      const fd = new FormData()
-      fd.append("file", uploadFormData.file)
-      fd.append("alt_text", uploadFormData.alt_text)
-      fd.append("category", "printing")
-      fd.append("is_visible", String(uploadFormData.is_visible))
-      const res = await fetch(`${API_URL}/api/images/upload`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd
-      })
-      if (res.ok) {
-        toast({ title: "Thành công", description: "Đã tải ảnh" })
-        fetchImages()
-        setIsUploadDialogOpen(false)
-        setUploadFormData({file:null,alt_text:"",is_visible:true})
-      } else {
-        toast({ title: "Lỗi", description: "Không thể tải ảnh", variant: "destructive" })
-      }
-    } catch (e) { console.error(e) }
-  }
 
-  const handleUpdateImage = async () => {
-    if (!selectedImage) return
-    try {
-      const res = await fetch(`${API_URL}/api/images/${selectedImage.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ alt_text: selectedImage.alt_text, is_visible: selectedImage.is_visible })
-      })
-      if (res.ok) {
-        toast({ title: "Đã cập nhật" })
-        fetchImages()
-        setIsEditImageDialogOpen(false)
-      } else toast({ title: "Lỗi", description: "Cập nhật thất bại", variant:"destructive" })
-    } catch(e){console.error(e)}
-  }
-
-  const handleDeleteImage = async (img: ImageItem) => {
-    if (!confirm("Xóa ảnh này?")) return
-    try {
-      const res = await fetch(`${API_URL}/api/images/${img.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) {
-        toast({ title: "Đã xóa ảnh" })
-        fetchImages()
-      } else toast({ title: "Lỗi", description: "Xóa thất bại", variant:"destructive" })
-    } catch(e){console.error(e)}
-  }
 
   // Main effect for fetching data when page or filters change
   useEffect(() => {
     if (token) {
       fetchServices()
-      fetchImages()
+    fetchPosts()
     }
   }, [token, fetchServices])
 
@@ -328,7 +330,7 @@ export default function AdminServicesPage() {
       
       console.log('Creating service with body:', requestBody)
       
-      const response = await fetch(`${API_URL}/api/services`, {
+      const response = await fetch("http://14.187.180.6:12122/api/services", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -384,7 +386,7 @@ export default function AdminServicesPage() {
       console.log('Updating service with body:', requestBody)
       console.log('Original service featured value:', selectedService.featured)
       
-      const response = await fetch(`${API_URL}/api/services/${selectedService.id}`, {
+      const response = await fetch(`http://14.187.180.6:12122/api/services/${selectedService.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -428,7 +430,7 @@ export default function AdminServicesPage() {
     if (!selectedService) return
 
     try {
-      const response = await fetch(`${API_URL}/api/services/${selectedService.id}`, {
+      const response = await fetch(`http://14.187.180.6:12122/api/services/${selectedService.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -493,7 +495,7 @@ export default function AdminServicesPage() {
   }
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev: typeof formData) => ({ ...prev, [field]: value }))
   }
 
   const handlePageChange = (page: number) => {
@@ -503,7 +505,7 @@ export default function AdminServicesPage() {
     }
   }
 
-  const filteredServices = services.filter((service) => {
+  const filteredServices = services.filter((service: Service) => {
     const matchesSearch = debouncedSearchTerm === "" || 
       service.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
       service.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
@@ -520,11 +522,7 @@ export default function AdminServicesPage() {
     return matchesSearch && matchesCategory && matchesStatus
   })
 
-  // State để track loading khi toggle active status
-  const [toggleActiveLoading, setToggleActiveLoading] = useState<number | null>(null)
   
-  // State để track loading khi toggle featured status
-  const [toggleFeaturedLoading, setToggleFeaturedLoading] = useState<number | null>(null)
 
   // Function để toggle is_active status
   const handleToggleActive = async (service: Service) => {
@@ -537,14 +535,14 @@ export default function AdminServicesPage() {
       console.log(`Toggling is_active for service ${service.id}: ${service.is_active} -> ${newActiveStatus}`)
       
       // Cập nhật optimistic UI - update local state trước  
-      setServices(prevServices => 
+      setServices((prevServices: Service[]) => 
         prevServices.map(s => 
           s.id === service.id ? { ...s, is_active: newActiveStatus } : s
         )
       )
       
       // Call API với PUT và full data + is_active
-      const response = await fetch(`${API_URL}/api/services/${service.id}`, {
+      const response = await fetch(`http://14.187.180.6:12122/api/services/${service.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -575,7 +573,7 @@ export default function AdminServicesPage() {
         await fetchServices()
       } else {
         // Revert optimistic update on error
-        setServices(prevServices => 
+        setServices((prevServices: Service[]) => 
           prevServices.map(s => 
             s.id === service.id ? { ...s, is_active: service.is_active } : s
           )
@@ -589,7 +587,7 @@ export default function AdminServicesPage() {
       console.error("Error toggling is_active:", error)
       
       // Revert optimistic update on error
-      setServices(prevServices => 
+      setServices((prevServices: Service[]) => 
         prevServices.map(s => 
           s.id === service.id ? { ...s, is_active: service.is_active } : s
         )
@@ -616,14 +614,14 @@ export default function AdminServicesPage() {
       console.log(`Toggling featured for service ${service.id}: ${service.featured} -> ${newFeaturedStatus}`)
       
       // Cập nhật optimistic UI - update local state trước  
-      setServices(prevServices => 
+      setServices((prevServices: Service[]) => 
         prevServices.map(s => 
           s.id === service.id ? { ...s, featured: newFeaturedStatus } : s
         )
       )
       
       // Thử call API với PATCH method trước
-      let response = await fetch(`${API_URL}/api/services/${service.id}`, {
+      let response = await fetch(`http://14.187.180.6:12122/api/services/${service.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -637,7 +635,7 @@ export default function AdminServicesPage() {
       // Nếu PATCH không work, thử PUT với full data + featured
       if (!response.ok) {
         console.log('PATCH failed, trying PUT with full data...')
-        response = await fetch(`${API_URL}/api/services/${service.id}`, {
+        response = await fetch(`http://14.187.180.6:12122/api/services/${service.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -670,7 +668,7 @@ export default function AdminServicesPage() {
         await fetchServices()
       } else {
         // Revert optimistic update on error
-        setServices(prevServices => 
+        setServices((prevServices: Service[]) => 
           prevServices.map(s => 
             s.id === service.id ? { ...s, featured: service.featured } : s
           )
@@ -684,7 +682,7 @@ export default function AdminServicesPage() {
       console.error("Error toggling featured:", error)
       
       // Revert optimistic update on error
-      setServices(prevServices => 
+      setServices((prevServices: Service[]) => 
         prevServices.map(s => 
           s.id === service.id ? { ...s, featured: service.featured } : s
         )
@@ -699,6 +697,214 @@ export default function AdminServicesPage() {
       setToggleFeaturedLoading(null)
     }
   }
+
+
+
+  const openCreateForm = () => {
+    setPrintingForm({ 
+      id: null, 
+      title: '', 
+      time: '', 
+      content: '', 
+      is_visible: true, 
+      images: [],
+      keep_existing_images: true 
+    });
+    setExistingImages([]);
+    setFormMode('create');
+    setShowForm(true);
+  };
+
+  const openEditForm = (post: PrintingPost) => {
+    setPrintingForm({
+      id: post.id,
+      title: post.title,
+      time: post.time || '',
+      content: post.content,
+      is_visible: post.is_visible,
+      images: [],
+      keep_existing_images: true,
+    });
+    // Lưu ảnh hiện có để hiển thị
+    setExistingImages(post.images || []);
+    setFormMode('edit');
+    setShowForm(true);
+  };
+
+  const handleSubmitPrinting = async () => {
+    // Validation
+    if (!printingForm.title.trim()) {
+      toast({ title: 'Lỗi', description: 'Vui lòng nhập tiêu đề', variant: 'destructive' });
+      return;
+    }
+    if (!printingForm.content.trim()) {
+      toast({ title: 'Lỗi', description: 'Vui lòng nhập nội dung', variant: 'destructive' });
+      return;
+    }
+
+    setSubmitLoading(true);
+    try {
+      // Tạo FormData theo đúng format API
+      const formData = new FormData();
+      formData.append('title', printingForm.title.trim());
+      formData.append('time', printingForm.time.trim());
+      formData.append('content', printingForm.content.trim());
+      formData.append('is_visible', printingForm.is_visible.toString());
+
+      // Thêm files vào FormData
+      printingForm.images.forEach((file, index) => {
+        formData.append('images', file);
+      });
+
+      // Nếu là edit mode, thêm keep_existing_images
+      if (printingForm.id) {
+        formData.append('keep_existing_images', printingForm.keep_existing_images.toString());
+      }
+
+      console.log('Submitting printing post with FormData');
+      console.log('Form data contents:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(key, 'File:', value.name, value.size, 'bytes');
+        } else {
+          console.log(key, value);
+        }
+      }
+      
+      const url = printingForm.id ? `http://14.187.180.6:12122/api/printing/${printingForm.id}` : 'http://14.187.180.6:12122/api/printing';
+      const method = printingForm.id ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 
+          Authorization: `Bearer ${token}` 
+          // Không set Content-Type, để browser tự động set cho multipart/form-data
+        },
+        body: formData,
+      });
+      
+      const responseData = await res.json();
+      console.log('API Response:', responseData);
+      
+      if (res.ok) {
+        toast({ title: 'Thành công', description: printingForm.id ? 'Đã cập nhật bài đăng' : 'Đã tạo bài đăng' });
+        setShowForm(false);
+        fetchPosts();
+      } else {
+        console.error('API Error:', responseData);
+        toast({ title: 'Lỗi', description: responseData.detail || 'Không thể lưu bài đăng', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error("Error submitting printing post:", error);
+      toast({ title: 'Lỗi', description: 'Không thể lưu bài đăng', variant: 'destructive' });
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const handleDeletePrinting = async (post: PrintingPost) => {
+    if (!confirm('Xoá bài đăng này?')) return;
+    try {
+      const res = await fetch(`http://14.187.180.6:12122/api/printing/${post.id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast({ title: 'Đã xoá bài đăng' });
+        fetchPosts();
+      } else {
+        toast({ title: 'Lỗi', description: 'Không thể xoá', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error("Error deleting printing post:", error);
+      toast({ title: 'Lỗi', description: 'Không thể xoá', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleVisible = async (post: PrintingPost) => {
+    try {
+      const res = await fetch(`http://14.187.180.6:12122/api/printing/${post.id}/visibility`, {
+        method: 'PATCH', headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchPosts();
+      } else {
+        toast({ title: 'Lỗi', description: 'Không thể thay đổi trạng thái', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+      toast({ title: 'Lỗi', description: 'Không thể thay đổi trạng thái', variant: 'destructive' });
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    // Kiểm tra số lượng file (tối đa 3)
+    const currentCount = printingForm.images.length;
+    const remainingSlots = 3 - currentCount;
+    
+    if (files.length > remainingSlots) {
+      toast({ 
+        title: 'Cảnh báo', 
+        description: `Chỉ có thể thêm tối đa ${remainingSlots} ảnh nữa`, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    // Kiểm tra định dạng file
+    const validFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const invalidFiles = files.filter(file => !validFormats.includes(file.type));
+    
+    if (invalidFiles.length > 0) {
+      toast({ 
+        title: 'Lỗi', 
+        description: 'Chỉ chấp nhận file ảnh (JPEG, PNG, GIF)', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    // Kiểm tra kích thước file (tối đa 5MB mỗi file)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const oversizedFiles = files.filter(file => file.size > maxSize);
+    
+    if (oversizedFiles.length > 0) {
+      toast({ 
+        title: 'Lỗi', 
+        description: 'Kích thước file không được vượt quá 5MB', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    setPrintingForm(prev => ({
+      ...prev,
+      images: [...prev.images, ...files]
+    }));
+
+    // Reset input để có thể chọn lại cùng file
+    event.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setPrintingForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeExistingImage = (imageId: number) => {
+    setExistingImages(prev => prev.filter(img => img.id !== imageId));
+    // Khi xóa ảnh hiện có, set keep_existing_images = false
+    setPrintingForm(prev => ({
+      ...prev,
+      keep_existing_images: false
+    }));
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50/50 relative overflow-hidden">
@@ -888,7 +1094,7 @@ export default function AdminServicesPage() {
                     <p className="text-gray-500">Không tìm thấy dịch vụ nào</p>
                   </div>
                 ) : (
-                  filteredServices.map((service) => (
+                  filteredServices.map((service: Service) => (
                     <Card key={service.id} className="p-4 border border-gray-200">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
@@ -985,7 +1191,7 @@ export default function AdminServicesPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredServices.map((service) => (
+                      filteredServices.map((service: Service) => (
                         <TableRow key={service.id}>
                           <TableCell className="text-xs sm:text-sm">{service.id}</TableCell>
                           <TableCell className="font-medium text-xs sm:text-sm max-w-48">
@@ -1354,45 +1560,245 @@ export default function AdminServicesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Printing Images Management */}
-      <div className="mt-16">
-        <Card className="shadow-xl border border-gray-200">
+      {/* Dialog thêm/sửa bài đăng In ấn */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{formMode === 'create' ? 'Thêm bài đăng In ấn' : 'Chỉnh sửa bài đăng In ấn'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 py-4">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Tiêu đề</Label>
+                <Input 
+                  id="title" 
+                  value={printingForm.title} 
+                  onChange={e => setPrintingForm({ ...printingForm, title: e.target.value })} 
+                  placeholder="Nhập tiêu đề bài đăng"
+                />
+              </div>
+              <div>
+                <Label htmlFor="time">Thời gian</Label>
+                <Input 
+                  id="time" 
+                  value={printingForm.time} 
+                  onChange={e => setPrintingForm({ ...printingForm, time: e.target.value })} 
+                  placeholder="VD: 1-2 ngày"
+                />
+              </div>
+              <div>
+                <Label htmlFor="content">Nội dung (Markdown)</Label>
+                <MDEditor
+                  value={printingForm.content}
+                  onChange={val => setPrintingForm({ ...printingForm, content: val || "" })}
+                  height={300}
+                  data-color-mode="light"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="is_visible" 
+                  checked={printingForm.is_visible} 
+                  onCheckedChange={checked => setPrintingForm({ ...printingForm, is_visible: checked })} 
+                />
+                <Label htmlFor="is_visible">Hiển thị công khai</Label>
+              </div>
+              <div>
+                <Label>Hình ảnh </Label>
+                <div className="space-y-4">
+                  {/* File Input */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-red-400 transition-colors">
+                    <input
+                      type="file"
+                      id="image-upload"
+                      multiple
+                      accept="image/jpeg,image/jpg,image/png,image/gif"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      disabled={printingForm.images.length >= 3}
+                    />
+                    <label 
+                      htmlFor="image-upload" 
+                      className={`cursor-pointer flex flex-col items-center space-y-2 ${printingForm.images.length >= 3 ? 'text-gray-400' : 'text-gray-600 hover:text-red-600'}`}
+                    >
+                      <Upload className="h-8 w-8" />
+                      <span className="text-sm font-medium">
+                        {printingForm.images.length >= 3 
+                          ? 'Đã đạt giới hạn 3 ảnh' 
+                          : 'Chọn ảnh hoặc kéo thả vào đây'
+                        }
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Hỗ trợ: JPEG, PNG, GIF (tối đa 5MB mỗi file)
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Ảnh hiện có (khi edit) */}
+                  {formMode === 'edit' && existingImages.length > 0 && (
+                    <div>
+                      <Label className="text-sm text-gray-600">Ảnh hiện có:</Label>
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {existingImages.map((img) => (
+                          <div key={img.id} className="relative group">
+                            <img 
+                              src={img.image?.url?.startsWith('http') ? img.image.url : `http://14.187.180.6:12122${img.image?.url}`}
+                              alt={img.image?.alt_text || 'Existing image'} 
+                              className="h-16 w-16 object-cover rounded border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeExistingImage(img.id)}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Switch 
+                          id="keep_existing" 
+                          checked={printingForm.keep_existing_images} 
+                          onCheckedChange={checked => setPrintingForm({ ...printingForm, keep_existing_images: checked })} 
+                        />
+                        <Label htmlFor="keep_existing" className="text-sm">Giữ lại ảnh hiện có</Label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ảnh mới được chọn */}
+                  {printingForm.images.length > 0 && (
+                    <div>
+                      <Label className="text-sm text-gray-600">Ảnh mới ({printingForm.images.length}/3):</Label>
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {printingForm.images.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={URL.createObjectURL(file)} 
+                              alt={`New image ${index + 1}`} 
+                              className="h-16 w-16 object-cover rounded border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeImage(index)}
+                            >
+                              ×
+                            </Button>
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 truncate rounded-b">
+                              {file.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label>Preview</Label>
+              <div className="prose border rounded-md p-4 h-[400px] overflow-y-auto bg-gray-50">
+                <h3>{printingForm.title || 'Tiêu đề'}</h3>
+                {printingForm.time && <p className="text-sm text-gray-600">Thời gian: {printingForm.time}</p>}
+                <ReactMarkdown>{printingForm.content || 'Nội dung sẽ hiển thị ở đây...'}</ReactMarkdown>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowForm(false)} disabled={submitLoading}>Hủy</Button>
+            <Button onClick={handleSubmitPrinting} disabled={submitLoading}>
+              {submitLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {formMode === 'create' ? 'Đang tạo...' : 'Đang lưu...'}
+                </>
+              ) : (
+                formMode === 'create' ? 'Tạo bài đăng' : 'Lưu thay đổi'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* === UI danh sách bài đăng In ấn === */}
+      <Card className="shadow-xl border border-gray-200 mt-8">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center text-gray-800">
               <ImageIcon className="h-5 w-5 text-red-600 mr-2" />
-              Ảnh In Ấn
+            Danh sách bài đăng In ấn
             </CardTitle>
-            <Button onClick={()=>setIsUploadDialogOpen(true)} className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 text-white">
-              <Upload className="h-4 w-4 mr-2" /> Tải ảnh
+          <Button onClick={openCreateForm} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white">
+            <Plus className="h-4 w-4 mr-2" /> Thêm bài đăng
             </Button>
           </CardHeader>
           <CardContent>
             {imageLoading ? (
               <p className="text-center py-8">Đang tải...</p>
-            ) : images.length === 0 ? (
-              <p className="text-center py-8 text-gray-500">Chưa có ảnh in ấn</p>
+          ) : (Array.isArray(posts) ? posts : []).length === 0 ? (
+            <p className="text-center py-8 text-gray-500">Chưa có bài đăng in ấn</p>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead><TableHead>Preview</TableHead><TableHead>Alt Text</TableHead><TableHead>Hiển thị</TableHead><TableHead>Hành động</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Tiêu đề</TableHead>
+                    <TableHead>Thời gian</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Ngày tạo</TableHead>
+                    <TableHead>Người tạo</TableHead>
+                    <TableHead>Ảnh</TableHead>
+                    <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {images.map(img=> (
-                      <TableRow key={img.id}>
-                        <TableCell>{img.id}</TableCell>
+                  {(Array.isArray(posts) ? posts : []).map((post: any) => (
+                    <TableRow key={post.id}>
+                      <TableCell>{post.id}</TableCell>
+                      <TableCell>{post.title}</TableCell>
+                      <TableCell>{post.time}</TableCell>
                         <TableCell>
-                          <img src={img.full_url} alt="thumb" className="h-12 w-12 object-cover rounded" />
+                        <Switch checked={post.is_visible} onCheckedChange={() => handleToggleVisible(post)} />
                         </TableCell>
-                        <TableCell>{img.alt_text}</TableCell>
-                        <TableCell>{img.is_visible ? '✅' : '🚫'}</TableCell>
+                      <TableCell>{new Date(post.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>{post.creator?.username || ''}</TableCell>
                         <TableCell>
-                          <Button size="sm" variant="outline" onClick={()=>{setSelectedImage(img);setIsEditImageDialogOpen(true)}} className="mr-2">
+                        {/* Hiển thị ảnh từ images array hoặc image_urls backup */}
+                        {post.images && post.images.length > 0 ? (
+                          <img 
+                            src={post.images[0].image.url.startsWith('http') ? post.images[0].image.url : `http://14.187.180.6:12122${post.images[0].image.url}`}
+                            alt={post.images[0].image.alt_text || "thumb"} 
+                            className="h-10 w-16 object-cover rounded" 
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder.svg?height=40&width=64';
+                            }}
+                          />
+                        ) : post.image_urls && post.image_urls.length > 0 && post.image_urls[0].trim() ? (
+                          <img 
+                            src={post.image_urls[0]} 
+                            alt="thumb" 
+                            className="h-10 w-16 object-cover rounded" 
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder.svg?height=40&width=64';
+                            }}
+                          />
+                        ) : (
+                          <span className="text-gray-400">Không có</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline" onClick={() => openEditForm(post)} className="mr-2">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline" onClick={()=>handleDeleteImage(img)}>
+                        <Button size="sm" variant="outline" onClick={() => handleDeletePrinting(post)}>
                             <Trash className="h-4 w-4" />
                           </Button>
                         </TableCell>
@@ -1404,48 +1810,8 @@ export default function AdminServicesPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Upload Dialog */}
-      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Tải ảnh in ấn</DialogTitle>
-            <DialogDescription>Chọn file ảnh (tối đa 10MB) và điền thông tin</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input type="file" accept="image/*" onChange={e=>setUploadFormData({...uploadFormData, file: e.target.files?.[0]||null})} />
-            <Input placeholder="Alt text" value={uploadFormData.alt_text} onChange={e=>setUploadFormData({...uploadFormData, alt_text:e.target.value})} />
-            <div className="flex items-center space-x-2">
-              <Switch id="visible" checked={uploadFormData.is_visible} onCheckedChange={v=>setUploadFormData({...uploadFormData, is_visible:v})} />
-              <Label htmlFor="visible">Hiển thị</Label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleUploadImage} disabled={!uploadFormData.file}>Tải lên</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Edit Image Dialog */}
-      <Dialog open={isEditImageDialogOpen} onOpenChange={setIsEditImageDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Chỉnh sửa ảnh</DialogTitle></DialogHeader>
-          {selectedImage && (
-            <div className="space-y-4">
-              <img src={selectedImage.full_url} alt="preview" className="w-full h-48 object-cover rounded" />
-              <Input value={selectedImage.alt_text||""} onChange={e=>setSelectedImage({...selectedImage, alt_text:e.target.value})} placeholder="Alt text" />
-              <div className="flex items-center space-x-2">
-                <Switch id="vis" checked={selectedImage.is_visible} onCheckedChange={v=>setSelectedImage({...selectedImage, is_visible:v})} />
-                <Label htmlFor="vis">Hiển thị</Label>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={handleUpdateImage}>Lưu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       </div>
     </div>
   )

@@ -34,8 +34,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
-import { ensureHttps } from "@/lib/utils"
-
+import Footer from "@/components/layout/footer";
 interface Blog {
   id: number
   title: string
@@ -73,6 +72,7 @@ export default function BlogPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMoreData, setHasMoreData] = useState(true)
   const [bookmarkedBlogs, setBookmarkedBlogs] = useState<Set<number>>(new Set())
+  const [apiCategories, setApiCategories] = useState<string[]>([])
   const { toast } = useToast()
   
   // Refs for intersection observer
@@ -107,7 +107,7 @@ export default function BlogPage() {
         setLoadingMore(true)
       }
 
-      let url = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/blogs?is_active=true` : '/api/blogs?is_active=true'
+      let url = "http://14.187.180.6:12122/api/blogs?is_active=true"
       
       // Add pagination
       const page = reset ? 1 : currentPage
@@ -121,12 +121,19 @@ export default function BlogPage() {
         url += `&search=${encodeURIComponent(debouncedSearchTerm)}`
       }
 
+      // Add sort parameter for server-side sorting if needed
+      if (sortBy && sortBy !== "newest") {
+        url += `&sort=${sortBy}`
+      }
+
+      console.log('Fetching blogs from:', url)
       const response = await fetch(url)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
       const data = await response.json()
+      console.log('Blog API Response:', data)
 
       // Handle different API response formats
       let blogData = []
@@ -141,6 +148,16 @@ export default function BlogPage() {
       } else if (data && Array.isArray(data.data)) {
         blogData = data.data
         total = data.total || data.data.length
+      }
+
+      // Extract unique categories from API response
+      const uniqueCategories = [...new Set(blogData.map((b: Blog) => b.category).filter(Boolean))] as string[]
+      console.log('API Categories found:', uniqueCategories)
+      console.log('Processed blog data:', { blogData: blogData.length, total, categories: uniqueCategories })
+
+      // Update API categories for dynamic dropdown
+      if (reset && uniqueCategories.length > 0) {
+        setApiCategories(uniqueCategories)
       }
 
       // Enhanced blog data with better calculations
@@ -176,15 +193,10 @@ export default function BlogPage() {
     }
   }
 
-  // Initial fetch and category change
+  // Initial fetch and when filters change
   useEffect(() => {
     fetchBlogs(true)
-  }, [selectedCategory])
-
-  // Search and sort change
-  useEffect(() => {
-    fetchBlogs(true)
-  }, [debouncedSearchTerm, sortBy])
+  }, [selectedCategory, debouncedSearchTerm, sortBy])
 
   // Load more function
   const loadMore = () => {
@@ -209,7 +221,7 @@ export default function BlogPage() {
     observer.observe(loadMoreRef.current)
 
     return () => observer.disconnect()
-  }, [hasMoreData, loadingMore])
+  }, [hasMoreData, loadingMore, loadMore])
 
   const retryFetch = () => {
     setError(null)
@@ -259,17 +271,31 @@ export default function BlogPage() {
     }
   }, [])
 
-  // Lọc và sắp xếp blogs với performance optimization
-  const filteredAndSortedBlogs = useMemo(() => {
-    let filtered = blogs.filter((blog) => {
-      const matchesSearch = !debouncedSearchTerm || 
-        blog?.title?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        blog?.content?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-      
-      const matchesCategory = selectedCategory === "all" || blog?.category === selectedCategory
+  // Lọc và sắp xếp blogs với client-side filtering làm backup
+  const sortedBlogs = useMemo(() => {
+    let filtered = [...blogs]
 
-      return matchesSearch && matchesCategory
-    })
+    // Client-side filtering as backup for server-side filtering
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase()
+      filtered = filtered.filter(blog => 
+        blog.title.toLowerCase().includes(searchLower) ||
+        blog.content.toLowerCase().includes(searchLower) ||
+        blog.category.toLowerCase().includes(searchLower)
+      )
+    }
+
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(blog => {
+        // Flexible category matching
+        const blogCategory = blog.category.toLowerCase()
+        const selectedCat = selectedCategory.toLowerCase()
+        
+        return blogCategory === selectedCat || 
+               blogCategory.includes(selectedCat) ||
+               selectedCat.includes(blogCategory)
+      })
+    }
 
     // Sắp xếp with stable sort
     filtered.sort((a, b) => {
@@ -288,7 +314,7 @@ export default function BlogPage() {
     })
 
     return filtered
-  }, [blogs, debouncedSearchTerm, selectedCategory, sortBy])
+  }, [blogs, sortBy, debouncedSearchTerm, selectedCategory])
 
   const clearFilters = () => {
     setSearchTerm("")
@@ -461,22 +487,54 @@ export default function BlogPage() {
               className="flex flex-col lg:flex-row gap-4 items-center justify-between"
             >
               <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full max-w-5xl">
-                {/* Enhanced Search with live feedback */}
-                <div className="relative flex-1 max-w-sm group">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-red-500 transition-colors duration-300" aria-hidden="true" />
+                {/* SEO-Optimized Search Form */}
+                <form 
+                  role="search" 
+                  className="relative flex-1 max-w-sm group"
+                  onSubmit={(e) => e.preventDefault()}
+                  aria-label="Tìm kiếm blog"
+                >
+                  <label htmlFor="blog-search" className="sr-only">
+                    Tìm kiếm bài viết về in ấn, thiết kế và marketing
+                  </label>
+                  <Search 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-red-500 transition-colors duration-300" 
+                    aria-hidden="true" 
+                  />
                   <Input
+                    id="blog-search"
+                    type="search"
+                    name="q"
                     placeholder="Tìm kiếm bài viết, từ khóa..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-11 rounded-lg border-gray-300 focus:border-red-400 focus:ring-red-400/20 shadow-sm hover:shadow-md transition-all duration-300"
-                    aria-label="Tìm kiếm bài viết"
+                    aria-label="Nhập từ khóa tìm kiếm"
+                    aria-describedby="search-help"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                   />
+                  <div id="search-help" className="sr-only">
+                    Tìm kiếm trong các bài viết về in ấn, thiết kế đồ họa, marketing và kiến thức chuyên ngành
+                  </div>
                   {searchTerm && searchTerm !== debouncedSearchTerm && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      aria-live="polite"
+                      aria-label="Đang tìm kiếm"
+                    >
                       <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                     </div>
                   )}
-                </div>
+                  {/* SEO-friendly search results count */}
+                  {debouncedSearchTerm && (
+                    <div className="sr-only" aria-live="polite">
+                      Tìm thấy {sortedBlogs.length} kết quả cho "{debouncedSearchTerm}"
+                    </div>
+                  )}
+                </form>
 
                 {/* Category Filter */}
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -490,13 +548,21 @@ export default function BlogPage() {
                         Tất cả danh mục
                       </div>
                     </SelectItem>
-                    {PREDEFINED_CATEGORIES.map((category) => {
-                      const Icon = category.icon
+                    {/* Categories from API */}
+                    {apiCategories.map((category) => {
+                      // Get icon from predefined categories if available, otherwise use default
+                      const predefinedCategory = PREDEFINED_CATEGORIES.find(predef => 
+                        predef.value === category || 
+                        predef.label.toLowerCase() === category.toLowerCase() ||
+                        predef.value.replace('-', ' ').toLowerCase() === category.toLowerCase()
+                      )
+                      const Icon = predefinedCategory?.icon || BookOpen
+                      
                       return (
-                        <SelectItem key={category.value} value={category.value} className="rounded-md">
+                        <SelectItem key={category} value={category} className="rounded-md">
                           <div className="flex items-center">
                             <Icon className="h-4 w-4 mr-2" aria-hidden="true" />
-                            {category.label}
+                            {category}
                           </div>
                         </SelectItem>
                       )
@@ -522,7 +588,7 @@ export default function BlogPage() {
               {/* Results count and actions */}
               <div className="flex items-center gap-3">
                 <div className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-sm text-gray-600">
-                  {filteredAndSortedBlogs.length} bài viết
+                  {sortedBlogs.length} bài viết
                 </div>
                 
                 {(searchTerm || selectedCategory !== "all" || sortBy !== "newest") && (
@@ -560,7 +626,7 @@ export default function BlogPage() {
                   </Card>
                 ))}
               </div>
-            ) : filteredAndSortedBlogs.length === 0 ? (
+            ) : sortedBlogs.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -591,7 +657,7 @@ export default function BlogPage() {
                   className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
                   <AnimatePresence>
-                    {filteredAndSortedBlogs.map((blog, index) => {
+                    {sortedBlogs.map((blog, index) => {
                       const categoryInfo = getCategoryInfo(blog.category)
                       const CategoryIcon = categoryInfo.icon
 
@@ -608,7 +674,7 @@ export default function BlogPage() {
                             {/* Enhanced Image Container */}
                             <div className="relative h-56 overflow-hidden">
                               <Image
-                                src={ensureHttps(blog.image_url) || "/api/placeholder/400/250"}
+                                src={blog.image_url || "/api/placeholder/400/250"}
                                 alt={blog.title}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -771,6 +837,7 @@ export default function BlogPage() {
             </motion.div>
           </div>
         </section>
+        <Footer />
       </div>
     </>
   )

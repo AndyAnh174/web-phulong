@@ -4,6 +4,7 @@ import { Award, Users, Clock, Shield, CheckCircle, TrendingUp, Star, Zap } from 
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 
 export default function AboutSection() {
   const stats = [
@@ -136,7 +137,7 @@ export default function AboutSection() {
           {/* Left Content */}
           <motion.div variants={itemVariants} className="max-w-xl">
             <div className="space-y-8">
-              {/* Header */}
+              {/* Header with Logo */}
               <div>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -151,16 +152,35 @@ export default function AboutSection() {
                   </span>
                 </motion.div>
 
-                <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-red-700 to-gray-800 bg-clip-text text-transparent mb-6">
-                  Đội ngũ chuyên nghiệp
-                  <motion.div 
-                    className="w-20 h-1.5 bg-gradient-to-r from-red-600 to-gray-500 mt-4 rounded-full"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: 80 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                  />
-                </h2>
+                {/* Logo Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="flex items-center gap-4 mb-6"
+                >
+                  <div className="relative w-16 h-16 bg-white rounded-xl shadow-lg p-2 border border-red-200/50">
+                    <Image
+                      src="https://i.imgur.com/WXSBk46.png"
+                      alt="Phú Long Logo"
+                      fill
+                      className="object-contain p-2"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-red-700 to-gray-800 bg-clip-text text-transparent">
+                      Đội ngũ chuyên nghiệp
+                    </h2>
+                    <motion.div 
+                      className="w-20 h-1.5 bg-gradient-to-r from-red-600 to-gray-500 mt-2 rounded-full"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: 80 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.8, delay: 0.5 }}
+                    />
+                  </div>
+                </motion.div>
               </div>
 
               {/* Description */}
@@ -199,8 +219,12 @@ export default function AboutSection() {
                           <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                             {stat.number}
                           </div>
-                          <div className="text-gray-900 font-semibold mb-1">{stat.label}</div>
-                          <div className="text-sm text-gray-600">{stat.description}</div>
+                          <div className="text-sm font-semibold text-gray-800 mb-1">
+                            {stat.label}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {stat.description}
+                          </div>
                         </div>
                       </div>
                     </Card>
@@ -209,65 +233,80 @@ export default function AboutSection() {
               </motion.div>
 
               {/* Trust badges */}
-              <motion.div 
-                className="flex flex-wrap gap-3"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-              >
-                <Badge className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 shadow-lg">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  ISO 9001:2015
-                </Badge>
-                <Badge className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-2 shadow-lg">
-                  <Star className="h-4 w-4 mr-2" />
-                  Top Choice 2024
-                </Badge>
-                <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 shadow-lg">
-                  <Award className="h-4 w-4 mr-2" />
-                  Trusted Partner
-                </Badge>
-              </motion.div>
+              
             </div>
           </motion.div>
 
-          {/* Right Content - Enhanced Features Grid */}
-          <motion.div 
-            className="relative max-w-lg mx-auto"
-            variants={itemVariants}
-          >
-            <div className="grid grid-cols-2 gap-6">
+          {/* Right Content */}
+          <motion.div variants={itemVariants} className="space-y-8">
+            {/* Features Grid */}
+            <div className="grid sm:grid-cols-2 gap-6">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  className={`${index % 2 === 1 ? 'mt-8' : ''}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -10, scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="group"
                 >
-                  <Card className="p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white/90 backdrop-blur-sm group">
-                    <div className={`p-4 rounded-2xl bg-gradient-to-br ${feature.color} shadow-lg mx-auto w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
-                      <feature.icon className="h-8 w-8 text-white" />
+                  <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <feature.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-red-600 transition-colors duration-300">
+                          {feature.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {feature.description}
+                        </p>
+                      </div>
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-gray-800 mb-3 text-center group-hover:text-red-600 transition-colors duration-300">
-                      {feature.title}
-                    </h3>
-                    
-                    <p className="text-gray-600 text-center leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
-                      {feature.description}
-                    </p>
                   </Card>
                 </motion.div>
               ))}
             </div>
 
-            {/* Decorative elements */}
-            <div className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-br from-red-200/20 to-red-300/10 rounded-full blur-xl"></div>
-            <div className="absolute -bottom-8 -left-8 w-12 h-12 bg-gradient-to-br from-gray-200/20 to-gray-300/10 rounded-full blur-xl"></div>
+            {/* Brand Trust Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="bg-gradient-to-r from-red-50 to-gray-50 rounded-2xl p-8 border border-red-200/50"
+            >
+              <div className="text-center space-y-4">
+                <div className="flex justify-center items-center gap-3 mb-4">
+                  <div className="relative w-12 h-12 bg-white rounded-lg shadow-md p-2 border border-red-200/50">
+                    <Image
+                      src="https://i.imgur.com/WXSBk46.png"
+                      alt="Phú Long"
+                      fill
+                      className="object-contain p-1"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-red-700 to-gray-700 bg-clip-text text-transparent">
+                      Thương hiệu uy tín
+                    </h3>
+                    <p className="text-sm text-gray-600">Được tin tưởng bởi hàng ngàn khách hàng</p>
+                  </div>
+                </div>
+                <div className="flex justify-center items-center gap-6 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-red-500" />
+                    <span>Chất lượng ISO</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-red-500" />
+                    <span>Bảo hành uy tín</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>

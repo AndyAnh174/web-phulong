@@ -60,7 +60,11 @@ const menuItems = [
     url: "/admin/contacts",
     icon: MessageSquare,
   },
-
+  {
+    title: "Google Drive URL Converter",
+    url: "/admin/drive-url-converter",
+    icon: null,
+  },
 ]
 
 export function AdminSidebar() {
@@ -94,7 +98,7 @@ export function AdminSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={pathname === item.url}>
                       <Link href={item.url}>
-                        <item.icon />
+                        {item.icon ? <item.icon /> : <span className='text-lg'>📦</span>}
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>

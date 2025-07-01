@@ -25,12 +25,10 @@ import {
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useToast } from "@/hooks/use-toast"
-import Footer from "@/components/layout/footer"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
-import { ensureHttps, processImageUrls } from "@/lib/utils"
-import { SECURE_API_BASE_URL } from "@/lib/api"
-
+import { useRouter } from "next/navigation"
+import ReactMarkdown from "react-markdown"
+import Footer from "@/components/layout/footer"
 // Interface definitions
 interface Service {
   id: number
@@ -150,8 +148,35 @@ export default function PricingPage() {
   const [previewImage, setPreviewImage] = useState<any | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [printingPosts, setPrintingPosts] = useState<any[]>([]);
+  const [printingLoading, setPrintingLoading] = useState(false);
+  const [printingError, setPrintingError] = useState("");
+  const [printingPage, setPrintingPage] = useState(1);
+  const PRINTING_LIMIT = 6;
+  const [printingTotal, setPrintingTotal] = useState(0);
+  const router = useRouter();
 
   const ITEMS_PER_PAGE = 6
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  }
 
   // Fetch all services from API once
   useEffect(() => {
@@ -162,9 +187,10 @@ export default function PricingPage() {
     try {
       setLoading(true)
       // Get all active services at once with proper API parameters
+      const API_BASE_URL =  'http://14.187.180.6:12122/api'
       
       // Fetch a large number to get all services (or implement proper pagination)
-      const response = await fetch(`${SECURE_API_BASE_URL}/services?is_active=true&limit=1000`, {
+      const response = await fetch(`${API_BASE_URL}/services?is_active=true&limit=1000`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -259,29 +285,6 @@ export default function PricingPage() {
   // Check if there are more services to load
   const hasMoreServices = displayedServices.length < allAvailableServices.length
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (index: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-        delay: index * 0.1
-      }
-    })
-  }
-
   // Fetch printing images
   useEffect(() => {
     fetchPrintingImages()
@@ -289,15 +292,15 @@ export default function PricingPage() {
 
   const fetchPrintingImages = async () => {
     try {
-      const IMAGE_BASE_URL = SECURE_API_BASE_URL.replace(/\/api$/, '')
-      const response = await fetch(`${SECURE_API_BASE_URL}/images?is_visible=true&category=printing&limit=100`)
+      const API_BASE_URL =  'http://14.187.180.6:12122/api'
+      const IMAGE_BASE_URL = API_BASE_URL.replace(/\/api$/, '')
+      const response = await fetch(`${API_BASE_URL}/images?is_visible=true&category=printing&limit=100`)
       if (!response.ok) throw new Error('Failed to fetch images')
       const data = await response.json()
-      const processedImages = Array.isArray(data) ? data.map((img:any)=>({
+      setPrintingImages(Array.isArray(data) ? data.map((img:any)=>({
         ...img,
-        full_url: ensureHttps(img.file_path ? `${IMAGE_BASE_URL}/${img.file_path}` : img.filename ? `${IMAGE_BASE_URL}/uploads/${img.filename}` : img.url)
-      })) : []
-      setPrintingImages(processedImages)
+        full_url: img.file_path ? `${IMAGE_BASE_URL}/${img.file_path}` : img.filename ? `${IMAGE_BASE_URL}/uploads/${img.filename}` : img.url
+      })) : [])
     } catch (error) {
       console.error('Error fetching images:', error)
       toast({ title: 'Lỗi', description: 'Không thể tải ảnh in ấn', variant: 'destructive' })
@@ -307,6 +310,32 @@ export default function PricingPage() {
   const handleLoadMoreImages = () => {
     setVisibleImageCount((prev) => prev + 3)
   }
+
+  // Fetch printing posts
+  useEffect(() => {
+    if (activeTab === "printing") {
+      fetchPrintingPosts();
+    }
+  }, [activeTab, printingPage]);
+
+  const fetchPrintingPosts = async () => {
+    setPrintingLoading(true);
+    setPrintingError("");
+    try {
+      const API_BASE_URL = 'http://14.187.180.6:12122';
+      const res = await fetch(`${API_BASE_URL}/api/printing?is_visible=true&skip=${(printingPage-1)*PRINTING_LIMIT}&limit=${PRINTING_LIMIT}`);
+      if (!res.ok) throw new Error("Không thể tải dữ liệu in ấn");
+      const data = await res.json();
+      console.log('Printing API Response:', data);
+      setPrintingPosts(data.items || []);
+      setPrintingTotal(data.total || 0);
+    } catch (e: any) {
+      console.error('Error fetching printing posts:', e);
+      setPrintingError(e.message || "Lỗi không xác định");
+    } finally {
+      setPrintingLoading(false);
+    }
+  };
 
   // Loading state
   if (loading) {
@@ -336,6 +365,22 @@ export default function PricingPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
+            {/* Logo Phú Long */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center justify-center p-4 bg-white rounded-2xl shadow-lg border border-red-200/50">
+                <img
+                  src="https://i.imgur.com/WXSBk46.png"
+                  alt="Phú Long"
+                  className="h-12 w-auto object-contain"
+                />
+              </div>
+            </motion.div>
+
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -452,7 +497,7 @@ export default function PricingPage() {
                           {service.image_url ? (
                             <div className="w-16 h-16 rounded-xl mx-auto mb-4 overflow-hidden group-hover:scale-110 transition-transform duration-300 shadow-md">
                               <img 
-                                src={ensureHttps(service.image_url)} 
+                                src={service.image_url} 
                                 alt={service.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -539,7 +584,7 @@ export default function PricingPage() {
                                   : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
                               }`}
                             >
-                              <Link href="/dat-hang" className="flex items-center justify-center">
+                              <Link href="/order" className="flex items-center justify-center">
                                 <Send className="h-4 w-4 mr-2" />
                                 Gửi yêu cầu báo giá
                                 <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
@@ -603,6 +648,22 @@ export default function PricingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
                 >
+                  {/* Logo Phú Long */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                    className="mb-6"
+                  >
+                    <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-red-50 to-gray-50 rounded-xl border border-red-200/50">
+                      <img
+                        src="https://i.imgur.com/WXSBk46.png"
+                        alt="Phú Long"
+                        className="h-10 w-auto object-contain"
+                      />
+                    </div>
+                  </motion.div>
+
                   <h2 className="text-3xl font-bold text-gray-800 mb-4">
                     Bảng giá in ấn
                   </h2>
@@ -610,35 +671,217 @@ export default function PricingPage() {
                     Tham khảo các mẫu in ấn chất lượng cao mà chúng tôi đã thực hiện
                   </p>
                 </motion.div>
-
-                {/* Images Grid */}
-                {printingImages.length > 0 ? (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6 }}
-                      className="max-w-3xl mx-auto overflow-hidden rounded-2xl shadow-xl border border-gray-200 bg-white"
-                    >
-                      <img
-                        src={printingImages[currentImageIndex].full_url}
-                        alt={printingImages[currentImageIndex].alt_text || 'Printing image'}
-                        className="w-full h-auto object-contain cursor-pointer"
-                        onClick={()=>{setPreviewImage(printingImages[currentImageIndex]);setIsPreviewOpen(true)}}
-                      />
-                    </motion.div>
-
-                    {printingImages.length > 1 && (
-                      <div className="flex justify-center mt-8">
-                        <Button onClick={()=> setCurrentImageIndex((currentImageIndex+1)%printingImages.length)} variant="outline" className="border-gray-300 text-gray-700 hover:border-red-400 hover:text-red-600">
-                          <ArrowRight className="h-4 w-4 mr-2"/> Xem ảnh khác
+                {printingLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="text-center">
+                      <div className="relative">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mx-auto"></div>
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-400/20 to-red-600/20 animate-pulse"></div>
+                      </div>
+                      <p className="mt-4 text-gray-600">Đang tải dữ liệu in ấn...</p>
+                    </div>
+                  </div>
+                ) : printingError ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-12"
+                  >
+                    <div className="max-w-md mx-auto">
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                        <Printer className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-red-700 mb-2">Lỗi tải dữ liệu</h3>
+                        <p className="text-red-600">{printingError}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : printingPosts.length === 0 ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-12"
+                  >
+                    <div className="max-w-md mx-auto">
+                      <div className="bg-gray-50 border border-gray-200 rounded-xl p-8">
+                        <Printer className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">Chưa có mẫu in ấn</h3>
+                        <p className="text-gray-500 mb-4">Chúng tôi đang cập nhật thêm các mẫu in ấn mới</p>
+                        <Button 
+                          asChild
+                          variant="outline" 
+                          className="border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                          <Link href="/contact">Liên hệ tư vấn</Link>
                         </Button>
                       </div>
-                    )}
-                  </>
+                    </div>
+                  </motion.div>
                 ) : (
-                  <p className="text-center text-gray-500">Chưa có hình ảnh.</p>
+                  <motion.div 
+                    className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {printingPosts.map((post, index) => (
+                      <motion.div
+                        key={post.id}
+                        custom={index}
+                        variants={itemVariants}
+                        whileHover={{ 
+                          y: -8, 
+                          scale: 1.02,
+                          transition: { duration: 0.3 }
+                        }}
+                        className="group cursor-pointer"
+                        onClick={() => router.push(`/pricing/${post.id}`)}
+                      >
+                        <Card className="overflow-hidden shadow-lg hover:shadow-2xl border-0 bg-white/90 backdrop-blur-sm transition-all duration-500 h-full">
+                          {/* Ảnh đại diện */}
+                          <div className="relative h-48 overflow-hidden bg-gradient-to-br from-red-50 to-gray-50">
+                            {/* Hiển thị ảnh từ image_urls hoặc images */}
+                            {post.image_urls && post.image_urls.length > 0 && post.image_urls[0].trim() ? (
+                              <img
+                                src={post.image_urls[0]}
+                                alt={post.title}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const fallback = target.parentElement?.querySelector('.fallback-printer') as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                            ) : post.images && post.images.length > 0 ? (
+                              <img
+                                src={post.images[0].image.url.startsWith('http') ? post.images[0].image.url : `http://14.187.180.6:12122${post.images[0].image.url}`}
+                                alt={post.images[0].image.alt_text || post.title}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const fallback = target.parentElement?.querySelector('.fallback-printer') as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            
+                            {/* Fallback icon */}
+                            <div className="fallback-printer absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-100 to-gray-100" style={{display: (!post.image_urls?.length && !post.images?.length) ? 'flex' : 'none'}}>
+                              <Printer className="w-16 h-16 text-red-400" />
+                            </div>
+                            
+                            {/* Overlay gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            
+                            {/* Thời gian badge */}
+                            <div className="absolute top-3 right-3">
+                              <Badge className="bg-white/90 text-red-700 shadow-md">
+                                {post.time}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-lg font-bold text-red-700 mb-2 group-hover:text-red-900 transition-colors duration-300 line-clamp-2">
+                              {post.title}
+                            </CardTitle>
+                          </CardHeader>
+                          
+                          <CardContent className="pt-0">
+                            {/* Markdown content preview */}
+                            <div className="prose prose-sm max-w-none text-gray-700 mb-4">
+                              <div className="line-clamp-3 text-sm leading-relaxed">
+                                <ReactMarkdown
+                                  components={{
+                                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                    h1: ({ children }) => <span className="font-semibold text-base">{children}</span>,
+                                    h2: ({ children }) => <span className="font-semibold text-sm">{children}</span>,
+                                    h3: ({ children }) => <span className="font-medium text-sm">{children}</span>,
+                                    strong: ({ children }) => <span className="font-semibold text-red-700">{children}</span>,
+                                    em: ({ children }) => <span className="italic text-gray-600">{children}</span>,
+                                    ul: ({ children }) => <ul className="list-disc list-inside space-y-1">{children}</ul>,
+                                    ol: ({ children }) => <ol className="list-decimal list-inside space-y-1">{children}</ol>,
+                                    li: ({ children }) => <li className="text-sm">{children}</li>,
+                                    code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{children}</code>,
+                                  }}
+                                >
+                                  {post.content?.length > 150 ? post.content.slice(0, 150) + "..." : post.content || ""}
+                                </ReactMarkdown>
+                              </div>
+                            </div>
+
+                            {/* Thêm ảnh nhỏ nếu có nhiều ảnh */}
+                            {((post.image_urls && post.image_urls.length > 1) || (post.images && post.images.length > 1)) && (
+                              <div className="flex gap-2 mb-4 overflow-hidden">
+                                {post.image_urls && post.image_urls.length > 1 ? (
+                                  post.image_urls.slice(1, 4).map((url, idx) => (
+                                    url.trim() && (
+                                      <div key={idx} className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                        <img
+                                          src={url}
+                                          alt={`${post.title} ${idx + 2}`}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    )
+                                  ))
+                                ) : (
+                                  post.images?.slice(1, 4).map((img, idx) => (
+                                    <div key={img.id} className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                      <img
+                                        src={img.image.url.startsWith('http') ? img.image.url : `http://14.187.180.6:12122${img.image.url}`}
+                                        alt={img.image.alt_text || `${post.title} ${idx + 2}`}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                        }}
+                                      />
+                                    </div>
+                                  ))
+                                )}
+                                {/* Hiển thị số ảnh còn lại */}
+                                {((post.image_urls?.length || 0) + (post.images?.length || 0)) > 4 && (
+                                  <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-xs font-medium text-gray-600">
+                                      +{((post.image_urls?.length || 0) + (post.images?.length || 0)) - 4}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                              <div className="text-xs text-gray-400">
+                                {new Date(post.updated_at).toLocaleDateString('vi-VN')}
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+                              >
+                                <ArrowRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+                {/* Pagination */}
+                {printingTotal > PRINTING_LIMIT && (
+                  <div className="flex justify-center mt-8 gap-2">
+                    {Array.from({length: Math.ceil(printingTotal/PRINTING_LIMIT)}).map((_,i)=>(
+                      <Button key={i} size="sm" variant={printingPage===i+1?"default":"outline"} onClick={()=>setPrintingPage(i+1)}>{i+1}</Button>
+                    ))}
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
@@ -679,7 +922,7 @@ export default function PricingPage() {
                   size="lg" 
                   className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-10 py-6 text-lg rounded-xl shadow-xl hover:scale-105 transition-all duration-300 group"
                 >
-                  <Link href="/dat-hang" className="flex items-center">
+                  <Link href="/order" className="flex items-center">
                     <Send className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
                     Gửi yêu cầu báo giá
                     <ArrowRight className="h-6 w-6 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
@@ -729,7 +972,7 @@ export default function PricingPage() {
 
       {/* Bottom images section removed */}
 
-      <Footer />
+    
 
       {/* Image Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
@@ -742,6 +985,7 @@ export default function PricingPage() {
           )}
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   )
 }

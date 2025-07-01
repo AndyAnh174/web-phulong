@@ -11,6 +11,7 @@ import { MapPin, Phone, Mail, Clock, Send, CheckCircle, MessageCircle, Headphone
 import { useToast } from "@/hooks/use-toast"
 import { api } from "@/lib/api"
 import { motion } from "framer-motion"
+import Footer from "@/components/layout/footer"
 
 interface Config {
   CONTACT_PHONE: string
@@ -235,7 +236,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-1">Địa chỉ</h3>
-                        <p className="text-gray-600 leading-relaxed">{config.CONTACT_ADDRESS}</p>
+                        <p className="text-gray-600 leading-relaxed"> Số 2 Lê Văn Chí, Phường Linh Chiểu, Thành phố Thủ Đức, TP. HCM</p>
                       </div>
                     </div>
                   )}
@@ -248,10 +249,10 @@ export default function ContactPage() {
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-1">Điện thoại</h3>
                         <a 
-                          href={`tel:${config.CONTACT_PHONE}`}
+                          href={`tel:0977007763`}
                           className="text-red-600 hover:text-red-700 font-medium transition-colors duration-200"
                         >
-                          {config.CONTACT_PHONE}
+                          0977007763
                         </a>
                       </div>
                     </div>
@@ -302,9 +303,9 @@ export default function ContactPage() {
                   <p className="text-red-700">Cần hỗ trợ gấp? Liên hệ ngay với chúng tôi</p>
                   <div className="space-y-3">
                     <Button asChild className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                      <a href={`tel:${config?.CONTACT_PHONE}`} className="flex items-center justify-center">
+                      <a href={`tel:0977007763`} className="flex items-center justify-center">
                         <Phone className="mr-2 h-4 w-4" />
-                        {config?.CONTACT_PHONE || "Gọi ngay"}
+                        0977007763
                       </a>
                     </Button>
                     
@@ -497,18 +498,22 @@ export default function ContactPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="bg-white rounded-2xl shadow-xl overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-gray-100 to-red-50 h-96 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Bản đồ sẽ được hiển thị tại đây</h3>
-                <p className="text-sm text-gray-500">Tích hợp Google Maps hoặc dịch vụ bản đồ khác</p>
-              </div>
+            <div className="w-full h-96 lg:h-[450px]">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.402887092474!2d106.77674789999999!3d10.856930199999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317527c309af49ed%3A0x7549bfec8c1656a5!2zMiBMw6ogVsSDbiBDaMOtLCBQaMaw4budbmcgTGluaCBUcnVuZywgVGjhu6cgxJDhu6ljLCBI4buTIENow60gTWluaA!5e0!3m2!1svi!2s!4v1750834576137!5m2!1svi!2s" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                className="rounded-2xl"
+              />
             </div>
           </motion.div>
         </div>
       </section>
+      <Footer />
     </div>
   )
 }
