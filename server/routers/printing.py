@@ -564,4 +564,124 @@ async def upload_content_image(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lỗi khi upload ảnh: {str(e)}"
-        ) 
+        )
+
+@router.post("/paste-image", response_model=dict)
+async def paste_image(
+    file: UploadFile = File(..., description="Ảnh từ clipboard paste"),
+    alt_text: Optional[str] = Form(None, description="Mô tả ảnh (tùy chọn)"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """
+    Upload ảnh từ clipboard paste (Chỉ ADMIN mới có quyền)
+    - Endpoint này được gọi khi user paste ảnh vào content editor
+    - Tự động upload và trả về shortcode để chèn vào content
+    """
+    try:
+        # Kiểm tra file hợp lệ
+        if not validate_image_file(file):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File {file.filename or 'pasted-image'} không hợp lệ. Chỉ chấp nhận file ảnh (jpg, png, gif, webp, bmp)"
+            )
+        
+        # Tạo filename nếu không có (thường khi paste từ clipboard)
+        if not file.filename or file.filename == "blob":
+            import time
+            timestamp = int(time.time())
+            # Xác định extension từ MIME type
+            ext_map = {
+                "image/jpeg": "jpg",
+                "image/png": "png", 
+                "image/gif": "gif",
+                "image/webp": "webp",
+                "image/bmp": "bmp"
+            }
+            ext = ext_map.get(file.content_type, "jpg")
+            file.filename = f"pasted-image-{timestamp}.{ext}"
+        
+        # Upload ảnh
+        uploaded_image = await save_uploaded_image(file, current_user.id, db)
+        
+        # Cập nhật alt_text nếu có
+        if alt_text:
+            uploaded_image.alt_text = alt_text
+        else:
+            # Tạo alt_text mặc định cho ảnh paste
+            uploaded_image.alt_text = f"Ảnh paste lúc {datetime.now().strftime('%H:%M %d/%m/%Y')}"
+        
+        db.commit()
+        
+        # Tạo shortcode
+        if alt_text:
+            shortcode = f"[image:{uploaded_image.id}|{alt_text}]"
+        else:
+            shortcode = f"[image:{uploaded_image.id}|{uploaded_image.alt_text}]"
+        
+        return {
+            "success": True,
+            "message": "Upload ảnh paste thành công",
+            "image": {
+                "id": uploaded_image.id,
+                "url": uploaded_image.url,
+                "filename": uploaded_image.filename,
+                "alt_text": uploaded_image.alt_text,
+                "width": uploaded_image.width,
+                "height": uploaded_image.height
+            },
+            "shortcode": shortcode,
+            "insertion_type": "paste"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi khi upload ảnh paste: {str(e)}"
+        )
+
+@router.post("/parse-content", response_model=dict)
+async def parse_content(
+    content_data: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Parse content để chuyển shortcode thành HTML (Public endpoint for preview)
+    - Endpoint này được gọi từ JavaScript để preview content
+    - Không cần authentication vì chỉ parse, không lưu data
+    """
+    try:
+        content = content_data.get('content', '')
+        
+        if not content:
+            return {
+                "content_html": "",
+                "images_found": 0
+            }
+        
+        # Parse content với shortcode
+        content_html = parse_content_images(content, db)
+        
+        # Đếm số ảnh được tìm thấy
+        import re
+        image_matches = re.findall(r'\[image:(\d+)(\|([^\]]*))?\]', content)
+        images_found = len(image_matches)
+        
+        return {
+            "content_html": content_html,
+            "original_content": content,
+            "images_found": images_found,
+            "success": True
+        }
+        
+    except Exception as e:
+        return {
+            "content_html": content_data.get('content', '').replace('\n', '<br>'),
+            "original_content": content_data.get('content', ''),
+            "images_found": 0,
+            "success": False,
+            "error": str(e)
+        } 

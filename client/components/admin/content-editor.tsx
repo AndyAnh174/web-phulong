@@ -1,27 +1,108 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+
+// Type declaration for paste helper
+declare global {
+  interface Window {
+    createPrintingPasteHelper: (options: any) => any;
+  }
+}
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Upload, Image as ImageIcon, X } from "lucide-react"
+import { Upload, Image as ImageIcon, X, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import api from "@/lib/api"
+import { parseContentHTML } from "./content-renderer"
 
 interface ContentEditorProps {
   content: string
   onContentChange: (content: string) => void
   placeholder?: string
+  showPreview?: boolean
 }
 
-export default function ContentEditor({ content, onContentChange, placeholder = "Nhập nội dung..." }: ContentEditorProps) {
+export default function ContentEditor({ content, onContentChange, placeholder = "Nhập nội dung...", showPreview = true }: ContentEditorProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [altText, setAltText] = useState("")
   const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const [previewVisible, setPreviewVisible] = useState(showPreview)
+  const [pasteHelper, setPasteHelper] = useState<any>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast } = useToast()
   const { token } = useAuth()
+
+  // Load paste helper script và initialize
+  useEffect(() => {
+    const loadPasteHelper = async () => {
+      // Kiểm tra nếu script đã load
+      if (typeof window.createPrintingPasteHelper === 'function') {
+        initializePasteHelper()
+        return
+      }
+
+      // Load script
+      const script = document.createElement('script')
+      script.src = '/js/printing-paste-helper.js'
+      script.onload = () => {
+        initializePasteHelper()
+      }
+      script.onerror = () => {
+        console.error('Failed to load paste helper script')
+      }
+      document.head.appendChild(script)
+    }
+
+    const initializePasteHelper = () => {
+      if (!window.createPrintingPasteHelper || !token) return
+
+      const helper = window.createPrintingPasteHelper({
+        apiBaseUrl: window.location.origin,
+        authToken: token,
+        contentSelector: '#content-editor-textarea',
+        previewSelector: '#content-preview',
+        onSuccess: (result: any) => {
+          toast({
+            title: "Thành công",
+            description: `✅ Đã chèn ảnh ID ${result.image.id} vào content`,
+          })
+        },
+        onError: (error: any) => {
+          toast({
+            title: "Lỗi",
+            description: `❌ ${error.message}`,
+            variant: "destructive",
+          })
+        },
+        onUploading: (isUploading: boolean) => {
+          setIsUploading(isUploading)
+        }
+      })
+
+      setPasteHelper(helper)
+    }
+
+    if (token) {
+      loadPasteHelper()
+    }
+
+    // Cleanup
+    return () => {
+      if (pasteHelper) {
+        pasteHelper.destroy?.()
+      }
+    }
+  }, [token, toast])
+
+  // Update auth token when it changes
+  useEffect(() => {
+    if (pasteHelper && token) {
+      pasteHelper.setAuthToken(token)
+    }
+  }, [pasteHelper, token])
 
   // Handle file upload và chèn shortcode
   const handleImageUpload = async (file: File) => {
@@ -129,6 +210,17 @@ export default function ContentEditor({ content, onContentChange, placeholder = 
             <ImageIcon className="h-4 w-4 mr-2" />
             Chèn ảnh
           </Button>
+          {showPreview && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPreviewVisible(!previewVisible)}
+            >
+              {previewVisible ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+              {previewVisible ? 'Ẩn preview' : 'Hiện preview'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -192,19 +284,54 @@ export default function ContentEditor({ content, onContentChange, placeholder = 
         </div>
       )}
 
-      {/* Content Textarea */}
-      <Textarea
-        value={content}
-        onChange={(e) => onContentChange(e.target.value)}
-        placeholder={placeholder}
-        rows={12}
-        className="font-mono text-sm"
-      />
+      {/* Content Editor Grid */}
+      <div className={`${previewVisible && showPreview ? 'grid grid-cols-2 gap-4' : ''}`}>
+        {/* Content Textarea */}
+        <div className="space-y-2">
+          <Textarea
+            ref={textareaRef}
+            id="content-editor-textarea"
+            value={content}
+            onChange={(e) => onContentChange(e.target.value)}
+            placeholder={`${placeholder}
 
-      <div className="text-xs text-gray-600">
-        <p><strong>Hỗ trợ Markdown và Shortcode:</strong></p>
-        <p>• Markdown: **bold**, *italic*, # heading, - list, [link](url)</p>
-        <p>• Ảnh: [image:ID|mô_tả] - sử dụng nút "Chèn ảnh" để thêm</p>
+💡 Tính năng mới:
+• Copy ảnh từ clipboard và paste vào đây (Ctrl+V)
+• Drag & drop ảnh từ máy tính vào đây
+• Tự động upload và chèn shortcode`}
+            rows={previewVisible && showPreview ? 15 : 12}
+            className="font-mono text-sm transition-all"
+          />
+          
+          <div className="text-xs text-gray-600">
+            <p><strong>Hỗ trợ Markdown và Shortcode:</strong></p>
+            <p>• Markdown: **bold**, *italic*, # heading, - list, [link](url)</p>
+            <p>• Ảnh: [image:ID|mô_tả] - paste ảnh hoặc dùng nút "Chèn ảnh"</p>
+            <p>• 📋 <strong>Paste ảnh:</strong> Copy ảnh và Ctrl+V hoặc drag & drop</p>
+          </div>
+        </div>
+
+        {/* Live Preview Panel */}
+        {previewVisible && showPreview && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">👁️ Live Preview</Label>
+              <span className="text-xs text-gray-500">
+                {content.match(/\[image:\d+(\|[^\]]*?)?\]/g)?.length || 0} ảnh
+              </span>
+            </div>
+            <div 
+              id="content-preview"
+              className="border rounded-md p-4 bg-gray-50 min-h-[360px] max-h-[360px] overflow-y-auto text-sm prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ 
+                __html: parseContentHTML(content) 
+              }}
+            />
+            <div className="text-xs text-gray-500">
+              Preview tự động cập nhật khi bạn thay đổi content hoặc paste ảnh
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
