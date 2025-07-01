@@ -33,12 +33,7 @@ import {
   Search,
   ChevronRight,
   Info,
-  Upload,
-  Image,
-  Copy,
-  Check,
-  X,
-  AlertCircle,
+
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
@@ -100,11 +95,7 @@ export default function AdminDashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [autoRefresh, setAutoRefresh] = useState(false)
   
-  // Image upload states
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("")
-  const [isUploading, setIsUploading] = useState(false)
-  const [dragOver, setDragOver] = useState(false)
-  const [urlCopied, setUrlCopied] = useState(false)
+
   
   const { toast } = useToast()
   const { token } = useAuth()
@@ -266,121 +257,7 @@ export default function AdminDashboardPage() {
     return `${hours} giờ trước`
   }
 
-  // Image upload functions
-  const handleImageUpload = async (file: File) => {
-    if (!file) return
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Lỗi",
-        description: "Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP, BMP)",
-        variant: "destructive"
-      })
-      return
-    }
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "Lỗi", 
-        description: "Kích thước file không được vượt quá 10MB",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('category', 'dashboard-upload')
-      formData.append('alt_text', `Upload từ dashboard - ${file.name}`)
-
-      const response = await fetch('http://14.187.180.6:12122/api/images/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error('Upload failed')
-      }
-
-      const result = await response.json()
-      setUploadedImageUrl(result.image.url)
-      
-      toast({
-        title: "Thành công",
-        description: "Upload ảnh thành công! URL đã được tạo.",
-      })
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast({
-        title: "Lỗi",
-        description: "Không thể upload ảnh. Vui lòng thử lại.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    
-    const files = Array.from(e.dataTransfer.files)
-    if (files.length > 0) {
-      handleImageUpload(files[0])
-    }
-  }
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files && files.length > 0) {
-      handleImageUpload(files[0])
-    }
-  }
-
-  const copyUrlToClipboard = async () => {
-    if (!uploadedImageUrl) return
-    
-    try {
-      await navigator.clipboard.writeText(uploadedImageUrl)
-      setUrlCopied(true)
-      toast({
-        title: "Đã sao chép",
-        description: "URL ảnh đã được sao chép vào clipboard"
-      })
-      
-      setTimeout(() => setUrlCopied(false), 2000)
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể sao chép URL",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const clearUploadedImage = () => {
-    setUploadedImageUrl("")
-    setUrlCopied(false)
-  }
 
   if (loading) {
     return (
@@ -595,159 +472,7 @@ export default function AdminDashboardPage() {
         
         </div>
 
-        {/* Image Upload Section */}
-        <Card className="border border-gray-200 shadow-lg bg-white/90 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-purple-50 via-purple-100 to-purple-50 rounded-t-lg">
-            <CardTitle className="flex items-center text-gray-900">
-              <Upload className="mr-3 h-5 w-5 text-purple-600" />
-              Upload Ảnh & Lấy URL
-              <Badge variant="outline" className="ml-3 bg-white">
-                Tiện ích
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Upload Area */}
-              <div className="space-y-4">
-                <div 
-                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-                    dragOver 
-                      ? 'border-purple-400 bg-purple-50' 
-                      : 'border-gray-300 hover:border-purple-300 hover:bg-purple-50/50'
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  {isUploading ? (
-                    <div className="space-y-4">
-                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
-                      <p className="text-purple-600 font-medium">Đang upload...</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center">
-                        <Image className="h-8 w-8 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-medium text-gray-900 mb-2">
-                          Kéo thả ảnh vào đây
-                        </p>
-                        <p className="text-sm text-gray-500 mb-4">
-                          hoặc click để chọn file
-                        </p>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                          className="hidden"
-                          id="imageUpload"
-                        />
-                        <Button
-                          onClick={() => document.getElementById('imageUpload')?.click()}
-                          variant="outline"
-                          className="border-purple-300 text-purple-600 hover:bg-purple-50"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Chọn ảnh
-                        </Button>
-                      </div>
-                      <div className="text-xs text-gray-400 space-y-1">
-                        <p>Hỗ trợ: JPG, PNG, GIF, WEBP, BMP</p>
-                        <p>Kích thước tối đa: 10MB</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              {/* URL Result */}
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-xl p-6 min-h-[200px] flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-medium text-gray-900 flex items-center">
-                      <Image className="mr-2 h-4 w-4 text-gray-600" />
-                      URL Ảnh
-                    </h4>
-                    {uploadedImageUrl && (
-                      <Button
-                        onClick={clearUploadedImage}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                  
-                  {uploadedImageUrl ? (
-                    <div className="space-y-4 flex-1">
-                      {/* Preview Image */}
-                      <div className="aspect-video bg-white rounded-lg border-2 border-gray-200 overflow-hidden">
-                        <img 
-                          src={uploadedImageUrl} 
-                          alt="Preview" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      
-                      {/* URL Display */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                          <code className="text-sm text-gray-600 truncate flex-1 mr-2">
-                            {uploadedImageUrl}
-                          </code>
-                          <Button
-                            onClick={copyUrlToClipboard}
-                            size="sm"
-                            variant="outline"
-                            className="flex-shrink-0"
-                          >
-                            {urlCopied ? (
-                              <Check className="h-3 w-3 text-green-600" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
-                        </div>
-                        
-                        {urlCopied && (
-                          <div className="flex items-center text-green-600 text-sm">
-                            <Check className="mr-1 h-3 w-3" />
-                            URL đã được sao chép!
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-400">
-                      <div className="text-center">
-                        <AlertCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p className="text-sm">URL sẽ hiển thị sau khi upload thành công</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Instructions */}
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <h5 className="font-medium text-blue-900 mb-2 flex items-center">
-                    <Info className="mr-2 h-4 w-4" />
-                    Hướng dẫn sử dụng
-                  </h5>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Upload ảnh để nhận URL trực tiếp</li>
-                    <li>• Sử dụng URL trong các nội dung blog, services</li>
-                    <li>• Ảnh sẽ được lưu trữ và tối ưu tự động</li>
-                    <li>• Click nút copy để sao chép URL nhanh</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Enhanced Quick Actions */}
         <Card className="border border-gray-200 shadow-lg bg-white/90 backdrop-blur-sm">
@@ -756,12 +481,12 @@ export default function AdminDashboardPage() {
               <TrendingUp className="mr-3 h-5 w-5 text-gray-600" />
               Thao tác nhanh
               <Badge variant="outline" className="ml-3 bg-white">
-                4 tính năng
+                5 tính năng
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button asChild className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 group h-auto p-6 flex-col">
                 <Link href="/admin/services">
                   <Package className="h-8 w-8 mb-3 group-hover:scale-110 transition-transform duration-300" />
@@ -781,6 +506,13 @@ export default function AdminDashboardPage() {
                   <Users className="h-8 w-8 mb-3 group-hover:scale-110 transition-transform duration-300" />
                   <span className="font-medium">Khách hàng</span>
                   <span className="text-xs opacity-70 mt-1">{summary?.customers || 0} khách hàng</span>
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="group border-purple-300 text-purple-600 hover:bg-purple-50 h-auto p-6 flex-col">
+                <Link href="/admin/image-upload">
+                  <Eye className="h-8 w-8 mb-3 group-hover:scale-110 transition-transform duration-300" />
+                  <span className="font-medium">Upload Ảnh</span>
+                  <span className="text-xs opacity-70 mt-1">Lấy URL</span>
                 </Link>
               </Button>
               <Button asChild variant="outline" className="group border-yellow-300 text-yellow-600 hover:bg-yellow-50 h-auto p-6 flex-col">

@@ -24,6 +24,7 @@ import {
   LogOut,
   Settings,
   User,
+  Upload,
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
@@ -59,6 +60,11 @@ const menuItems = [
     title: "Liên hệ",
     url: "/admin/contacts",
     icon: MessageSquare,
+  },
+  {
+    title: "Upload Ảnh",
+    url: "/admin/image-upload",
+    icon: Upload,
   },
   {
     title: "Google Drive URL Converter",
