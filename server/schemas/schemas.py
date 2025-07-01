@@ -75,6 +75,47 @@ class AdminAccessLogOut(AdminAccessLogBase):
     class Config:
         from_attributes = True
 
+# Image Schemas (định nghĩa trước để tránh forward reference)
+class ImageBase(BaseModel):
+    filename: str
+    alt_text: Optional[str] = None
+    is_visible: bool = True
+    category: Optional[str] = None
+
+class ImageCreate(BaseModel):
+    alt_text: Optional[str] = None
+    is_visible: bool = True
+    category: Optional[str] = None
+
+class ImageUpdate(BaseModel):
+    alt_text: Optional[str] = None
+    is_visible: Optional[bool] = None
+    category: Optional[str] = None
+
+class ImageOut(BaseModel):
+    id: int
+    filename: str
+    file_path: str
+    url: str
+    alt_text: Optional[str] = None
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    is_visible: bool
+    category: Optional[str] = None
+    uploaded_by: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+    uploader: Optional["UserOut"] = None
+    
+    class Config:
+        from_attributes = True
+
+class ImageUploadResponse(BaseModel):
+    message: str
+    image: ImageOut
+
 # Service Schemas
 class ServiceBase(BaseModel):
     name: str
@@ -101,7 +142,7 @@ class ServiceOut(ServiceBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    image: Optional['ImageOut'] = None
+    image: Optional[ImageOut] = None  # Không cần quotes nữa
     
     class Config:
         from_attributes = True
@@ -211,45 +252,4 @@ class ContactOut(ContactBase):
     created_at: datetime
     
     class Config:
-        from_attributes = True
-
-# Image Schemas
-class ImageBase(BaseModel):
-    filename: str
-    alt_text: Optional[str] = None
-    is_visible: bool = True
-    category: Optional[str] = None
-
-class ImageCreate(BaseModel):
-    alt_text: Optional[str] = None
-    is_visible: bool = True
-    category: Optional[str] = None
-
-class ImageUpdate(BaseModel):
-    alt_text: Optional[str] = None
-    is_visible: Optional[bool] = None
-    category: Optional[str] = None
-
-class ImageOut(BaseModel):
-    id: int
-    filename: str
-    file_path: str
-    url: str
-    alt_text: Optional[str] = None
-    file_size: Optional[int] = None
-    mime_type: Optional[str] = None
-    width: Optional[int] = None
-    height: Optional[int] = None
-    is_visible: bool
-    category: Optional[str] = None
-    uploaded_by: Optional[int] = None
-    created_at: datetime
-    updated_at: datetime
-    uploader: Optional[UserOut] = None
-    
-    class Config:
-        from_attributes = True
-
-class ImageUploadResponse(BaseModel):
-    message: str
-    image: ImageOut 
+        from_attributes = True 
