@@ -5,12 +5,20 @@ export interface Service {
   name: string
   description: string
   price: number
-  image_url: string
+  image_id?: number | null
   category: string
   is_active: boolean
   featured?: boolean
   created_at?: string
   updated_at?: string
+  image?: {
+    id: number
+    filename: string
+    url: string
+    alt_text: string | null
+    width: number
+    height: number
+  }
 }
 
 export interface ApiResponse<T> {
@@ -61,6 +69,57 @@ export const api = {
         throw new Error('Failed to fetch suggested services')
       }
       return response.json()
+    },
+
+    // Tạo service mới với upload ảnh
+    create: async (serviceData: FormData, token: string): Promise<Service> => {
+      const response = await fetch(`${API_BASE_URL}/services/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: serviceData
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to create service')
+      }
+      
+      return response.json()
+    },
+
+    // Cập nhật service với upload ảnh
+    update: async (id: number, serviceData: FormData, token: string): Promise<Service> => {
+      const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: serviceData
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to update service')
+      }
+      
+      return response.json()
+    },
+
+    // Xóa service
+    delete: async (id: number, token: string): Promise<void> => {
+      const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to delete service')
+      }
     }
   },
 
@@ -99,6 +158,41 @@ export const api = {
       
       if (!response.ok) {
         throw new Error('Failed to submit contact form')
+      }
+      
+      return response.json()
+    }
+  },
+
+  // Printing/Blog endpoints
+  printing: {
+    // Upload ảnh cho content
+    uploadContentImage: async (file: File, altText: string, token: string): Promise<{
+      message: string
+      image: {
+        id: number
+        url: string
+        filename: string
+        alt_text: string
+      }
+      shortcode: string
+      usage: string
+    }> => {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('alt_text', altText)
+
+      const response = await fetch(`${API_BASE_URL}/printing/upload-content-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to upload image')
       }
       
       return response.json()

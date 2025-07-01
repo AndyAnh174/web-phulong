@@ -38,11 +38,19 @@ interface Service {
   name: string
   description: string
   price: number
-  image_url: string
+  image_id?: number | null
   category: string
   featured: boolean
   is_active: boolean
   created_at: string
+  image?: {
+    id: number
+    filename: string
+    url: string
+    alt_text: string | null
+    width: number
+    height: number
+  }
 }
 
 interface Review {
@@ -131,7 +139,7 @@ export default function ServiceDetailPage() {
       id: service.id,
       name: service.name,
       price: service.price,
-      image_url: service.image_url,
+      image_url: service.image?.url || "",
       category: service.category
     })
     
@@ -238,7 +246,9 @@ export default function ServiceDetailPage() {
                 transition={{ duration: 0.3 }}
               >
                 <Image
-                  src={service.image_url || "/placeholder.svg?height=500&width=700"}
+                  src={service.image?.url 
+                  ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.180.6:12122${service.image.url}`)
+                  : "/placeholder.svg?height=500&width=700"}
                   alt={service.name}
                   width={700}
                   height={500}
@@ -538,7 +548,9 @@ export default function ServiceDetailPage() {
                     <CardHeader className="p-0">
                       <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
                         <Image
-                          src={suggestedService.image_url || "/placeholder.svg?height=240&width=400"}
+                          src={suggestedService.image?.url 
+                          ? (suggestedService.image.url.startsWith('http') ? suggestedService.image.url : `http://14.187.180.6:12122${suggestedService.image.url}`)
+                          : "/placeholder.svg?height=240&width=400"}
                           alt={suggestedService.name}
                           width={400}
                           height={240}

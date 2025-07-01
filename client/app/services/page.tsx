@@ -34,10 +34,18 @@ interface Service {
   name: string
   description: string
   price: number
-  image_url: string
+  image_id?: number | null
   category: string
   featured: boolean
   is_active: boolean
+  image?: {
+    id: number
+    filename: string
+    url: string
+    alt_text: string | null
+    width: number
+    height: number
+  }
 }
 
 export default function ServicesPage() {
@@ -353,7 +361,9 @@ export default function ServicesPage() {
                           <div className="relative overflow-hidden rounded-t-xl">
                             <div className="relative h-64 bg-gray-100">
                               <Image
-                                src={service.image_url || "/placeholder.svg?height=256&width=400"}
+                                src={service.image?.url 
+                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.180.6:12122${service.image.url}`)
+                          : "/placeholder.svg?height=256&width=400"}
                                 alt={service.name}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -462,7 +472,9 @@ export default function ServicesPage() {
                         <div className="flex items-center p-6">
                           <div className="relative w-32 h-32 rounded-lg overflow-hidden mr-6 shrink-0">
                             <Image
-                              src={service.image_url || "/placeholder.svg?height=128&width=128"}
+                              src={service.image?.url 
+                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.180.6:12122${service.image.url}`)
+                          : "/placeholder.svg?height=128&width=128"}
                               alt={service.name}
                               fill
                               className="object-cover group-hover:scale-110 transition-transform duration-500"

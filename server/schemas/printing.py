@@ -60,6 +60,7 @@ class PrintingOut(PrintingBase):
     created_by: Optional[int] = None
     creator: Optional[UserOut] = None
     images: List[PrintingImageOut] = []
+    content_html: Optional[str] = None  # Content đã được parse với ảnh HTML
     
     class Config:
         from_attributes = True

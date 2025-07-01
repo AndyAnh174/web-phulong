@@ -58,7 +58,7 @@ class Service(Base):
     name = Column(String, index=True)
     description = Column(Text)
     price = Column(Float)
-    image_url = Column(String, nullable=True)
+    image_id = Column(Integer, ForeignKey("images.id"), nullable=True)  # Thay thế image_url
     category = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     featured = Column(Boolean, default=False)
@@ -68,6 +68,7 @@ class Service(Base):
     # Relationship
     orders = relationship("Order", back_populates="service")
     reviews = relationship("ServiceReview", back_populates="service", cascade="all, delete-orphan")
+    image = relationship("Image", backref="services")  # Relationship với Image
 
 class Blog(Base):
     __tablename__ = "blogs"

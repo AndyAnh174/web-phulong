@@ -80,7 +80,7 @@ class ServiceBase(BaseModel):
     name: str
     description: str
     price: float
-    image_url: Optional[str] = None
+    image_id: Optional[int] = None
     category: Optional[str] = None
     is_active: bool = True
     featured: bool = False
@@ -92,7 +92,7 @@ class ServiceUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
-    image_url: Optional[str] = None
+    image_id: Optional[int] = None
     category: Optional[str] = None
     is_active: Optional[bool] = None
     featured: Optional[bool] = None
@@ -101,6 +101,7 @@ class ServiceOut(ServiceBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    image: Optional['ImageOut'] = None
     
     class Config:
         from_attributes = True

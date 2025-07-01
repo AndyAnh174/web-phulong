@@ -16,6 +16,7 @@ from models.models import Printing, PrintingImage, User, Image
 from middlewares.auth_middleware import get_current_user, get_admin_user
 from config.settings import settings
 import logging
+import re
 
 router = APIRouter(prefix="/api/printing", tags=["Printing"])
 
@@ -144,7 +145,26 @@ async def get_printings(
     # Lấy danh sách với phân trang
     printings = query.order_by(Printing.created_at.desc()).offset(skip).limit(limit).all()
     
-    return PrintingListResponse(items=printings, total=total)
+    # Parse content cho từng bài đăng
+    parsed_printings = []
+    for printing in printings:
+        content_html = parse_content_images(printing.content, db)
+        printing_dict = {
+            "id": printing.id,
+            "title": printing.title,
+            "time": printing.time,
+            "content": printing.content,
+            "content_html": content_html,
+            "is_visible": printing.is_visible,
+            "created_at": printing.created_at,
+            "updated_at": printing.updated_at,
+            "created_by": printing.created_by,
+            "creator": printing.creator,
+            "images": printing.images
+        }
+        parsed_printings.append(printing_dict)
+    
+    return PrintingListResponse(items=parsed_printings, total=total)
 
 @router.get("/{printing_id}", response_model=PrintingOut)
 async def get_printing(printing_id: int, db: Session = Depends(get_db)):
@@ -157,7 +177,25 @@ async def get_printing(printing_id: int, db: Session = Depends(get_db)):
             detail=f"Bài đăng với ID {printing_id} không tồn tại"
         )
     
-    return printing
+    # Parse content để thay thế shortcode ảnh bằng HTML
+    content_html = parse_content_images(printing.content, db)
+    
+    # Tạo dict để trả về với content_html
+    printing_dict = {
+        "id": printing.id,
+        "title": printing.title,
+        "time": printing.time,
+        "content": printing.content,
+        "content_html": content_html,
+        "is_visible": printing.is_visible,
+        "created_at": printing.created_at,
+        "updated_at": printing.updated_at,
+        "created_by": printing.created_by,
+        "creator": printing.creator,
+        "images": printing.images
+    }
+    
+    return printing_dict
 
 @router.post("/", response_model=PrintingResponse)
 async def create_printing(
@@ -440,4 +478,90 @@ async def toggle_printing_visibility(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lỗi khi thay đổi trạng thái hiển thị: {str(e)}"
+        )
+
+def parse_content_images(content: str, db: Session) -> str:
+    """
+    Parse content để thay thế shortcode ảnh bằng HTML
+    Shortcode format: [image:123] hoặc [image:123|alt_text]
+    """
+    def replace_image(match):
+        image_id_part = match.group(1)
+        
+        # Tách image_id và alt_text
+        if '|' in image_id_part:
+            image_id, alt_text = image_id_part.split('|', 1)
+        else:
+            image_id = image_id_part
+            alt_text = ""
+        
+        try:
+            image_id = int(image_id)
+            image = db.query(Image).filter(Image.id == image_id).first()
+            
+            if image:
+                alt_attr = f'alt="{alt_text}"' if alt_text else f'alt="{image.alt_text or ""}"'
+                return f'<img src="{image.url}" {alt_attr} class="content-image" style="max-width: 100%; height: auto;" />'
+            else:
+                return f'[Ảnh không tồn tại: {image_id}]'
+        except ValueError:
+            return match.group(0)  # Trả về shortcode gốc nếu không parse được
+    
+    # Regex để tìm shortcode [image:123] hoặc [image:123|alt_text]
+    pattern = r'\[image:([^\]]+)\]'
+    return re.sub(pattern, replace_image, content)
+
+@router.post("/upload-content-image", response_model=dict)
+async def upload_content_image(
+    file: UploadFile = File(..., description="Upload ảnh cho content"),
+    alt_text: Optional[str] = Form(None, description="Mô tả ảnh"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """
+    Upload ảnh để chèn vào content (Chỉ ADMIN mới có quyền)
+    - Trả về shortcode để chèn vào content
+    - Shortcode format: [image:123] hoặc [image:123|alt_text]
+    """
+    try:
+        # Kiểm tra file hợp lệ
+        if not validate_image_file(file):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File {file.filename} không hợp lệ. Chỉ chấp nhận file ảnh (jpg, png, gif, webp, bmp)"
+            )
+        
+        # Upload ảnh
+        uploaded_image = await save_uploaded_image(file, current_user.id, db)
+        
+        # Cập nhật alt_text nếu có
+        if alt_text:
+            uploaded_image.alt_text = alt_text
+            db.commit()
+        
+        # Tạo shortcode
+        if alt_text:
+            shortcode = f"[image:{uploaded_image.id}|{alt_text}]"
+        else:
+            shortcode = f"[image:{uploaded_image.id}]"
+        
+        return {
+            "message": "Upload ảnh thành công",
+            "image": {
+                "id": uploaded_image.id,
+                "url": uploaded_image.url,
+                "filename": uploaded_image.filename,
+                "alt_text": uploaded_image.alt_text
+            },
+            "shortcode": shortcode,
+            "usage": "Sao chép shortcode này và dán vào content tại vị trí muốn hiển thị ảnh"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi khi upload ảnh: {str(e)}"
         ) 

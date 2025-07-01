@@ -53,11 +53,19 @@ interface Service {
   name: string
   description: string
   price: number
-  image_url: string
+  image_id?: number | null
   category: string
   featured: boolean
   is_active: boolean
   created_at: string
+  image?: {
+    id: number
+    filename: string
+    url: string
+    alt_text: string | null
+    width: number
+    height: number
+  }
 }
 
 interface PaginationInfo {
@@ -146,11 +154,15 @@ export default function AdminServicesPage() {
     name: "",
     description: "",
     price: "",
-    image_url: "",
     category: "",
     featured: false,
     is_active: true,
   })
+  
+  // State cho upload ảnh
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [removeCurrentImage, setRemoveCurrentImage] = useState(false)
 
   const [posts, setPosts] = useState<PrintingPost[]>([])
   const [imageLoading, setImageLoading] = useState(true)
@@ -318,25 +330,28 @@ export default function AdminServicesPage() {
 
   const handleCreateService = async () => {
     try {
-      // Chỉ gửi những field mà API hỗ trợ theo document
-      const requestBody = {
-        name: formData.name,
-        description: formData.description,
-        price: Number.parseFloat(formData.price),
-        image_url: formData.image_url,
-        category: formData.category,
-        is_active: formData.is_active,
+      // Tạo FormData để upload ảnh
+      const formDataToSend = new FormData()
+      formDataToSend.append('name', formData.name)
+      formDataToSend.append('description', formData.description)
+      formDataToSend.append('price', formData.price)
+      formDataToSend.append('category', formData.category)
+      formDataToSend.append('is_active', formData.is_active.toString())
+      formDataToSend.append('featured', formData.featured.toString())
+      
+      // Thêm ảnh nếu có
+      if (selectedImage) {
+        formDataToSend.append('image', selectedImage)
       }
       
-      console.log('Creating service with body:', requestBody)
+      console.log('Creating service with FormData')
       
-      const response = await fetch("http://14.187.180.6:12122/api/services", {
+      const response = await fetch("http://14.187.180.6:12122/api/services/", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody),
+        body: formDataToSend,
       })
 
       if (response.ok) {
@@ -373,32 +388,38 @@ export default function AdminServicesPage() {
     if (!selectedService) return
 
     try {
-      // Chỉ gửi những field mà API hỗ trợ theo document
-      const requestBody = {
-        name: formData.name,
-        description: formData.description,
-        price: Number.parseFloat(formData.price),
-        image_url: formData.image_url,
-        category: formData.category,
-        is_active: formData.is_active,
+      // Tạo FormData để upload ảnh
+      const formDataToSend = new FormData()
+      formDataToSend.append('name', formData.name)
+      formDataToSend.append('description', formData.description)
+      formDataToSend.append('price', formData.price)
+      formDataToSend.append('category', formData.category)
+      formDataToSend.append('is_active', formData.is_active.toString())
+      formDataToSend.append('featured', formData.featured.toString())
+      
+      // Thêm ảnh mới nếu có
+      if (selectedImage) {
+        formDataToSend.append('image', selectedImage)
       }
       
-      console.log('Updating service with body:', requestBody)
-      console.log('Original service featured value:', selectedService.featured)
+      // Xóa ảnh hiện tại nếu được yêu cầu
+      if (removeCurrentImage) {
+        formDataToSend.append('remove_image', 'true')
+      }
+      
+      console.log('Updating service with FormData')
       
       const response = await fetch(`http://14.187.180.6:12122/api/services/${selectedService.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody),
+        body: formDataToSend,
       })
 
       if (response.ok) {
         const responseData = await response.json()
         console.log('Update response:', responseData)
-        console.log('Response featured value:', responseData.featured)
         
         toast({
           title: "Thành công",
@@ -468,11 +489,14 @@ export default function AdminServicesPage() {
       name: service.name,
       description: service.description,
       price: service.price.toString(),
-      image_url: service.image_url,
       category: service.category,
       featured: service.featured,
       is_active: service.is_active,
     })
+    // Set ảnh preview nếu có
+    setImagePreview(service.image?.url || "")
+    setSelectedImage(null)
+    setRemoveCurrentImage(false)
     setIsEditDialogOpen(true)
   }
 
@@ -486,16 +510,67 @@ export default function AdminServicesPage() {
       name: "",
       description: "",
       price: "",
-      image_url: "",
       category: "",
       featured: false,
       is_active: true,
     })
+    setSelectedImage(null)
+    setImagePreview("")
+    setRemoveCurrentImage(false)
     setSelectedService(null)
   }
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev: typeof formData) => ({ ...prev, [field]: value }))
+  }
+
+  // Handle image file selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Kiểm tra kích thước file (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Lỗi",
+          description: "Kích thước ảnh không được vượt quá 10MB",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Kiểm tra định dạng file
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: "Lỗi",
+          description: "Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP, BMP)",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setSelectedImage(file)
+      // Tạo preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setImagePreview(previewUrl)
+      setRemoveCurrentImage(false)
+    }
+  }
+
+  // Remove selected image
+  const removeSelectedImage = () => {
+    setSelectedImage(null)
+    setImagePreview("")
+    setRemoveCurrentImage(false)
+  }
+
+  // Toggle remove current image (for edit mode)
+  const toggleRemoveCurrentImage = () => {
+    setRemoveCurrentImage(!removeCurrentImage)
+    if (!removeCurrentImage) {
+      setSelectedImage(null)
+      setImagePreview("")
+    }
   }
 
   const handlePageChange = (page: number) => {
@@ -552,7 +627,6 @@ export default function AdminServicesPage() {
           name: service.name,
           description: service.description,
           price: service.price,
-          image_url: service.image_url,
           category: service.category,
           is_active: newActiveStatus,
         }),
@@ -645,7 +719,6 @@ export default function AdminServicesPage() {
             name: service.name,
             description: service.description,
             price: service.price,
-            image_url: service.image_url,
             category: service.category,
             is_active: service.is_active,
             featured: newFeaturedStatus,
@@ -1402,14 +1475,48 @@ export default function AdminServicesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="image_url" className="text-sm sm:text-base">URL hình ảnh</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => handleInputChange("image_url", e.target.value)}
-                  placeholder="Nhập URL hình ảnh"
-                  className="text-sm sm:text-base h-9 sm:h-10"
-                />
+                <Label htmlFor="image" className="text-sm sm:text-base">Hình ảnh dịch vụ</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-red-400 transition-colors">
+                  <input
+                    type="file"
+                    id="image-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <label 
+                    htmlFor="image-upload" 
+                    className="cursor-pointer flex flex-col items-center space-y-2 text-gray-600 hover:text-red-600"
+                  >
+                    <Upload className="h-8 w-8" />
+                    <span className="text-sm font-medium">
+                      Chọn ảnh hoặc kéo thả vào đây
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Hỗ trợ: JPG, PNG, GIF, WEBP, BMP (tối đa 10MB)
+                    </span>
+                  </label>
+                </div>
+                
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="relative mt-2">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="h-32 w-32 object-cover rounded border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                      onClick={removeSelectedImage}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -1498,14 +1605,92 @@ export default function AdminServicesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-image_url" className="text-sm sm:text-base">URL hình ảnh</Label>
-                <Input
-                  id="edit-image_url"
-                  value={formData.image_url}
-                  onChange={(e) => handleInputChange("image_url", e.target.value)}
-                  placeholder="Nhập URL hình ảnh"
-                  className="text-sm sm:text-base h-9 sm:h-10"
-                />
+                <Label htmlFor="edit-image" className="text-sm sm:text-base">Hình ảnh dịch vụ</Label>
+                
+                {/* Ảnh hiện tại */}
+                {selectedService?.image && !removeCurrentImage && !selectedImage && (
+                  <div className="relative">
+                    <img 
+                      src={selectedService.image.url.startsWith('http') ? selectedService.image.url : `http://14.187.180.6:12122${selectedService.image.url}`}
+                      alt={selectedService.image.alt_text || 'Current image'} 
+                      className="h-32 w-32 object-cover rounded border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                      onClick={toggleRemoveCurrentImage}
+                    >
+                      ×
+                    </Button>
+                    <div className="mt-1 text-xs text-gray-600">
+                      Ảnh hiện tại (click × để xóa)
+                    </div>
+                  </div>
+                )}
+                
+                {/* Checkbox để xóa ảnh hiện tại */}
+                {selectedService?.image && (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="remove-current-image"
+                      checked={removeCurrentImage}
+                      onChange={toggleRemoveCurrentImage}
+                      className="rounded"
+                    />
+                    <Label htmlFor="remove-current-image" className="text-sm">
+                      Xóa ảnh hiện tại
+                    </Label>
+                  </div>
+                )}
+                
+                {/* Upload ảnh mới */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-red-400 transition-colors">
+                  <input
+                    type="file"
+                    id="edit-image-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <label 
+                    htmlFor="edit-image-upload" 
+                    className="cursor-pointer flex flex-col items-center space-y-2 text-gray-600 hover:text-red-600"
+                  >
+                    <Upload className="h-8 w-8" />
+                    <span className="text-sm font-medium">
+                      {selectedService?.image ? 'Thay đổi ảnh' : 'Chọn ảnh mới'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Hỗ trợ: JPG, PNG, GIF, WEBP, BMP (tối đa 10MB)
+                    </span>
+                  </label>
+                </div>
+                
+                {/* Preview ảnh mới */}
+                {imagePreview && selectedImage && (
+                  <div className="relative mt-2">
+                    <img 
+                      src={imagePreview} 
+                      alt="New image preview" 
+                      className="h-32 w-32 object-cover rounded border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                      onClick={removeSelectedImage}
+                    >
+                      ×
+                    </Button>
+                    <div className="mt-1 text-xs text-green-600">
+                      Ảnh mới được chọn
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
