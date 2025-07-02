@@ -42,7 +42,8 @@ import {
   TrendingUp,
   ChevronRight as ChevronRightIcon,
   Image as ImageIcon,
-  Activity
+  Activity,
+  Loader2
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
@@ -124,6 +125,10 @@ export default function AdminBlogsPage() {
     is_active: true,
   })
   const [formErrors, setFormErrors] = useState<FormErrors>({})
+
+  // State cho Image Uploader
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
   const { toast } = useToast()
   const { token } = useAuth()
@@ -443,6 +448,68 @@ export default function AdminBlogsPage() {
       setFormErrors((prev) => ({ ...prev, [field as keyof FormErrors]: undefined }))
     }
   }
+
+  // Upload ảnh và lấy URL
+  const handleImageUpload = async (file: File, altText: string = '', category: string = 'blog') => {
+    try {
+      setImageUploadLoading(true);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('alt_text', altText);
+      formData.append('category', category);
+      formData.append('is_visible', 'true');
+
+      const response = await fetch('http://14.187.180.6:12122/api/images/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      setUploadedImageUrl(result.image.url);
+      
+      toast({
+        title: 'Thành công',
+        description: `Upload ảnh thành công! URL: ${result.image.url}`,
+      });
+      
+      return result.image.url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể upload ảnh. Vui lòng thử lại.',
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
+  // Copy URL to clipboard
+  const copyUrlToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: 'Đã copy',
+        description: 'URL ảnh đã được copy vào clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể copy URL',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Filter blogs based on search and filters
   const filteredBlogs = blogs.filter((blog) => {
@@ -850,11 +917,95 @@ export default function AdminBlogsPage() {
                 <ImageIcon className="mr-2 h-4 w-4" />
                 URL hình ảnh (tùy chọn)
               </Label>
+              
+              {/* Image Uploader - Upload lên server và lấy URL */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                <Label className="text-sm font-medium text-blue-800 mb-2 block">
+                  🌟 Upload ảnh lên server (lấy URL)
+                </Label>
+                <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                  <input
+                    type="file"
+                    id="blog-url-image-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const url = await handleImageUpload(file, 'Blog image', 'blog');
+                          // Tự động điền vào input image_url
+                          handleInputChange("image_url", url);
+                        } catch (error) {
+                          // Error handled in function
+                        }
+                      }
+                      e.target.value = ''; // Reset input
+                    }}
+                    className="hidden"
+                    disabled={imageUploadLoading}
+                  />
+                  <label htmlFor="blog-url-image-upload" className="cursor-pointer flex flex-col items-center space-y-2 text-blue-600 hover:text-blue-700">
+                    {imageUploadLoading ? (
+                      <>
+                        <RefreshCw className="h-8 w-8 animate-spin" />
+                        <span className="text-sm font-medium">Đang upload...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-8 w-8" />
+                        <span className="text-sm font-medium">Upload ảnh để lấy URL</span>
+                        <span className="text-xs text-blue-500">
+                          JPG, PNG, GIF, WEBP, BMP (tối đa 10MB)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                </div>
+                
+                {/* Display uploaded URL */}
+                {uploadedImageUrl && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <Label className="text-xs font-medium text-green-800 mb-1 block">
+                      ✅ URL ảnh đã upload:
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={uploadedImageUrl}
+                        readOnly
+                        className="text-xs bg-white border-green-300 flex-1"
+                        onClick={(e) => e.target.select()}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyUrlToClipboard(uploadedImageUrl)}
+                        className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+                      >
+                        Copy
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleInputChange("image_url", uploadedImageUrl)}
+                        className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+                      >
+                        Dùng URL
+                      </Button>
+                    </div>
+                    <p className="text-xs text-green-600 mt-1">
+                      👆 Copy URL hoặc click "Dùng URL" để tự động điền vào input
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <Input
                 id="image_url"
                 value={formData.image_url}
                 onChange={(e) => handleInputChange("image_url", e.target.value)}
-                placeholder="https://example.com/image.jpg"
+                placeholder="https://example.com/image.jpg hoặc upload ảnh ở trên"
                 className={formErrors.image_url ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-blue-500"}
               />
               {formErrors.image_url && (
@@ -977,11 +1128,95 @@ export default function AdminBlogsPage() {
                 <ImageIcon className="mr-2 h-4 w-4" />
                 URL hình ảnh (tùy chọn)
               </Label>
+              
+              {/* Image Uploader - Upload lên server và lấy URL */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                <Label className="text-sm font-medium text-blue-800 mb-2 block">
+                  🌟 Upload ảnh lên server (lấy URL)
+                </Label>
+                <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                  <input
+                    type="file"
+                    id="edit-blog-url-image-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const url = await handleImageUpload(file, 'Blog image', 'blog');
+                          // Tự động điền vào input image_url
+                          handleInputChange("image_url", url);
+                        } catch (error) {
+                          // Error handled in function
+                        }
+                      }
+                      e.target.value = ''; // Reset input
+                    }}
+                    className="hidden"
+                    disabled={imageUploadLoading}
+                  />
+                  <label htmlFor="edit-blog-url-image-upload" className="cursor-pointer flex flex-col items-center space-y-2 text-blue-600 hover:text-blue-700">
+                    {imageUploadLoading ? (
+                      <>
+                        <RefreshCw className="h-8 w-8 animate-spin" />
+                        <span className="text-sm font-medium">Đang upload...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-8 w-8" />
+                        <span className="text-sm font-medium">Upload ảnh để lấy URL</span>
+                        <span className="text-xs text-blue-500">
+                          JPG, PNG, GIF, WEBP, BMP (tối đa 10MB)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                </div>
+                
+                {/* Display uploaded URL */}
+                {uploadedImageUrl && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <Label className="text-xs font-medium text-green-800 mb-1 block">
+                      ✅ URL ảnh đã upload:
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={uploadedImageUrl}
+                        readOnly
+                        className="text-xs bg-white border-green-300 flex-1"
+                        onClick={(e) => e.target.select()}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyUrlToClipboard(uploadedImageUrl)}
+                        className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+                      >
+                        Copy
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleInputChange("image_url", uploadedImageUrl)}
+                        className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+                      >
+                        Dùng URL
+                      </Button>
+                    </div>
+                    <p className="text-xs text-green-600 mt-1">
+                      👆 Copy URL hoặc click "Dùng URL" để tự động điền vào input
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <Input
                 id="edit-image_url"
                 value={formData.image_url}
                 onChange={(e) => handleInputChange("image_url", e.target.value)}
-                placeholder="https://example.com/image.jpg"
+                placeholder="https://example.com/image.jpg hoặc upload ảnh ở trên"
                 className={formErrors.image_url ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-blue-500"}
               />
               {formErrors.image_url && (

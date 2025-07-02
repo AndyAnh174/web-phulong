@@ -184,6 +184,9 @@ export default function AdminServicesPage() {
   const [toggleActiveLoading, setToggleActiveLoading] = useState<number | null>(null)
   const [toggleFeaturedLoading, setToggleFeaturedLoading] = useState<number | null>(null)
 
+  // State cho Image Uploader
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
   const router = useRouter()
   const { toast } = useToast()
@@ -975,6 +978,68 @@ export default function AdminServicesPage() {
       ...prev,
       keep_existing_images: false
     }));
+  };
+
+  // Upload ảnh và lấy URL
+  const handleImageUpload = async (file: File, altText: string = '', category: string = 'blog') => {
+    try {
+      setImageUploadLoading(true);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('alt_text', altText);
+      formData.append('category', category);
+      formData.append('is_visible', 'true');
+
+      const response = await fetch('http://14.187.180.6:12122/api/images/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      setUploadedImageUrl(result.image.url);
+      
+      toast({
+        title: 'Thành công',
+        description: `Upload ảnh thành công! URL: ${result.image.url}`,
+      });
+      
+      return result.image.url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể upload ảnh. Vui lòng thử lại.',
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
+  // Copy URL to clipboard
+  const copyUrlToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: 'Đã copy',
+        description: 'URL ảnh đã được copy vào clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể copy URL',
+        variant: 'destructive',
+      });
+    }
   };
 
 
@@ -1791,7 +1856,79 @@ export default function AdminServicesPage() {
               <div>
                 <Label>Hình ảnh </Label>
                 <div className="space-y-4">
-                  {/* File Input */}
+                  {/* Image Uploader - Upload lên server và lấy URL */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <Label className="text-sm font-medium text-blue-800 mb-2 block">
+                      🌟 Upload ảnh lên server (lấy URL)
+                    </Label>
+                    <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                      <input
+                        type="file"
+                        id="url-image-upload"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              await handleImageUpload(file, 'Blog image', 'blog');
+                            } catch (error) {
+                              // Error handled in function
+                            }
+                          }
+                          e.target.value = ''; // Reset input
+                        }}
+                        className="hidden"
+                        disabled={imageUploadLoading}
+                      />
+                      <label htmlFor="url-image-upload" className="cursor-pointer flex flex-col items-center space-y-2 text-blue-600 hover:text-blue-700">
+                        {imageUploadLoading ? (
+                          <>
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                            <span className="text-sm font-medium">Đang upload...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-8 w-8" />
+                            <span className="text-sm font-medium">Upload ảnh để lấy URL</span>
+                            <span className="text-xs text-blue-500">
+                              JPG, PNG, GIF, WEBP, BMP (tối đa 10MB)
+                            </span>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                    
+                    {/* Display uploaded URL */}
+                    {uploadedImageUrl && (
+                      <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <Label className="text-xs font-medium text-green-800 mb-1 block">
+                          ✅ URL ảnh đã upload:
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={uploadedImageUrl}
+                            readOnly
+                            className="text-xs bg-white border-green-300 flex-1"
+                            onClick={(e) => e.target.select()}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyUrlToClipboard(uploadedImageUrl)}
+                            className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">
+                          👆 Copy URL này để dán vào các input khác
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* File Input cho attachment */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-red-400 transition-colors">
                     <input
                       type="file"
@@ -1810,7 +1947,7 @@ export default function AdminServicesPage() {
                       <span className="text-sm font-medium">
                         {printingForm.images.length >= 3 
                           ? 'Đã đạt giới hạn 3 ảnh' 
-                          : 'Chọn ảnh hoặc kéo thả vào đây'
+                          : 'Hoặc chọn ảnh đính kèm bài đăng'
                         }
                       </span>
                       <span className="text-xs text-gray-500">
