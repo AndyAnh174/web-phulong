@@ -494,19 +494,16 @@ export default function AdminBlogsPage() {
     }
   };
 
-  // Copy URL to clipboard
-  const copyUrlToClipboard = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
+  // Copy URL to clipboard - đơn giản chỉ select text  
+  const copyUrlToClipboard = (url: string) => {
+    // Tìm input element chứa URL và select text
+    const inputElement = document.querySelector(`input[value="${url}"]`) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.select();
+      inputElement.setSelectionRange(0, 99999); // For mobile devices
       toast({
-        title: 'Đã copy',
-        description: 'URL ảnh đã được copy vào clipboard',
-      });
-    } catch (error) {
-      toast({
-        title: 'Lỗi',
-        description: 'Không thể copy URL',
-        variant: 'destructive',
+        title: 'Đã chọn URL',
+        description: 'Nhấn Ctrl+C để copy URL',
       });
     }
   };
