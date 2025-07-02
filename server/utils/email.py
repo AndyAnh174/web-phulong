@@ -466,7 +466,7 @@ def send_order_confirmation(order, service):
         notes=order.notes or 'Không có',
         design_file=order.design_file_url or 'Không có',
         order_date=order.created_at.strftime('%H:%M:%S %d/%m/%Y'),
-        admin_url=f"https://demoapi.andyanh.id.vn/api/orders/{order.id}",
+        admin_url=f"http://14.187.180.6:12122/api/orders/{order.id}",
         year=datetime.now().year
     )
     

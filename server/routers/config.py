@@ -12,7 +12,7 @@ router = APIRouter()
 async def get_public_env():
     """Lấy các biến môi trường công khai cho frontend"""
     # Đảm bảo luôn trả về HTTPS URL
-    backend_url = settings.BACKEND_URL if settings.BACKEND_URL else "https://demoapi.andyanh.id.vn"
+    backend_url = settings.BACKEND_URL if settings.BACKEND_URL else "http://14.187.180.6:12122/"
     
     # Nếu không có protocol, thêm https://
     if backend_url and not backend_url.startswith("http"):
@@ -24,11 +24,11 @@ async def get_public_env():
     
     return {
         "API_URL": f"{backend_url}/api",
-        "SITE_NAME": "Phú Long In Ấn",
+        "SITE_NAME": "In Ấn Phú Long",
         "SITE_DESCRIPTION": "Dịch vụ in ấn chất lượng cao",
         "CONTACT_EMAIL": "inphulong@gmail.com",
-        "CONTACT_PHONE": "0123456789",
-        "CONTACT_ADDRESS": "123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh",
+        "CONTACT_PHONE": "0977007763",
+        "CONTACT_ADDRESS": "Số 2 Lê Văn Chí, Phường Linh Chiểu, Thành phố Thủ Đức, TP. HCM",
         "ITEMS_PER_PAGE": 10,
         "ENABLE_ANALYTICS": False
     }
