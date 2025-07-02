@@ -119,7 +119,7 @@ export default function ServiceDetailPage() {
 
   const fetchSuggestedServices = async () => {
     try {
-      const response = await fetch(`http://14.187.180.6:12122//api/services/suggested?current_id=${params.id}`)
+      const response = await fetch(`http://14.187.180.6:12122/api/services/suggested?current_id=${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setSuggestedServices(data)
