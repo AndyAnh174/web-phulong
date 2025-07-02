@@ -48,7 +48,6 @@ export default function Footer() {
   }
 
   const features = [
-    { icon: CheckCircle, text: "Chất lượng ISO", color: "text-green-400" },
     { icon: Shield, text: "Bảo hành uy tín", color: "text-blue-400" },
     { icon: Award, text: "10+ năm kinh nghiệm", color: "text-yellow-400" },
     { icon: Star, text: "Dịch vụ 5 sao", color: "text-red-400" },

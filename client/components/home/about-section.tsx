@@ -295,16 +295,6 @@ export default function AboutSection() {
                     <p className="text-sm text-gray-600">Được tin tưởng bởi hàng ngàn khách hàng</p>
                   </div>
                 </div>
-                <div className="flex justify-center items-center gap-6 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-red-500" />
-                    <span>Chất lượng ISO</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-red-500" />
-                    <span>Bảo hành uy tín</span>
-                  </div>
-                </div>
               </div>
             </motion.div>
           </motion.div>

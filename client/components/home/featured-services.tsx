@@ -341,22 +341,6 @@ export default function FeaturedServices() {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2 justify-center">
-                <Check className="h-4 w-4 text-red-500" />
-                <span>Chất lượng ISO</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <Shield className="h-4 w-4 text-red-500" />
-                <span>Bảo hành uy tín</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <Clock className="h-4 w-4 text-red-500" />
-                <span>Giao hàng nhanh</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <Award className="h-4 w-4 text-red-500" />
-                <span>Dịch vụ 5 sao</span>
-              </div>
             </div>
           </div>
         </motion.div>

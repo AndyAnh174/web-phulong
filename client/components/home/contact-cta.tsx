@@ -336,14 +336,6 @@ export default function ContactCTA() {
                     <Star className="h-4 w-4 text-yellow-500" />
                     <span>5 sao</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-red-500" />
-                    <span>Chất lượng ISO</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-red-500" />
-                    <span>10+ năm kinh nghiệm</span>
-                  </div>
                 </div>
               </div>
             </motion.div>

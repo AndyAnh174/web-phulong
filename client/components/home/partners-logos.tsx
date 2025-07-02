@@ -89,12 +89,6 @@ const partners = [
 
 const trustBadges = [
   {
-    title: "ISO 9001:2015",
-    subtitle: "Chứng nhận chất lượng quốc tế",
-    icon: Shield,
-    color: "from-red-600 to-red-700"
-  },
-  {
     title: "Top Choice 2024",
     subtitle: "Lựa chọn hàng đầu năm 2024",
     icon: Award,
