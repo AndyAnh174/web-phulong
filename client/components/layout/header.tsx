@@ -28,8 +28,8 @@ export default function Header() {
 
   const navigation = [
     { name: "Trang chủ", href: "/" },
-   
-    { name: "Bảng giá", href: "/pricing" },
+    { name: "Thiết kế", href: "/design" },
+    { name: "Sản phẩm in", href: "/printing" },
     { name: "Blog", href: "/blog" },
     { name: "Đặt hàng", href: "/order" },
     { name: "Liên hệ", href: "/contact" },
