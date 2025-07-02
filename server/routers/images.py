@@ -104,10 +104,10 @@ async def upload_image(
         if hasattr(settings, 'BACKEND_URL') and settings.BACKEND_URL:
             backend_url = settings.BACKEND_URL
             if not backend_url.startswith("http"):
-                backend_url = f"http://{backend_url}"
+                backend_url = f"https://{backend_url}"
             file_url = f"{backend_url}/static/images/uploads/{unique_filename}"
         else:
-            file_url = f"http://14.187.180.6:12122/static/images/uploads/{unique_filename}"
+            file_url = f"https://demoapi.andyanh.id.vn/static/images/uploads/{unique_filename}"
         
         # Lưu thông tin vào database
         new_image = Image(

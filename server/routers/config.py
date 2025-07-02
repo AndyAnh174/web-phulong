@@ -12,7 +12,7 @@ router = APIRouter()
 async def get_public_env():
     """Lấy các biến môi trường công khai cho frontend"""
     # Đảm bảo luôn trả về HTTPS URL
-    backend_url = settings.BACKEND_URL if settings.BACKEND_URL else "http://14.187.180.6:12122/"
+    backend_url = settings.BACKEND_URL if settings.BACKEND_URL else "https://demoapi.andyanh.id.vn"
     
     # Nếu không có protocol, thêm https://
     if backend_url and not backend_url.startswith("http"):
