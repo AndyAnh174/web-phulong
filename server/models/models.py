@@ -178,3 +178,21 @@ class PrintingImage(Base):
     # Relationship
     printing = relationship("Printing", back_populates="images")
     image = relationship("Image") 
+
+class Banner(Base):
+    __tablename__ = "banners"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False, index=True)  # Tiêu đề banner
+    description = Column(Text, nullable=True)  # Mô tả banner
+    image_id = Column(Integer, ForeignKey("images.id"), nullable=False)  # Ảnh banner
+    url = Column(String, nullable=True)  # Link khi click banner
+    is_active = Column(Boolean, default=True)  # Ẩn/hiện banner
+    order = Column(Integer, default=1)  # Thứ tự hiển thị
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # Người tạo
+    
+    # Relationship
+    image = relationship("Image", backref="banners")
+    creator = relationship("User", backref="banners") 

@@ -72,3 +72,15 @@ Pipfile.lock
 
 # Uvicorn reload
 *.pid
+
+static/images/*.png
+static/images/*.jpg
+static/images/*.gif
+static/images/*.webp
+static/images/*.svg
+static/images/*.ico
+static/images/*.bmp
+static/images/*.tiff
+static/images/*.ico
+static/images/*.bmp
+static/images/*.jpeg

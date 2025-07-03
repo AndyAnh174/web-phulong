@@ -252,4 +252,35 @@ class ContactOut(ContactBase):
     created_at: datetime
     
     class Config:
+        from_attributes = True
+
+# Banner Schemas
+class BannerBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    image_id: int
+    url: Optional[str] = None
+    is_active: bool = True
+    order: int = 1
+
+class BannerCreate(BannerBase):
+    pass
+
+class BannerUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    image_id: Optional[int] = None
+    url: Optional[str] = None
+    is_active: Optional[bool] = None
+    order: Optional[int] = None
+
+class BannerOut(BannerBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    created_by: Optional[int] = None
+    image: Optional[ImageOut] = None
+    creator: Optional[UserOut] = None
+    
+    class Config:
         from_attributes = True 
