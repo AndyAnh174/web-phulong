@@ -718,15 +718,13 @@ export default function AdminBannersPage() {
                   <div className="text-sm">
                     <h4 className="font-semibold text-blue-800 mb-2">📏 Hướng dẫn kích thước ảnh banner:</h4>
                     <ul className="text-blue-700 space-y-1 text-xs">
-                      <li><strong>📱 Mobile:</strong> 375x150px (tỷ lệ 2.5:1)</li>
-                      <li><strong>💻 Desktop:</strong> 1920x600px (tỷ lệ 3.2:1)</li>
-                      <li><strong>🎯 Khuyến nghị:</strong> 1920x600px - tự động resize cho mobile</li>
-                      <li><strong>📐 Tỷ lệ tối ưu:</strong> Từ 2.5:1 đến 4:1 (rộng hơn cao)</li>
+                      <li><strong>📱 Mobile:</strong> 430x400px (w x h)</li>
+                      <li><strong>💻 Desktop:</strong> 520x480px (w x h)</li>
                       <li><strong>⚡ Dung lượng:</strong> Nên dưới 2MB để tải nhanh</li>
                       <li><strong>🎨 Chất lượng:</strong> 72-150 DPI, định dạng JPG/PNG</li>
                     </ul>
                   </div>
-                                 </div>
+                </div>
                </div>
               
               {/* File Preview */}
