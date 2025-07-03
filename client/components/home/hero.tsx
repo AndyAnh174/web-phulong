@@ -17,11 +17,70 @@ import {
   TrendingUp,
   Zap,
   Phone,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
+
+interface Banner {
+  id: number
+  title: string
+  description?: string
+  url?: string
+  image: {
+    id: number
+    url: string
+    alt_text: string
+    width: number
+    height: number
+  }
+}
 
 export default function Hero() {
+  const [banners, setBanners] = useState<Banner[]>([])
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch banners từ API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const response = await fetch('http://14.187.180.6:12122/api/banners/active')
+        if (response.ok) {
+          const data = await response.json()
+          setBanners(data)
+        } else {
+          console.error('Failed to fetch banners')
+        }
+      } catch (error) {
+        console.error('Error fetching banners:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBanners()
+  }, [])
+
+  // Auto slide banners
+  useEffect(() => {
+    if (banners.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentBannerIndex((prev: number) => (prev + 1) % banners.length)
+      }, 5000) // 5 seconds
+      return () => clearInterval(interval)
+    }
+  }, [banners.length])
+
+  const nextBanner = () => {
+    setCurrentBannerIndex((prev: number) => (prev + 1) % banners.length)
+  }
+
+  const prevBanner = () => {
+    setCurrentBannerIndex((prev: number) => (prev - 1 + banners.length) % banners.length)
+  }
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Enhanced Background with White Gray Red theme */}
@@ -185,85 +244,172 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Optimized Image with red overlay */}
+          {/* Right Content - Dynamic Banner Slider */}
           <motion.div 
             className="relative hidden lg:block max-w-lg mx-auto"
             initial={{ opacity: 0, x: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            <div className="relative w-full h-[500px] xl:h-[600px] rounded-2xl overflow-hidden transform hover:scale-105 hover:rotate-1 transition-all duration-700 shadow-2xl group">
-              {/* Updated overlay with white gray red theme */}
-              <div className="absolute inset-0 bg-gradient-to-t from-red-900/20 via-transparent to-gray-100/10 z-10 group-hover:from-red-900/30 transition-all duration-700"></div>
-              
-              <Image
-                src="/LOGO-MÀU.png"
-                alt="Phú Long Logo - Premium Printing Services"
-                fill
-                className="object-contain transition-all duration-700 group-hover:scale-110 group-hover:rotate-1 animate-pulse"
-                priority
-                sizes="(max-width: 1024px) 0vw, 50vw"
-                onError={(e) => {
-                  e.currentTarget.src = "/api/placeholder/600/500"
-                }}
-              />
-              
-              {/* Lấp lánh effects */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-2 h-2 bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-600 rounded-full opacity-70"
-                    style={{
-                      left: `${20 + i * 15}%`,
-                      top: `${15 + i * 12}%`,
-                    }}
-                    animate={{
-                      scale: [0, 1.5, 0],
-                      opacity: [0, 1, 0],
-                      x: [0, 10, -10, 0],
-                      y: [0, -10, 10, 0],
-                    }}
-                    transition={{
-                      duration: 2 + i * 0.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: i * 0.3,
-                    }}
+            <div className="relative w-full h-[500px] xl:h-[600px] rounded-2xl overflow-hidden shadow-2xl group">
+              {loading ? (
+                // Loading skeleton
+                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex items-center justify-center">
+                  <div className="text-gray-500">Đang tải banner...</div>
+                </div>
+              ) : banners.length > 0 ? (
+                // Banner Slider
+                <div className="relative w-full h-full">
+                  {banners.map((banner, index) => {
+                    const isActive = index === currentBannerIndex
+                    return (
+                      <motion.div
+                        key={banner.id}
+                        className={`absolute inset-0 transition-all duration-1000 ${
+                          isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                        }`}
+                        initial={false}
+                        animate={{
+                          opacity: isActive ? 1 : 0,
+                          scale: isActive ? 1 : 1.1,
+                        }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                      >
+                        {/* Banner Image */}
+                        <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-700">
+                          {/* Image overlay for better text readability */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10"></div>
+                          
+                          {banner.url ? (
+                            <a 
+                              href={banner.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="block w-full h-full"
+                            >
+                              <Image
+                                src={banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`}
+                                alt={banner.image.alt_text || banner.title}
+                                fill
+                                className="object-cover transition-all duration-700 group-hover:scale-110"
+                                priority={index === 0}
+                                sizes="(max-width: 1024px) 0vw, 50vw"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/LOGO-MÀU.png"
+                                }}
+                              />
+                            </a>
+                          ) : (
+                            <Image
+                              src={banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`}
+                              alt={banner.image.alt_text || banner.title}
+                              fill
+                              className="object-cover transition-all duration-700 group-hover:scale-110"
+                              priority={index === 0}
+                              sizes="(max-width: 1024px) 0vw, 50vw"
+                              onError={(e) => {
+                                e.currentTarget.src = "/LOGO-MÀU.png"
+                              }}
+                            />
+                          )}
+                          
+                          {/* Banner content overlay */}
+                          {(banner.title || banner.description) && (
+                            <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20">
+                              {banner.title && (
+                                <h3 className="text-xl font-bold mb-2 drop-shadow-lg">
+                                  {banner.title}
+                                </h3>
+                              )}
+                              {banner.description && (
+                                <p className="text-sm opacity-90 drop-shadow-md">
+                                  {banner.description}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                  
+                  {/* Navigation buttons */}
+                  {banners.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevBanner}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-2 transition-all duration-300 group-hover:opacity-100 opacity-60"
+                      >
+                        <ChevronLeft className="h-6 w-6 text-white" />
+                      </button>
+                      <button
+                        onClick={nextBanner}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-2 transition-all duration-300 group-hover:opacity-100 opacity-60"
+                      >
+                        <ChevronRight className="h-6 w-6 text-white" />
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Dots indicator */}
+                  {banners.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+                      {banners.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentBannerIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            index === currentBannerIndex 
+                              ? 'bg-white scale-125' 
+                              : 'bg-white/50 hover:bg-white/70'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Fallback to logo when no banners
+                <div className="relative w-full h-full">
+                  <div className="absolute inset-0 bg-gradient-to-t from-red-900/20 via-transparent to-gray-100/10 z-10"></div>
+                  <Image
+                    src="/LOGO-MÀU.png"
+                    alt="Phú Long Logo - Premium Printing Services"
+                    fill
+                    className="object-contain transition-all duration-700 group-hover:scale-110 animate-pulse"
+                    priority
+                    sizes="(max-width: 1024px) 0vw, 50vw"
                   />
-                ))}
-              </div>
-              
-              {/* Shimmer overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              
-              {/* Floating quality badges with updated colors */}
-              <motion.div
-                className="absolute top-4 right-4 z-20"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.5 }}
-              >
-                <Badge className="bg-red-500/90 hover:bg-red-600 text-white px-3 py-1 backdrop-blur-lg text-sm shadow-lg">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Chất lượng cao
-                </Badge>
-              </motion.div>
-              
-              <motion.div
-                className="absolute bottom-4 left-4 z-20"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.7 }}
-              >
-                <Badge className="bg-gray-600/90 hover:bg-gray-700 text-white px-3 py-1 backdrop-blur-lg text-sm shadow-lg">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Giao nhanh 24h
-                </Badge>
-              </motion.div>
+                  
+                  {/* Floating quality badges */}
+                  <motion.div
+                    className="absolute top-4 right-4 z-20"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.5 }}
+                  >
+                    <Badge className="bg-red-500/90 hover:bg-red-600 text-white px-3 py-1 backdrop-blur-lg text-sm shadow-lg">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Chất lượng cao
+                    </Badge>
+                  </motion.div>
+                  
+                  <motion.div
+                    className="absolute bottom-4 left-4 z-20"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.7 }}
+                  >
+                    <Badge className="bg-gray-600/90 hover:bg-gray-700 text-white px-3 py-1 backdrop-blur-lg text-sm shadow-lg">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Giao nhanh 24h
+                    </Badge>
+                  </motion.div>
+                </div>
+              )}
             </div>
 
-            {/* Updated decorative elements */}
+            {/* Decorative elements */}
             <div className="absolute -top-6 -right-6 w-20 h-20 bg-gradient-to-br from-red-200/30 to-red-300/20 rounded-full blur-xl"></div>
             <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-gray-200/30 to-gray-300/20 rounded-full blur-xl"></div>
           </motion.div>

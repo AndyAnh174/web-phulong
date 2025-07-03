@@ -25,6 +25,7 @@ import {
   Settings,
   User,
   Upload,
+  Image,
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
@@ -44,6 +45,11 @@ const menuItems = [
     title: "Bài viết",
     url: "/admin/blogs",
     icon: FileText,
+  },
+  {
+    title: "Quản lý Banner",
+    url: "/admin/banners",
+    icon: Image,
   },
   {
     title: "Đơn hàng",
