@@ -67,8 +67,8 @@ export default function Hero() {
     const fetchBanners = async () => {
       try {
         console.log('🔄 Fetching banners from API...')
-        // Sử dụng endpoint đúng: chỉ lấy banner active
-        const response = await fetch('http://14.187.180.6:12122/api/banners?is_active=true')
+        // Sử dụng domain mới
+        const response = await fetch('https://demoapi.andyanh.id.vn/api/banners?is_active=true')
         console.log('📡 Response status:', response.status)
         
         if (response.ok) {
@@ -76,8 +76,19 @@ export default function Hero() {
           console.log('✅ Banners fetched successfully:', data)
           console.log('📊 Number of banners:', data.length)
           
+          // Debug chi tiết từng banner
+          data.forEach((banner: Banner, index: number) => {
+            console.log(`🎨 Banner ${index + 1}:`, {
+              id: banner.id,
+              title: banner.title,
+              imageUrl: banner.image?.url,
+              isActive: banner.is_active
+            })
+          })
+          
           if (data && data.length > 0) {
             setBanners(data)
+            console.log('🎯 Set banners to state:', data.length, 'banners')
           } else {
             console.log('⚠️ No banners from API, using test banner')
             setBanners(testBanners)
@@ -86,7 +97,7 @@ export default function Hero() {
           console.error('❌ Failed to fetch banners:', response.status, response.statusText)
           // Fallback: thử endpoint không có filter
           try {
-            const fallbackResponse = await fetch('http://14.187.180.6:12122/api/banners')
+            const fallbackResponse = await fetch('https://demoapi.andyanh.id.vn/api/banners')
             if (fallbackResponse.ok) {
               const fallbackData = await fallbackResponse.json()
               console.log('🔄 Fallback data:', fallbackData)
@@ -318,8 +329,16 @@ export default function Hero() {
               ) : banners.length > 0 ? (
                 // Banner Slider
                 <div className="relative w-full h-full">
+                  {console.log('🎨 Rendering banners:', banners.length, 'banners')}
+                  {console.log('📋 Current banner index:', currentBannerIndex)}
                   {banners.map((banner, index) => {
                     const isActive = index === currentBannerIndex
+                    console.log(`🖼️ Rendering banner ${index + 1}:`, {
+                      title: banner.title,
+                      isActive,
+                      imageUrl: banner.image?.url,
+                      fullImageUrl: banner.image?.url?.startsWith('http') ? banner.image.url : `https://demoapi.andyanh.id.vn${banner.image?.url}`
+                    })
                     return (
                       <motion.div
                         key={banner.id}
@@ -346,26 +365,28 @@ export default function Hero() {
                               className="block w-full h-full"
                             >
                               <Image
-                                src={banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`}
+                                src={banner.image.url.startsWith('http') ? banner.image.url : `https://demoapi.andyanh.id.vn${banner.image.url}`}
                                 alt={banner.image.alt_text || banner.title}
                                 fill
                                 className="object-cover transition-all duration-700 group-hover:scale-110"
                                 priority={index === 0}
                                 sizes="(max-width: 1024px) 0vw, 50vw"
                                 onError={(e) => {
+                                  console.log('🚨 Banner image failed to load:', banner.image.url)
                                   e.currentTarget.src = "/LOGO-MÀU.png"
                                 }}
                               />
                             </a>
                           ) : (
                             <Image
-                              src={banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`}
+                              src={banner.image.url.startsWith('http') ? banner.image.url : `https://demoapi.andyanh.id.vn${banner.image.url}`}
                               alt={banner.image.alt_text || banner.title}
                               fill
                               className="object-cover transition-all duration-700 group-hover:scale-110"
                               priority={index === 0}
                               sizes="(max-width: 1024px) 0vw, 50vw"
                               onError={(e) => {
+                                console.log('🚨 Banner image failed to load (no URL):', banner.image.url)
                                 e.currentTarget.src = "/LOGO-MÀU.png"
                               }}
                             />
