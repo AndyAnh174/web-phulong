@@ -156,11 +156,16 @@ export default function Hero() {
     loading, 
     bannersCount: banners.length, 
     currentIndex: currentBannerIndex,
-    banners: banners.map(b => ({ id: b.id, title: b.title, imageUrl: b.image?.url }))
+    banners: banners.map((b: Banner) => ({ id: b.id, title: b.title, imageUrl: b.image?.url }))
   })
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Debug Banner Status */}
+      <div className="fixed top-4 right-4 z-50 bg-black/80 text-white px-4 py-2 rounded text-sm">
+        🔍 Banner Debug: {loading ? 'Loading...' : `${banners.length} banners loaded`}
+      </div>
+      
       {/* Enhanced Background with White Gray Red theme */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[url('https://i.imgur.com/WXSBk46.png')] bg-cover bg-center opacity-20"></div>
@@ -202,10 +207,10 @@ export default function Hero() {
       <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-gradient-to-tr from-gray-200/20 to-transparent rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-6 lg:px-8 max-w-7xl relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[80vh]">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
           {/* Left Content */}
           <motion.div 
-            className="text-gray-800 space-y-6 lg:space-y-8 py-8 lg:py-0 max-w-xl"
+            className="text-gray-800 space-y-6 lg:space-y-8 py-8 lg:py-0 order-2 lg:order-1"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -324,20 +329,23 @@ export default function Hero() {
 
           {/* Right Content - Dynamic Banner Slider */}
           <motion.div 
-            className="relative max-w-lg mx-auto"
+            className="relative w-full max-w-lg mx-auto order-1 lg:order-2"
             initial={{ opacity: 0, x: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] xl:h-[600px] rounded-2xl overflow-hidden shadow-2xl group">
+            <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl group bg-white border-2 border-gray-100">
               {loading ? (
                 // Loading skeleton
-                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex items-center justify-center">
-                  <div className="text-gray-500">Đang tải banner...</div>
+                <div className="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 animate-pulse flex items-center justify-center">
+                  <div className="text-blue-700 font-semibold">🔄 Đang tải banner...</div>
                 </div>
               ) : banners.length > 0 ? (
                 // Banner Slider
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full bg-green-100 border-4 border-green-500">
+                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 text-xs rounded z-50">
+                    📸 Banner Active: {banners.length} banners
+                  </div>
                   {banners.map((banner, index) => {
                     const isActive = index === currentBannerIndex
                     const imageUrl = banner.image?.url?.startsWith('http') 
@@ -370,6 +378,11 @@ export default function Hero() {
                         <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-700">
                           {/* Image overlay for better text readability */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10"></div>
+                          
+                          {/* Debug info overlay */}
+                          <div className="absolute top-4 right-4 bg-blue-500 text-white px-2 py-1 text-xs rounded z-40">
+                            {index + 1}/{banners.length} - {isActive ? 'ACTIVE' : 'HIDDEN'}
+                          </div>
                           
                           {banner.url ? (
                             <a 
@@ -463,7 +476,10 @@ export default function Hero() {
                 </div>
               ) : (
                 // Fallback to logo when no banners
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full bg-red-100 border-4 border-red-500">
+                  <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded z-50">
+                    🏢 Logo Fallback (No banners)
+                  </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-red-900/20 via-transparent to-gray-100/10 z-10"></div>
                   <Image
                     src="/LOGO-MÀU.png"
