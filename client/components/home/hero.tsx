@@ -67,7 +67,7 @@ export default function Hero() {
     const fetchBanners = async () => {
       try {
         console.log('🔄 Fetching banners from API...')
-        // Sử dụng domain mới
+        // Sử dụng domain gốc
         const response = await fetch('https://demoapi.andyanh.id.vn/api/banners?is_active=true')
         console.log('📡 Response status:', response.status)
         
@@ -150,6 +150,15 @@ export default function Hero() {
   const prevBanner = () => {
     setCurrentBannerIndex((prev: number) => (prev - 1 + banners.length) % banners.length)
   }
+
+  // Debug log trước khi render
+  console.log('🔍 Hero render:', { 
+    loading, 
+    bannersCount: banners.length, 
+    currentIndex: currentBannerIndex,
+    banners: banners.map(b => ({ id: b.id, title: b.title, imageUrl: b.image?.url }))
+  })
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Enhanced Background with White Gray Red theme */}
@@ -315,12 +324,12 @@ export default function Hero() {
 
           {/* Right Content - Dynamic Banner Slider */}
           <motion.div 
-            className="relative hidden lg:block max-w-lg mx-auto"
+            className="relative max-w-lg mx-auto"
             initial={{ opacity: 0, x: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            <div className="relative w-full h-[500px] xl:h-[600px] rounded-2xl overflow-hidden shadow-2xl group">
+            <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] xl:h-[600px] rounded-2xl overflow-hidden shadow-2xl group">
               {loading ? (
                 // Loading skeleton
                 <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex items-center justify-center">
@@ -329,16 +338,21 @@ export default function Hero() {
               ) : banners.length > 0 ? (
                 // Banner Slider
                 <div className="relative w-full h-full">
-                  {console.log('🎨 Rendering banners:', banners.length, 'banners')}
-                  {console.log('📋 Current banner index:', currentBannerIndex)}
                   {banners.map((banner, index) => {
                     const isActive = index === currentBannerIndex
-                    console.log(`🖼️ Rendering banner ${index + 1}:`, {
-                      title: banner.title,
-                      isActive,
-                      imageUrl: banner.image?.url,
-                      fullImageUrl: banner.image?.url?.startsWith('http') ? banner.image.url : `https://demoapi.andyanh.id.vn${banner.image?.url}`
-                    })
+                    const imageUrl = banner.image?.url?.startsWith('http') 
+                      ? banner.image.url 
+                      : `https://demoapi.andyanh.id.vn${banner.image?.url}`
+                    
+                    // Debug log cho banner hiện tại
+                    if (isActive) {
+                      console.log(`🎯 Active banner ${index + 1}:`, {
+                        title: banner.title,
+                        imageUrl: imageUrl,
+                        isActive: isActive
+                      })
+                    }
+                    
                     return (
                       <motion.div
                         key={banner.id}
@@ -365,28 +379,28 @@ export default function Hero() {
                               className="block w-full h-full"
                             >
                               <Image
-                                src={banner.image.url.startsWith('http') ? banner.image.url : `https://demoapi.andyanh.id.vn${banner.image.url}`}
+                                src={imageUrl}
                                 alt={banner.image.alt_text || banner.title}
                                 fill
                                 className="object-cover transition-all duration-700 group-hover:scale-110"
                                 priority={index === 0}
                                 sizes="(max-width: 1024px) 0vw, 50vw"
                                 onError={(e) => {
-                                  console.log('🚨 Banner image failed to load:', banner.image.url)
+                                  console.log('🚨 Banner image failed to load:', imageUrl)
                                   e.currentTarget.src = "/LOGO-MÀU.png"
                                 }}
                               />
                             </a>
                           ) : (
                             <Image
-                              src={banner.image.url.startsWith('http') ? banner.image.url : `https://demoapi.andyanh.id.vn${banner.image.url}`}
+                              src={imageUrl}
                               alt={banner.image.alt_text || banner.title}
                               fill
                               className="object-cover transition-all duration-700 group-hover:scale-110"
                               priority={index === 0}
                               sizes="(max-width: 1024px) 0vw, 50vw"
                               onError={(e) => {
-                                console.log('🚨 Banner image failed to load (no URL):', banner.image.url)
+                                console.log('🚨 Banner image failed to load (no URL):', imageUrl)
                                 e.currentTarget.src = "/LOGO-MÀU.png"
                               }}
                             />
