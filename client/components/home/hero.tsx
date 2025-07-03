@@ -29,6 +29,7 @@ interface Banner {
   title: string
   description?: string
   url?: string
+  is_active?: boolean
   image: {
     id: number
     url: string
@@ -43,19 +44,76 @@ export default function Hero() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [loading, setLoading] = useState(true)
 
+  // Test banner data nếu API không có data
+  const testBanners: Banner[] = [
+    {
+      id: 1,
+      title: "Banner Test 1",
+      description: "Đây là banner test để kiểm tra hiển thị",
+      url: "",
+      is_active: true,
+      image: {
+        id: 1,
+        url: "/LOGO-MÀU.png",
+        alt_text: "Test Banner 1",
+        width: 1920,
+        height: 600
+      }
+    }
+  ]
+
   // Fetch banners từ API
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await fetch('http://14.187.180.6:12122/api/banners/active')
+        console.log('🔄 Fetching banners from API...')
+        // Sử dụng endpoint đúng: chỉ lấy banner active
+        const response = await fetch('http://14.187.180.6:12122/api/banners?is_active=true')
+        console.log('📡 Response status:', response.status)
+        
         if (response.ok) {
           const data = await response.json()
-          setBanners(data)
+          console.log('✅ Banners fetched successfully:', data)
+          console.log('📊 Number of banners:', data.length)
+          
+          if (data && data.length > 0) {
+            setBanners(data)
+          } else {
+            console.log('⚠️ No banners from API, using test banner')
+            setBanners(testBanners)
+          }
         } else {
-          console.error('Failed to fetch banners')
+          console.error('❌ Failed to fetch banners:', response.status, response.statusText)
+          // Fallback: thử endpoint không có filter
+          try {
+            const fallbackResponse = await fetch('http://14.187.180.6:12122/api/banners')
+            if (fallbackResponse.ok) {
+              const fallbackData = await fallbackResponse.json()
+              console.log('🔄 Fallback data:', fallbackData)
+              // Filter chỉ lấy banner active
+              const activeBanners = fallbackData.filter((banner: Banner) => banner.is_active !== false)
+              console.log('✅ Active banners:', activeBanners)
+              
+              if (activeBanners.length > 0) {
+                setBanners(activeBanners)
+              } else {
+                console.log('⚠️ No active banners, using test banner')
+                setBanners(testBanners)
+              }
+            } else {
+              console.log('⚠️ Fallback failed, using test banner')
+              setBanners(testBanners)
+            }
+          } catch (fallbackError) {
+            console.error('❌ Fallback also failed:', fallbackError)
+            console.log('⚠️ Using test banner as final fallback')
+            setBanners(testBanners)
+          }
         }
       } catch (error) {
-        console.error('Error fetching banners:', error)
+        console.error('❌ Error fetching banners:', error)
+        console.log('⚠️ Using test banner due to network error')
+        setBanners(testBanners)
       } finally {
         setLoading(false)
       }
