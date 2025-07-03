@@ -236,7 +236,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-1">Địa chỉ</h3>
-                        <p className="text-gray-600 leading-relaxed"> Số 2 Lê Văn Chí, Phường Linh Chiểu, Thành phố Thủ Đức, TP. HCM</p>
+                        <p className="text-gray-600 leading-relaxed"> Số 2 Lê Văn Chí, Phường Thủ Đức, Thành phố Hồ Chí Minh</p>
                       </div>
                     </div>
                   )}

@@ -322,20 +322,7 @@ export default function OrderPage() {
 
         <div className="max-w-6xl mx-auto px-4 lg:px-6 text-center relative z-10">
           {/* Logo Phú Long */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="inline-flex items-center justify-center p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-              <img
-                src="https://i.imgur.com/WXSBk46.png"
-                alt="Phú Long"
-                className="h-12 w-auto object-contain"
-              />
-            </div>
-          </motion.div>
+         
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

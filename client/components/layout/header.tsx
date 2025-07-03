@@ -3,10 +3,16 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, Phone, Mail } from "lucide-react"
+import { Menu, X, Phone, Mail, ChevronDown, Palette, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface Config {
   SITE_NAME: string
@@ -28,7 +34,15 @@ export default function Header() {
 
   const navigation = [
     { name: "Trang chủ", href: "/" },
-    { name: "Bảng giá", href: "/pricing" },
+    { 
+      name: "Bảng giá", 
+      href: "/pricing",
+      hasDropdown: true,
+      dropdownItems: [
+        { name: "Thiết kế", href: "/pricing/thiet-ke", icon: Palette },
+        { name: "In ấn", href: "/pricing/in-an", icon: Printer },
+      ]
+    },
     { name: "Blog", href: "/blog" },
     { name: "Đặt hàng", href: "/order" },
     { name: "Liên hệ", href: "/contact" },
@@ -60,18 +74,51 @@ export default function Header() {
 
           {/* Desktop menu giữa */}
           <nav className="hidden md:flex items-center gap-6 mx-auto">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "text-sm font-medium transition-colors",
-                  pathname === item.href ? "text-red-600" : "text-gray-700 hover:text-red-600"
-                )}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              if (item.hasDropdown && item.dropdownItems) {
+                const isActive = pathname === item.href || item.dropdownItems.some(subItem => pathname === subItem.href)
+                return (
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger className={cn(
+                      "flex items-center gap-1 text-sm font-medium transition-colors hover:text-red-600",
+                      isActive ? "text-red-600" : "text-gray-700"
+                    )}>
+                      {item.name}
+                      <ChevronDown className="h-3 w-3" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48">
+                      {item.dropdownItems.map((subItem) => (
+                        <DropdownMenuItem key={subItem.name} asChild>
+                          <Link 
+                            href={subItem.href}
+                            className={cn(
+                              "flex items-center gap-2 w-full",
+                              pathname === subItem.href ? "text-red-600" : "text-gray-700"
+                            )}
+                          >
+                            <subItem.icon className="h-4 w-4" />
+                            {subItem.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              }
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    pathname === item.href ? "text-red-600" : "text-gray-700 hover:text-red-600"
+                  )}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
           </nav>
 
           {/* Mobile menu toggle bên phải */}
@@ -90,19 +137,45 @@ export default function Header() {
         {/* Mobile menu dropdown */}
         {isMenuOpen && (
           <div className="md:hidden px-4 pb-3 space-y-1 border-t">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "block py-2 px-3 rounded-md text-sm font-medium",
-                  pathname === item.href ? "bg-red-100 text-red-600" : "text-gray-700 hover:bg-red-50"
-                )}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              if (item.hasDropdown && item.dropdownItems) {
+                return (
+                  <div key={item.name} className="space-y-1">
+                    <div className="py-2 px-3 text-sm font-medium text-gray-700">
+                      {item.name}
+                    </div>
+                    {item.dropdownItems.map((subItem) => (
+                      <Link
+                        key={subItem.name}
+                        href={subItem.href}
+                        className={cn(
+                          "flex items-center gap-2 py-2 px-6 rounded-md text-sm font-medium",
+                          pathname === subItem.href ? "bg-red-100 text-red-600" : "text-gray-600 hover:bg-red-50"
+                        )}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <subItem.icon className="h-4 w-4" />
+                        {subItem.name}
+                      </Link>
+                    ))}
+                  </div>
+                )
+              }
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "block py-2 px-3 rounded-md text-sm font-medium",
+                    pathname === item.href ? "bg-red-100 text-red-600" : "text-gray-700 hover:bg-red-50"
+                  )}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
           </div>
         )}
       </div>
