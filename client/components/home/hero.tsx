@@ -68,7 +68,7 @@ export default function Hero() {
       try {
         console.log('🔄 Fetching banners from API...')
         // Sử dụng domain gốc
-        const response = await fetch('https://demoapi.andyanh.id.vn/api/banners?is_active=true')
+        const response = await fetch('http://14.187.180.6:12122/api/banners?is_active=true')
         console.log('📡 Response status:', response.status)
         
         if (response.ok) {
@@ -97,7 +97,7 @@ export default function Hero() {
           console.error('❌ Failed to fetch banners:', response.status, response.statusText)
           // Fallback: thử endpoint không có filter
           try {
-            const fallbackResponse = await fetch('https://demoapi.andyanh.id.vn/api/banners')
+            const fallbackResponse = await fetch('http://14.187.180.6:12122/api/banners')
             if (fallbackResponse.ok) {
               const fallbackData = await fallbackResponse.json()
               console.log('🔄 Fallback data:', fallbackData)
@@ -151,13 +151,8 @@ export default function Hero() {
     setCurrentBannerIndex((prev: number) => (prev - 1 + banners.length) % banners.length)
   }
 
-  // Debug log trước khi render
-  console.log('🔍 Hero render:', { 
-    loading, 
-    bannersCount: banners.length, 
-    currentIndex: currentBannerIndex,
-    banners: banners.map((b: Banner) => ({ id: b.id, title: b.title, imageUrl: b.image?.url }))
-  })
+  // Debug: Check banner state
+  console.log('🔍 Banner state:', { loading, count: banners.length, currentIndex: currentBannerIndex })
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -342,7 +337,7 @@ export default function Hero() {
                     const isActive = index === currentBannerIndex
                     const imageUrl = banner.image?.url?.startsWith('http') 
                       ? banner.image.url 
-                      : `https://demoapi.andyanh.id.vn${banner.image?.url}`
+                      : `http://14.187.180.6:12122${banner.image?.url}`
                     
                     // Debug log cho banner hiện tại
                     if (isActive) {
