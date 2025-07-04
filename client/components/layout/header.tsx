@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X, Phone, Mail, ChevronDown, Palette, Printer } from "lucide-react"
@@ -18,6 +18,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [config, setConfig] = useState<Config | null>(null)
   const [hoveredDropdown, setHoveredDropdown] = useState<string | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -44,12 +45,30 @@ export default function Header() {
   ]
 
   const handleMouseEnter = (itemName: string) => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
     setHoveredDropdown(itemName)
   }
 
   const handleMouseLeave = () => {
-    setHoveredDropdown(null)
+    // Set timeout to hide dropdown after 1.5 seconds
+    timeoutRef.current = setTimeout(() => {
+      setHoveredDropdown(null)
+      timeoutRef.current = null
+    }, 1500)
   }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   return (
     <header className="bg-white shadow border-b sticky top-0 z-50">
@@ -104,7 +123,11 @@ export default function Header() {
                     
                     {/* Dropdown menu */}
                     {isHovered && (
-                      <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                      <div 
+                        className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                        onMouseEnter={() => handleMouseEnter(item.name)}
+                        onMouseLeave={handleMouseLeave}
+                      >
                         <div className="py-1">
                           {item.dropdownItems.map((subItem) => (
                             <Link
