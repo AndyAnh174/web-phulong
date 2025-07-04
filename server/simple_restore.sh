@@ -51,20 +51,22 @@ show_help() {
     echo "Usage: $0 <backup_file.tar.gz> [options]"
     echo
     echo "Examples:"
-    echo "  $0 simple_backup_20250704_101200.tar.gz"
-    echo "  $0 backup.tar.gz --db-only"
+    echo "  $0 simple_backup_20250704_101200.tar.gz --clean"
+    echo "  $0 backup.tar.gz --db-only --clean"
     echo "  $0 backup.tar.gz --static-only"
+    echo "  $0 backup.tar.gz --clean --force"
     echo
     echo "Options:"
     echo "  --help, -h        Show this help"
     echo "  --db-only         Only restore database"
     echo "  --static-only     Only restore static files"
+    echo "  --clean           Clean database before restore (recommended)"
     echo "  --dry-run         Show what would be restored (don't execute)"
     echo "  --force           Skip confirmations"
     echo
     echo "Notes:"
     echo "  - Database container must be running"
-    echo "  - Backup will OVERWRITE existing data"
+    echo "  - Use --clean to avoid conflicts with existing data"
     echo "  - Static files will be merged (not replaced)"
 }
 
@@ -165,6 +167,58 @@ extract_backup() {
     done
 }
 
+# Clean database
+clean_database() {
+    log_step "Clean database trước khi restore..."
+    
+    # Backup database hiện tại nếu không force
+    if [ "$FORCE_MODE" != "true" ]; then
+        echo
+        log_warning "⚠️  CẢNH BÁO: Sẽ xóa toàn bộ dữ liệu hiện tại!"
+        log_info "Database sẽ được backup tự động trước khi xóa"
+        read -p "Bạn có chắc chắn muốn tiếp tục? (y/N): " confirm
+        if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+            log_info "Hủy clean database"
+            return 1
+        fi
+        
+        # Backup database hiện tại
+        local backup_name="db_backup_before_restore_$(date +%Y%m%d_%H%M%S).sql"
+        log_info "Backup database hiện tại..."
+        if docker exec $DB_CONTAINER pg_dump -U $DB_USER $DB_NAME > "$backup_name"; then
+            log_success "✅ Database backup: $backup_name"
+        else
+            log_warning "⚠️ Không thể backup database hiện tại"
+        fi
+    fi
+    
+    # Drop và recreate database
+    log_info "Drop và recreate database..."
+    
+    # Disconnect tất cả connections
+    docker exec $DB_CONTAINER psql -U $DB_USER -d postgres -c "
+        SELECT pg_terminate_backend(pid) 
+        FROM pg_stat_activity 
+        WHERE datname = '$DB_NAME' AND pid <> pg_backend_pid();
+    " > /dev/null 2>&1 || true
+    
+    # Drop database
+    if docker exec $DB_CONTAINER psql -U $DB_USER -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;" > /dev/null 2>&1; then
+        log_success "✅ Dropped database: $DB_NAME"
+    else
+        log_error "❌ Không thể drop database!"
+        return 1
+    fi
+    
+    # Create database
+    if docker exec $DB_CONTAINER psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME;" > /dev/null 2>&1; then
+        log_success "✅ Created database: $DB_NAME"
+    else
+        log_error "❌ Không thể tạo database!"
+        return 1
+    fi
+}
+
 # Restore database
 restore_database() {
     log_step "Restore database..."
@@ -183,14 +237,23 @@ restore_database() {
         return 1
     fi
     
-    # Xác nhận restore
-    if [ "$FORCE_MODE" != "true" ]; then
-        echo
-        log_warning "⚠️  CẢNH BÁO: Restore sẽ OVERWRITE toàn bộ database hiện tại!"
-        read -p "Bạn có chắc chắn muốn tiếp tục? (y/N): " confirm
-        if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
-            log_info "Hủy restore database"
-            return 0
+    # Clean database nếu được yêu cầu
+    if [ "$CLEAN_DB" = "true" ]; then
+        clean_database
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
+    else
+        # Xác nhận restore vào database hiện tại
+        if [ "$FORCE_MODE" != "true" ]; then
+            echo
+            log_warning "⚠️  CẢNH BÁO: Restore vào database hiện tại có thể gây conflict!"
+            log_info "💡 Khuyến nghị: Sử dụng --clean để clean database trước"
+            read -p "Tiếp tục restore vào database hiện tại? (y/N): " confirm
+            if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+                log_info "Hủy restore database"
+                return 0
+            fi
         fi
     fi
     
@@ -340,7 +403,11 @@ main() {
     # Restore theo options
     if [ "$RESTORE_DB" = "true" ]; then
         if [ "$DRY_RUN" = "true" ]; then
-            log_info "[DRY RUN] Sẽ restore database"
+            if [ "$CLEAN_DB" = "true" ]; then
+                log_info "[DRY RUN] Sẽ clean database và restore"
+            else
+                log_info "[DRY RUN] Sẽ restore database (có thể có conflicts)"
+            fi
         else
             restore_database
         fi
@@ -369,6 +436,7 @@ RESTORE_DB="true"
 RESTORE_STATIC="true"
 DRY_RUN="false"
 FORCE_MODE="false"
+CLEAN_DB="false"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -385,6 +453,10 @@ while [[ $# -gt 0 ]]; do
             RESTORE_DB="false"
             RESTORE_STATIC="true"
             log_info "Mode: Static files only"
+            ;;
+        --clean)
+            CLEAN_DB="true"
+            log_info "Mode: Clean database before restore"
             ;;
         --dry-run)
             DRY_RUN="true"
