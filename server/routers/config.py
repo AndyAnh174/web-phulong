@@ -24,11 +24,11 @@ async def get_public_env():
     
     return {
         "API_URL": f"{backend_url}/api",
-        "SITE_NAME": "In Ấn Phú Long",
+        "SITE_NAME": "IN ẤN PHÚ LONG",
         "SITE_DESCRIPTION": "Dịch vụ in ấn chất lượng cao",
         "CONTACT_EMAIL": "inphulong@gmail.com",
         "CONTACT_PHONE": "0977007763",
-        "CONTACT_ADDRESS": "Số 2 Lê Văn Chí, Phường Linh Chiểu, Thành phố Thủ Đức, TP. HCM",
+        "CONTACT_ADDRESS": "Số 2 Lê Văn Chí, Phường Thủ Đức, Thành Phố Thủ Đức",
         "ITEMS_PER_PAGE": 10,
         "ENABLE_ANALYTICS": False
     }

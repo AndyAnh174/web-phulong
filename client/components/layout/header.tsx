@@ -7,12 +7,6 @@ import { Menu, X, Phone, Mail, ChevronDown, Palette, Printer } from "lucide-reac
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 interface Config {
   SITE_NAME: string
@@ -23,6 +17,7 @@ interface Config {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [config, setConfig] = useState<Config | null>(null)
+  const [hoveredDropdown, setHoveredDropdown] = useState<string | null>(null)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -47,6 +42,14 @@ export default function Header() {
     { name: "Đặt hàng", href: "/order" },
     { name: "Liên hệ", href: "/contact" },
   ]
+
+  const handleMouseEnter = (itemName: string) => {
+    setHoveredDropdown(itemName)
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredDropdown(null)
+  }
 
   return (
     <header className="bg-white shadow border-b sticky top-0 z-50">
@@ -77,32 +80,49 @@ export default function Header() {
             {navigation.map((item) => {
               if (item.hasDropdown && item.dropdownItems) {
                 const isActive = pathname === item.href || item.dropdownItems.some(subItem => pathname === subItem.href)
+                const isHovered = hoveredDropdown === item.name
+                
                 return (
-                  <DropdownMenu key={item.name}>
-                    <DropdownMenuTrigger className={cn(
-                      "flex items-center gap-1 text-sm font-medium transition-colors hover:text-red-600",
-                      isActive ? "text-red-600" : "text-gray-700"
-                    )}>
+                  <div 
+                    key={item.name}
+                    className="relative"
+                    onMouseEnter={() => handleMouseEnter(item.name)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <button
+                      className={cn(
+                        "flex items-center gap-1 text-sm font-medium transition-colors hover:text-red-600",
+                        isActive ? "text-red-600" : "text-gray-700"
+                      )}
+                    >
                       {item.name}
-                      <ChevronDown className="h-3 w-3" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-48">
-                      {item.dropdownItems.map((subItem) => (
-                        <DropdownMenuItem key={subItem.name} asChild>
-                          <Link 
-                            href={subItem.href}
-                            className={cn(
-                              "flex items-center gap-2 w-full",
-                              pathname === subItem.href ? "text-red-600" : "text-gray-700"
-                            )}
-                          >
-                            <subItem.icon className="h-4 w-4" />
-                            {subItem.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      <ChevronDown className={cn(
+                        "h-3 w-3 transition-transform duration-200",
+                        isHovered ? "rotate-180" : ""
+                      )} />
+                    </button>
+                    
+                    {/* Dropdown menu */}
+                    {isHovered && (
+                      <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                        <div className="py-1">
+                          {item.dropdownItems.map((subItem) => (
+                            <Link
+                              key={subItem.name}
+                              href={subItem.href}
+                              className={cn(
+                                "flex items-center gap-2 px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 transition-colors",
+                                pathname === subItem.href ? "text-red-600 bg-red-50" : "text-gray-700"
+                              )}
+                            >
+                              <subItem.icon className="h-4 w-4" />
+                              {subItem.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )
               }
               
