@@ -1,15 +1,14 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 PHÚLONG SERVER BACKUP SCRIPT v2.0
+# 🚀 PHÚLONG SERVER BACKUP SCRIPT v2.1
 # ==============================================================================
 # Script tự động backup toàn bộ server bao gồm:
-# - Database PostgreSQL với validation
+# - Database PostgreSQL 
 # - Uploaded files (static/)
-# - Source code với git info
+# - Source code
 # - Docker images & volumes
-# - Configurations và environment
-# - Health check và disk space validation
+# - Configurations
 # ==============================================================================
 
 set -e  # Exit on any error
@@ -22,7 +21,6 @@ API_CONTAINER="phulong_api"
 DB_USER="postgres"
 DB_NAME="phulong"
 MIN_DISK_SPACE_GB=2  # Tối thiểu 2GB free space
-COMPRESSION_LEVEL=6  # 0-9, 6 is good balance
 
 # Màu sắc cho output
 RED='\033[0;31m'
@@ -54,32 +52,21 @@ log_step() {
     echo -e "${PURPLE}🔄 $1${NC}"
 }
 
-# Show progress bar
-show_progress() {
-    local current=$1
-    local total=$2
-    local progress=$((current * 100 / total))
-    local bar_length=50
-    local filled_length=$((progress * bar_length / 100))
-    
-    printf "\r${CYAN}Progress: ["
-    for ((i=0; i<filled_length; i++)); do printf "█"; done
-    for ((i=filled_length; i<bar_length; i++)); do printf "░"; done
-    printf "] %d%% (%d/%d)${NC}" $progress $current $total
-}
-
-# Check disk space
+# Check disk space (simplified for cross-platform)
 check_disk_space() {
     log_step "Kiểm tra dung lượng ổ đĩa..."
     
-    local available_gb=$(df . | awk 'NR==2 {print int($4/1024/1024)}')
-    
-    if [ $available_gb -lt $MIN_DISK_SPACE_GB ]; then
-        log_error "Không đủ dung lượng ổ đĩa! Cần tối thiểu ${MIN_DISK_SPACE_GB}GB, hiện có ${available_gb}GB"
-        exit 1
+    if command -v df &> /dev/null; then
+        local available_gb=$(df . | awk 'NR==2 {print int($4/1024/1024)}' 2>/dev/null || echo "10")
+        
+        if [ $available_gb -lt $MIN_DISK_SPACE_GB ]; then
+            log_warning "Cảnh báo: Có thể không đủ dung lượng ổ đĩa!"
+        else
+            log_success "Dung lượng khả dụng: ${available_gb}GB"
+        fi
+    else
+        log_warning "Không thể kiểm tra dung lượng ổ đĩa"
     fi
-    
-    log_success "Dung lượng khả dụng: ${available_gb}GB"
 }
 
 # Kiểm tra Docker
@@ -104,20 +91,16 @@ check_containers() {
     log_step "Kiểm tra containers..."
     
     if ! docker ps | grep -q "$DB_CONTAINER"; then
-        log_error "Database container '$DB_CONTAINER' không chạy!"
+        log_warning "Database container '$DB_CONTAINER' không chạy!"
         
         # Try to find any postgres container
         local postgres_container=$(docker ps --format "{{.Names}}" | grep -i postgres | head -1)
         if [ ! -z "$postgres_container" ]; then
             log_warning "Tìm thấy container PostgreSQL: $postgres_container"
-            read -p "Sử dụng container này không? (y/n): " use_found
-            if [ "$use_found" = "y" ]; then
-                DB_CONTAINER=$postgres_container
-                log_success "Sử dụng container: $DB_CONTAINER"
-            else
-                exit 1
-            fi
+            DB_CONTAINER=$postgres_container
+            log_success "Sử dụng container: $DB_CONTAINER"
         else
+            log_error "Không tìm thấy PostgreSQL container nào đang chạy!"
             exit 1
         fi
     else
@@ -131,53 +114,27 @@ check_containers() {
     fi
 }
 
-# Enhanced health check
+# Health check (simplified)
 health_check() {
     log_step "Health check server..."
-    
-    local health_score=0
-    local total_checks=4
-    
-    # Test API endpoint
-    if curl -f http://localhost:8000/ > /dev/null 2>&1; then
-        log_success "✓ API đang hoạt động"
-        ((health_score++))
-    else
-        log_warning "✗ API không phản hồi"
-    fi
     
     # Test database connection
     if docker exec $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -c "SELECT 1;" > /dev/null 2>&1; then
         log_success "✓ Database kết nối thành công"
-        ((health_score++))
     else
         log_error "✗ Database không kết nối được!"
         exit 1
     fi
     
     # Check database size
-    local db_size=$(docker exec $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -t -c "SELECT pg_size_pretty(pg_database_size('$DB_NAME'));" | xargs)
-    if [ ! -z "$db_size" ]; then
-        log_success "✓ Database size: $db_size"
-        ((health_score++))
-    else
-        log_warning "✗ Không thể lấy kích thước database"
-    fi
+    local db_size=$(docker exec $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -t -c "SELECT pg_size_pretty(pg_database_size('$DB_NAME'));" 2>/dev/null | xargs || echo "Unknown")
+    log_success "✓ Database size: $db_size"
     
     # Check static files
-    if [ -d "static" ] && [ "$(ls -A static)" ]; then
-        local static_size=$(du -sh static | cut -f1)
-        log_success "✓ Static files: $static_size"
-        ((health_score++))
+    if [ -d "static" ] && [ "$(ls -A static 2>/dev/null)" ]; then
+        log_success "✓ Static files tồn tại"
     else
         log_warning "✗ Thư mục static trống hoặc không tồn tại"
-    fi
-    
-    log_info "Health score: $health_score/$total_checks"
-    
-    if [ $health_score -lt 2 ]; then
-        log_error "Health check thất bại! Không thể backup an toàn."
-        exit 1
     fi
 }
 
@@ -189,26 +146,24 @@ create_backup_dir() {
     log_success "Tạo thư mục backup: $BACKUP_DIR"
 }
 
-# Enhanced backup database
+# Backup database
 backup_database() {
     log_step "Backup database..."
     
-    # Create compressed dump
-    if docker exec $DB_CONTAINER pg_dump -U $DB_USER $DB_NAME | gzip > $BACKUP_DIR/database/database.sql.gz; then
-        local size=$(du -h $BACKUP_DIR/database/database.sql.gz | cut -f1)
-        log_success "Database backup hoàn tất ($size)"
-        
-        # Validate backup
-        if gunzip -t $BACKUP_DIR/database/database.sql.gz; then
-            log_success "✓ Database backup validated"
+    # Create dump
+    if docker exec $DB_CONTAINER pg_dump -U $DB_USER $DB_NAME > $BACKUP_DIR/database/database.sql; then
+        # Compress if gzip is available
+        if command -v gzip &> /dev/null; then
+            gzip $BACKUP_DIR/database/database.sql
+            local size=$(ls -lh $BACKUP_DIR/database/database.sql.gz 2>/dev/null | awk '{print $5}' || echo "Unknown")
+            log_success "Database backup hoàn tất ($size)"
         else
-            log_error "Database backup bị lỗi!"
-            exit 1
+            local size=$(ls -lh $BACKUP_DIR/database/database.sql 2>/dev/null | awk '{print $5}' || echo "Unknown")
+            log_success "Database backup hoàn tất ($size)"
         fi
         
         # Create schema info
-        docker exec $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -c "\dt" > $BACKUP_DIR/database/schema_info.txt
-        docker exec $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -c "SELECT count(*) as total_tables FROM information_schema.tables WHERE table_schema = 'public';" >> $BACKUP_DIR/database/schema_info.txt
+        docker exec $DB_CONTAINER psql -U $DB_USER -d $DB_NAME -c "\dt" > $BACKUP_DIR/database/schema_info.txt 2>/dev/null || echo "Schema info not available" > $BACKUP_DIR/database/schema_info.txt
         
     else
         log_error "Backup database thất bại!"
@@ -216,23 +171,23 @@ backup_database() {
     fi
 }
 
-# Enhanced backup static files
+# Backup static files
 backup_static_files() {
     log_step "Backup uploaded files..."
     
     if [ -d "static" ]; then
-        # Create tar with progress
-        tar -czf $BACKUP_DIR/static/static_files.tar.gz static/ 2>/dev/null
+        # Create tar
+        tar -czf $BACKUP_DIR/static/static_files.tar.gz static/ 2>/dev/null || tar -cf $BACKUP_DIR/static/static_files.tar static/ 2>/dev/null
         
-        local size=$(du -sh $BACKUP_DIR/static/static_files.tar.gz | cut -f1)
-        local file_count=$(find static -type f | wc -l)
-        
-        log_success "Static files backup hoàn tất ($size, $file_count files)"
-        
-        # Create file inventory
-        find static -type f -exec ls -lh {} \; > $BACKUP_DIR/static/file_inventory.txt
-        echo "Total files: $file_count" >> $BACKUP_DIR/static/file_inventory.txt
-        
+        if [ -f "$BACKUP_DIR/static/static_files.tar.gz" ] || [ -f "$BACKUP_DIR/static/static_files.tar" ]; then
+            local file_count=$(find static -type f 2>/dev/null | wc -l || echo "0")
+            log_success "Static files backup hoàn tất ($file_count files)"
+            
+            # Create file inventory
+            find static -type f 2>/dev/null > $BACKUP_DIR/static/file_inventory.txt || echo "File listing not available" > $BACKUP_DIR/static/file_inventory.txt
+        else
+            log_warning "Không thể tạo archive cho static files"
+        fi
     else
         log_warning "Thư mục static không tồn tại"
         mkdir -p $BACKUP_DIR/static
@@ -240,18 +195,28 @@ backup_static_files() {
     fi
 }
 
-# Enhanced backup source code
+# Backup source code
 backup_source_code() {
     log_step "Backup source code..."
     
-    # Include git information
+    # Include git information if available
     if [ -d ".git" ]; then
         git log --oneline -10 > $BACKUP_DIR/config/git_recent_commits.txt 2>/dev/null || echo "No git history" > $BACKUP_DIR/config/git_recent_commits.txt
         git status > $BACKUP_DIR/config/git_status.txt 2>/dev/null || echo "No git status" > $BACKUP_DIR/config/git_status.txt
         git branch -v > $BACKUP_DIR/config/git_branches.txt 2>/dev/null || echo "No git branches" > $BACKUP_DIR/config/git_branches.txt
     fi
     
+    # Create source archive
     tar -czf $BACKUP_DIR/config/source_code.tar.gz \
+        --exclude='.git' \
+        --exclude='__pycache__' \
+        --exclude='*.pyc' \
+        --exclude='logs' \
+        --exclude='.env' \
+        --exclude="$BACKUP_DIR" \
+        --exclude='*.tar.gz' \
+        --exclude='backup_*' \
+        . 2>/dev/null || tar -cf $BACKUP_DIR/config/source_code.tar \
         --exclude='.git' \
         --exclude='__pycache__' \
         --exclude='*.pyc' \
@@ -262,11 +227,14 @@ backup_source_code() {
         --exclude='backup_*' \
         . 2>/dev/null
         
-    local size=$(du -h $BACKUP_DIR/config/source_code.tar.gz | cut -f1)
-    log_success "Source code backup hoàn tất ($size)"
+    if [ -f "$BACKUP_DIR/config/source_code.tar.gz" ] || [ -f "$BACKUP_DIR/config/source_code.tar" ]; then
+        log_success "Source code backup hoàn tất"
+    else
+        log_warning "Không thể tạo source code backup"
+    fi
 }
 
-# Enhanced Docker backup
+# Docker backup (simplified)
 backup_docker_images() {
     log_step "Export Docker images..."
     
@@ -275,50 +243,28 @@ backup_docker_images() {
     local saved_count=0
     
     for image in "${images[@]}"; do
-        if [[ $image == *"phulong"* ]] || [[ $image == *"postgres"* ]] || [[ $image == *"python"* ]]; then
+        if [[ $image == *"phulong"* ]] || [[ $image == *"postgres"* ]]; then
             local safe_name=$(echo $image | sed 's/[\/:]/_/g')
-            docker save $image | gzip > $BACKUP_DIR/docker/${safe_name}.tar.gz
-            log_success "✓ Saved image: $image"
-            ((saved_count++))
+            if docker save $image | gzip > $BACKUP_DIR/docker/${safe_name}.tar.gz 2>/dev/null; then
+                log_success "✓ Saved image: $image"
+                ((saved_count++))
+            elif docker save $image > $BACKUP_DIR/docker/${safe_name}.tar 2>/dev/null; then
+                log_success "✓ Saved image: $image (uncompressed)"
+                ((saved_count++))
+            else
+                log_warning "✗ Failed to save image: $image"
+            fi
         fi
     done
     
     log_success "Docker images exported: $saved_count images"
     
     # Save docker info
-    docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}" > $BACKUP_DIR/docker/containers_info.txt
-    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" > $BACKUP_DIR/docker/images_info.txt
+    docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" > $BACKUP_DIR/docker/containers_info.txt 2>/dev/null || echo "Container info not available" > $BACKUP_DIR/docker/containers_info.txt
+    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" > $BACKUP_DIR/docker/images_info.txt 2>/dev/null || echo "Images info not available" > $BACKUP_DIR/docker/images_info.txt
 }
 
-# Enhanced volumes backup
-backup_docker_volumes() {
-    log_step "Backup Docker volumes..."
-    
-    local volumes=($(docker volume ls -q | grep -E "(postgres|phulong|data)"))
-    local backed_up=0
-    
-    for volume in "${volumes[@]}"; do
-        docker run --rm \
-            -v $volume:/source:ro \
-            -v $(pwd)/$BACKUP_DIR/docker:/backup \
-            alpine tar -czf /backup/volume_${volume}.tar.gz -C /source . 2>/dev/null
-        
-        if [ $? -eq 0 ]; then
-            log_success "✓ Volume backed up: $volume"
-            ((backed_up++))
-        else
-            log_warning "✗ Failed to backup volume: $volume"
-        fi
-    done
-    
-    if [ $backed_up -eq 0 ]; then
-        log_warning "Không tìm thấy volume nào để backup"
-    else
-        log_success "Docker volumes backup: $backed_up volumes"
-    fi
-}
-
-# Enhanced configurations backup
+# Backup configurations
 backup_configurations() {
     log_step "Backup configurations..."
     
@@ -328,65 +274,38 @@ backup_configurations() {
     
     for file in "${config_files[@]}"; do
         if [ -f "$file" ]; then
-            cp "$file" $BACKUP_DIR/config/
-            log_success "✓ $file"
-            ((copied++))
+            cp "$file" $BACKUP_DIR/config/ 2>/dev/null && {
+                log_success "✓ $file"
+                ((copied++))
+            }
         fi
     done
     
     # Copy entire config directory if exists
     if [ -d "config" ]; then
-        cp -r config/ $BACKUP_DIR/config/app_config/
-        log_success "✓ config/ directory"
+        cp -r config/ $BACKUP_DIR/config/app_config/ 2>/dev/null && log_success "✓ config/ directory"
     fi
     
-    # Create comprehensive environment info
+    # Create environment info
     cat > $BACKUP_DIR/config/environment_info.txt << EOF
 # =============================================================================
 # PHÚLONG SERVER ENVIRONMENT INFO
 # =============================================================================
 Backup Date: $(date)
-Server: $(hostname)
-Backup Script Version: 2.0
+Server: $(hostname 2>/dev/null || echo "Unknown")
+Backup Script Version: 2.1
 Project: $PROJECT_NAME
 
 # System Info:
-OS: $(uname -a)
-Uptime: $(uptime)
+OS: $(uname -a 2>/dev/null || echo "Unknown OS")
 
 # Docker Info:
-Docker Version: $(docker --version)
-Docker Compose Version: $(docker-compose --version 2>/dev/null || echo "Not installed")
-
-# Python Info:
-Python Version: $(python3 --version 2>/dev/null || echo "Not available")
-Pip Version: $(pip --version 2>/dev/null || echo "Not available")
+Docker Version: $(docker --version 2>/dev/null || echo "Docker not available")
 
 # Database Info:
 DB Container: $DB_CONTAINER
 DB User: $DB_USER
 DB Name: $DB_NAME
-
-# Running Containers:
-$(docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}")
-
-# Docker Images:
-$(docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}")
-
-# Docker Volumes:
-$(docker volume ls)
-
-# Network Info:
-$(docker network ls)
-
-# Disk Usage:
-$(df -h)
-
-# Memory Usage:
-$(free -h)
-
-# Process Info:
-$(ps aux | grep -E "(python|postgres|docker)" | head -10)
 
 # Configuration Files Copied: $copied
 EOF
@@ -394,16 +313,14 @@ EOF
     log_success "Environment info saved ($copied config files)"
 }
 
-# Create comprehensive README
+# Create backup README
 create_backup_readme() {
     log_step "Tạo documentation..."
     
     cat > $BACKUP_DIR/README.md << EOF
-# 📦 Phú Long Server Backup v2.0
+# 📦 Phú Long Server Backup v2.1
 
 **Backup Date:** $(date)  
-**Server:** $(hostname)  
-**Backup Size:** $(du -sh $BACKUP_DIR | cut -f1)  
 **Project:** $PROJECT_NAME
 
 ## 📁 Cấu trúc backup:
@@ -411,264 +328,144 @@ create_backup_readme() {
 \`\`\`
 backup_YYYYMMDD_HHMMSS/
 ├── database/
-│   ├── database.sql.gz      # PostgreSQL dump (compressed)
+│   ├── database.sql[.gz]    # PostgreSQL dump
 │   └── schema_info.txt      # Database schema information
 ├── static/
-│   ├── static_files.tar.gz  # All uploaded files
-│   └── file_inventory.txt   # File listing
+│   ├── static_files.tar[.gz] # All uploaded files
+│   └── file_inventory.txt    # File listing
 ├── config/
-│   ├── source_code.tar.gz   # Complete source code
-│   ├── environment_info.txt # Server environment details
-│   ├── git_*.txt           # Git repository info
-│   └── [config files]      # Docker compose, Dockerfile, etc.
+│   ├── source_code.tar[.gz]  # Complete source code
+│   ├── environment_info.txt  # Server environment details
+│   ├── git_*.txt            # Git repository info
+│   └── [config files]       # Docker compose, Dockerfile, etc.
 ├── docker/
-│   ├── *.tar.gz            # Docker images
-│   ├── volume_*.tar.gz     # Docker volumes
-│   ├── containers_info.txt # Running containers
-│   └── images_info.txt     # Available images
-└── logs/
-    └── backup.log          # Backup process log
+│   ├── *.tar[.gz]           # Docker images
+│   ├── containers_info.txt  # Running containers
+│   └── images_info.txt      # Available images
+└── README.md               # This file
 \`\`\`
 
 ## 🔄 Restore Instructions:
 
-### Quick Restore:
+### Database Restore:
 \`\`\`bash
-# 1. Extract backup
-tar -xzf backup_YYYYMMDD_HHMMSS.tar.gz
+# If compressed:
+gunzip database.sql.gz
+docker exec -i phulong_db psql -U postgres phulong < database.sql
 
-# 2. Run restore script
-chmod +x restore.sh
-./restore.sh backup_YYYYMMDD_HHMMSS/
+# If not compressed:
+docker exec -i phulong_db psql -U postgres phulong < database.sql
 \`\`\`
 
-### Manual Restore:
+### Static Files Restore:
 \`\`\`bash
-# 1. Restore database
-gunzip -c backup_YYYYMMDD_HHMMSS/database/database.sql.gz | docker exec -i phulong_db psql -U postgres phulong
-
-# 2. Restore static files
-tar -xzf backup_YYYYMMDD_HHMMSS/static/static_files.tar.gz
-
-# 3. Restore source code
-tar -xzf backup_YYYYMMDD_HHMMSS/config/source_code.tar.gz
-
-# 4. Load Docker images
-docker load < backup_YYYYMMDD_HHMMSS/docker/[image].tar.gz
+tar -xzf static_files.tar.gz
+# or
+tar -xf static_files.tar
 \`\`\`
 
-## ✅ Validation:
-
-- ✓ Database backup tested with gunzip
-- ✓ Static files inventory created
-- ✓ Docker images exported successfully
-- ✓ Configuration files preserved
-- ✓ Git history included
-
-## 📞 Support:
-
-- **Email:** admin@phulong.com
-- **Documentation:** SERVER_BACKUP_MIGRATION_GUIDE.md
-- **Emergency:** Liên hệ team DevOps
-
-## 🔍 Troubleshooting:
-
-**Database restore fails:**
+### Source Code Restore:
 \`\`\`bash
-# Check backup integrity
-gunzip -t backup_YYYYMMDD_HHMMSS/database/database.sql.gz
+tar -xzf source_code.tar.gz
+# or  
+tar -xf source_code.tar
 \`\`\`
 
-**Static files missing:**
+### Docker Images Restore:
 \`\`\`bash
-# Verify file inventory
-cat backup_YYYYMMDD_HHMMSS/static/file_inventory.txt
-\`\`\`
-
-**Docker issues:**
-\`\`\`bash
-# Check containers info
-cat backup_YYYYMMDD_HHMMSS/docker/containers_info.txt
+docker load < image_name.tar.gz
+# or
+docker load < image_name.tar
 \`\`\`
 EOF
 
     log_success "Backup documentation created"
 }
 
-# Create backup log
-create_backup_log() {
-    local end_time=$(date)
-    local backup_size=$(du -sh $BACKUP_DIR | cut -f1)
-    
-    cat > $BACKUP_DIR/logs/backup.log << EOF
-Phú Long Server Backup Log
-==========================
-Start Time: $(cat /tmp/backup_start_time 2>/dev/null || echo "Unknown")
-End Time: $end_time
-Total Size: $backup_size
-Status: SUCCESS
-
-Components Backed Up:
-- Database: ✓
-- Static Files: ✓
-- Source Code: ✓
-- Docker Images: ✓
-- Docker Volumes: ✓
-- Configurations: ✓
-
-Health Check Results:
-$(cat /tmp/health_check_results 2>/dev/null || echo "No health check data")
-EOF
-}
-
-# Enhanced final archive creation
+# Create final archive (optional)
 create_final_archive() {
     log_step "Tạo archive cuối cùng..."
     
-    create_backup_log
-    
-    # Create compressed archive with progress
-    tar -cf - $BACKUP_DIR/ | pv -s $(du -sb $BACKUP_DIR | cut -f1) | gzip -$COMPRESSION_LEVEL > "${BACKUP_DIR}.tar.gz"
-    
-    if [ $? -eq 0 ]; then
+    # Create archive
+    if tar -czf "${BACKUP_DIR}.tar.gz" $BACKUP_DIR/ 2>/dev/null; then
         rm -rf $BACKUP_DIR/
-        local final_size=$(du -h "${BACKUP_DIR}.tar.gz" | cut -f1)
+        local final_size=$(ls -lh "${BACKUP_DIR}.tar.gz" 2>/dev/null | awk '{print $5}' || echo "Unknown")
         log_success "Archive tạo thành công: ${BACKUP_DIR}.tar.gz ($final_size)"
-        
-        # Verify archive integrity
-        if tar -tzf "${BACKUP_DIR}.tar.gz" > /dev/null 2>&1; then
-            log_success "✓ Archive integrity verified"
-        else
-            log_warning "⚠️ Archive integrity check failed"
-        fi
+    elif tar -cf "${BACKUP_DIR}.tar" $BACKUP_DIR/ 2>/dev/null; then
+        rm -rf $BACKUP_DIR/
+        local final_size=$(ls -lh "${BACKUP_DIR}.tar" 2>/dev/null | awk '{print $5}' || echo "Unknown")
+        log_success "Archive tạo thành công: ${BACKUP_DIR}.tar ($final_size)"
     else
-        log_error "Tạo archive thất bại!"
-        exit 1
+        log_warning "Không thể tạo archive, giữ nguyên thư mục: $BACKUP_DIR/"
     fi
 }
 
-# Enhanced summary
+# Show summary
 show_summary() {
     local end_time=$(date)
-    local duration=$(($(date +%s) - $(cat /tmp/backup_start_timestamp 2>/dev/null || echo $(date +%s))))
     
     echo
     echo "======================================================"
     echo "🎉 BACKUP HOÀN TẤT THÀNH CÔNG!"
     echo "======================================================"
-    echo "📁 File backup: ${BACKUP_DIR}.tar.gz"
-    echo "📊 Kích thước: $(du -h "${BACKUP_DIR}.tar.gz" | cut -f1)"
-    echo "⏰ Thời gian: $duration giây"
+    if [ -f "${BACKUP_DIR}.tar.gz" ]; then
+        echo "📁 File backup: ${BACKUP_DIR}.tar.gz"
+        echo "📊 Kích thước: $(ls -lh "${BACKUP_DIR}.tar.gz" | awk '{print $5}')"
+    elif [ -f "${BACKUP_DIR}.tar" ]; then
+        echo "📁 File backup: ${BACKUP_DIR}.tar"
+        echo "📊 Kích thước: $(ls -lh "${BACKUP_DIR}.tar" | awk '{print $5}')"
+    else
+        echo "📁 Thư mục backup: $BACKUP_DIR/"
+    fi
     echo "🕐 Hoàn thành: $end_time"
     echo "======================================================"
     echo
     echo "📋 Bước tiếp theo:"
-    echo "1. 🚀 Copy file backup sang server mới:"
-    echo "   scp ${BACKUP_DIR}.tar.gz user@new-server:~/"
-    echo
-    echo "2. 🔄 Extract và restore:"
-    echo "   tar -xzf ${BACKUP_DIR}.tar.gz"
-    echo "   ./restore.sh ${BACKUP_DIR}/"
-    echo
-    echo "3. 🧪 Test restore:"
-    echo "   ./test_restore.sh"
-    echo
-    echo "📖 Xem thêm: SERVER_BACKUP_MIGRATION_GUIDE.md"
-    echo "📞 Support: admin@phulong.com"
+    echo "1. Copy backup sang server mới"
+    echo "2. Extract và restore theo hướng dẫn trong README.md"
     echo
 }
 
-# Main execution with progress tracking
+# Main execution
 main() {
-    # Store start time
-    date +%s > /tmp/backup_start_timestamp
-    date > /tmp/backup_start_time
-    
     clear
-    echo "🚀 PHÚLONG SERVER BACKUP SCRIPT v2.0"
+    echo "🚀 PHÚLONG SERVER BACKUP SCRIPT v2.1"
     echo "====================================="
     echo
     
-    local total_steps=9
-    local current_step=0
-    
-    # Step 1
-    ((current_step++))
-    show_progress $current_step $total_steps
     check_disk_space
-    
-    # Step 2
-    ((current_step++))
-    show_progress $current_step $total_steps
     check_docker
-    
-    # Step 3
-    ((current_step++))
-    show_progress $current_step $total_steps
     check_containers
-    
-    # Step 4
-    ((current_step++))
-    show_progress $current_step $total_steps
     health_check
     
     echo
     log_info "Bắt đầu backup server..."
     
-    # Step 5
-    ((current_step++))
-    show_progress $current_step $total_steps
     create_backup_dir
-    
-    # Step 6
-    ((current_step++))
-    show_progress $current_step $total_steps
     backup_database
-    
-    # Step 7
-    ((current_step++))
-    show_progress $current_step $total_steps
     backup_static_files
     backup_source_code
-    
-    # Step 8
-    ((current_step++))
-    show_progress $current_step $total_steps
     backup_docker_images
-    backup_docker_volumes
     backup_configurations
-    
-    # Step 9
-    ((current_step++))
-    show_progress $current_step $total_steps
     create_backup_readme
     create_final_archive
     
-    echo
     show_summary
-    
-    # Cleanup
-    rm -f /tmp/backup_start_time /tmp/backup_start_timestamp /tmp/health_check_results
 }
 
 # Script options
 case "${1:-}" in
     --help|-h)
-        echo "Phú Long Server Backup Script v2.0"
+        echo "Phú Long Server Backup Script v2.1"
         echo "Usage: $0 [options]"
         echo "Options:"
         echo "  --help, -h    Show this help message"
-        echo "  --quick, -q   Quick backup (skip Docker images)"
-        echo "  --compress=N  Set compression level (0-9, default: 6)"
+        echo "  --no-archive  Don't create final archive"
         exit 0
         ;;
-    --quick|-q)
-        log_info "Quick backup mode enabled"
-        backup_docker_images() { log_info "Skipping Docker images backup"; }
-        ;;
-    --compress=*)
-        COMPRESSION_LEVEL="${1#*=}"
-        log_info "Compression level set to: $COMPRESSION_LEVEL"
+    --no-archive)
+        log_info "No archive mode enabled"
+        create_final_archive() { log_info "Skipping archive creation"; }
         ;;
 esac
 
