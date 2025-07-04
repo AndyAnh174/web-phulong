@@ -58,7 +58,7 @@ export default function Header() {
     timeoutRef.current = setTimeout(() => {
       setHoveredDropdown(null)
       timeoutRef.current = null
-    }, 1500)
+    }, 500)
   }
 
   // Cleanup timeout on unmount
