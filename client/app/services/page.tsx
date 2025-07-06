@@ -67,7 +67,7 @@ export default function ServicesPage() {
   const fetchServices = useCallback(async () => {
     try {
       setLoading(true)
-      let url = "http://14.187.180.6:12122/api/services?"
+      let url = "http://14.187.207.48:12122/api/services?"
 
       if (selectedCategory !== "all") {
         url += `category=${selectedCategory}&`
@@ -362,7 +362,7 @@ export default function ServicesPage() {
                             <div className="relative h-64 bg-gray-100">
                               <Image
                                 src={service.image?.url 
-                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.180.6:12122${service.image.url}`)
+                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.207.48:12122${service.image.url}`)
                           : "/placeholder.svg?height=256&width=400"}
                                 alt={service.name}
                                 fill
@@ -473,7 +473,7 @@ export default function ServicesPage() {
                           <div className="relative w-32 h-32 rounded-lg overflow-hidden mr-6 shrink-0">
                             <Image
                               src={service.image?.url 
-                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.180.6:12122${service.image.url}`)
+                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.207.48:12122${service.image.url}`)
                           : "/placeholder.svg?height=128&width=128"}
                               alt={service.name}
                               fill

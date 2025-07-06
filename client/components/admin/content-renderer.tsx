@@ -16,7 +16,7 @@ export default function ContentRenderer({ content, className = "" }: ContentRend
     return text.replace(imageShortcodeRegex, (match, imageId, altText) => {
       const alt = altText || 'Image'
       // Tạo URL đầy đủ cho ảnh (giả sử API trả về đường dẫn tương đối)
-      const imageUrl = `http://14.187.180.6:12122/static/images/uploads/${imageId}.jpg`
+      const imageUrl = `http://14.187.207.48:12122/static/images/uploads/${imageId}.jpg`
       
       return `<img src="${imageUrl}" alt="${alt}" class="content-image" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 8px;" />`
     })
@@ -80,7 +80,7 @@ export function parseContentHTML(content: string): string {
   const imageShortcodeRegex = /\[image:(\d+)(?:\|([^\]]*))?\]/g
   let parsed = content.replace(imageShortcodeRegex, (match, imageId, altText) => {
     const alt = altText || 'Image'
-    const imageUrl = `http://14.187.180.6:12122/static/images/uploads/${imageId}.jpg`
+    const imageUrl = `http://14.187.207.48:12122/static/images/uploads/${imageId}.jpg`
     
     return `<img src="${imageUrl}" alt="${alt}" class="content-image" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 8px;" />`
   })

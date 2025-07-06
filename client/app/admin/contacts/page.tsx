@@ -52,7 +52,7 @@ export default function AdminContactsPage() {
     try {
       setLoading(true)
       const skip = (currentPage - 1) * itemsPerPage
-      const response = await fetch(`http://14.187.180.6:12122/api/contact/list?skip=${skip}&limit=${itemsPerPage}`, {
+      const response = await fetch(`http://14.187.207.48:12122/api/contact/list?skip=${skip}&limit=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -87,7 +87,7 @@ export default function AdminContactsPage() {
     if (!selectedContact) return
 
     try {
-      const response = await fetch(`http://14.187.180.6:12122/api/contact/${selectedContact.id}`, {
+      const response = await fetch(`http://14.187.207.48:12122/api/contact/${selectedContact.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

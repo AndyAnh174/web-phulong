@@ -107,7 +107,7 @@ export default function BlogPage() {
         setLoadingMore(true)
       }
 
-      let url = "http://14.187.180.6:12122/api/blogs?is_active=true"
+      let url = "http://14.187.207.48:12122/api/blogs?is_active=true"
       
       // Add pagination
       const page = reset ? 1 : currentPage

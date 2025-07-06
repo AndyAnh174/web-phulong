@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Kiểm tra token có hợp lệ không
   const checkAuthWithToken = async (tokenToCheck: string): Promise<boolean> => {
     try {
-      const response = await fetch("http://14.187.180.6:12122/api/users/me", {
+      const response = await fetch("http://14.187.207.48:12122/api/users/me", {
         headers: {
           Authorization: `Bearer ${tokenToCheck}`,
         },
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true)
     try {
-      const response = await fetch("http://14.187.180.6:12122/api/auth/login-json", {
+      const response = await fetch("http://14.187.207.48:12122/api/auth/login-json", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(data.access_token)
 
         // Lấy thông tin user
-        const userResponse = await fetch("http://14.187.180.6:12122/api/users/me", {
+        const userResponse = await fetch("http://14.187.207.48:12122/api/users/me", {
           headers: {
             Authorization: `Bearer ${data.access_token}`,
           },

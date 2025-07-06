@@ -92,7 +92,7 @@ interface FormErrors {
   category?: string
 }
 
-const API_BASE_URL =  'http://14.187.180.6:12122/api'
+const API_BASE_URL =  'http://14.187.207.48:12122/api'
 
 export default function AdminBlogsPage() {
   // Debug API URL
@@ -460,7 +460,7 @@ export default function AdminBlogsPage() {
       formData.append('category', category);
       formData.append('is_visible', 'true');
 
-      const response = await fetch('http://14.187.180.6:12122/api/images/upload', {
+      const response = await fetch('http://14.187.207.48:12122/api/images/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

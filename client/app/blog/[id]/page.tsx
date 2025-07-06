@@ -134,7 +134,7 @@ export default function BlogDetailPage() {
 
   const fetchBlogDetail = async () => {
     try {
-      const response = await fetch(`http://14.187.180.6:12122/api/blogs/${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/blogs/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         const enhancedBlog = {
@@ -169,7 +169,7 @@ export default function BlogDetailPage() {
 
   const fetchRelatedBlogs = async (category: string) => {
     try {
-      const response = await fetch(`http://14.187.180.6:12122/api/blogs?category=${category}&limit=3`)
+      const response = await fetch(`http://14.187.207.48:12122/api/blogs?category=${category}&limit=3`)
       if (response.ok) {
         const data = await response.json()
         const blogData = Array.isArray(data) ? data : data.items || data.data || []

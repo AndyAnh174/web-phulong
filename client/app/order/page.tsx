@@ -85,7 +85,7 @@ export default function OrderPage() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch("http://14.187.180.6:12122/api/services?is_active=true")
+      const response = await fetch("http://14.187.207.48:12122/api/services?is_active=true")
       const data = await response.json()
       setServices(data)
     } catch (error) {
@@ -189,7 +189,7 @@ export default function OrderPage() {
         submitData.append("design_file", designFile)
       }
 
-      const response = await fetch("http://14.187.180.6:12122/api/orders", {
+      const response = await fetch("http://14.187.207.48:12122/api/orders", {
         method: "POST",
         body: submitData,
       })

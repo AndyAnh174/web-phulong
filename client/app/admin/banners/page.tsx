@@ -118,7 +118,7 @@ export default function AdminBannersPage() {
         setLoading(true)
       }
       
-      let url = `http://14.187.180.6:12122/api/banners`
+      let url = `http://14.187.207.48:12122/api/banners`
       
       if (statusFilter !== "all") {
         url += `?is_active=${statusFilter === "active"}`
@@ -221,7 +221,7 @@ export default function AdminBannersPage() {
       uploadData.append('is_active', formData.is_active.toString())
       uploadData.append('order', formData.order.toString())
 
-      const response = await fetch("http://14.187.180.6:12122/api/banners/upload-with-banner", {
+      const response = await fetch("http://14.187.207.48:12122/api/banners/upload-with-banner", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -282,7 +282,7 @@ export default function AdminBannersPage() {
         order: formData.order
       }
 
-      const response = await fetch(`http://14.187.180.6:12122/api/banners/${selectedBanner.id}`, {
+      const response = await fetch(`http://14.187.207.48:12122/api/banners/${selectedBanner.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -328,7 +328,7 @@ export default function AdminBannersPage() {
       setSubmitting(true)
       
       // Delete with image (query param delete_image=true)
-      const response = await fetch(`http://14.187.180.6:12122/api/banners/${selectedBanner.id}?delete_image=true`, {
+      const response = await fetch(`http://14.187.207.48:12122/api/banners/${selectedBanner.id}?delete_image=true`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -369,7 +369,7 @@ export default function AdminBannersPage() {
     try {
       setToggleActiveLoading(banner.id)
       
-      const response = await fetch(`http://14.187.180.6:12122/api/banners/${banner.id}/toggle`, {
+      const response = await fetch(`http://14.187.207.48:12122/api/banners/${banner.id}/toggle`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -573,7 +573,7 @@ export default function AdminBannersPage() {
                         <div className="flex items-center gap-3">
                           <div className="relative w-16 h-10 rounded border overflow-hidden">
                             <Image
-                              src={banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`}
+                              src={banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.207.48:12122${banner.image.url}`}
                               alt={banner.image.alt_text || banner.title}
                               fill
                               className="object-cover"
@@ -643,11 +643,11 @@ export default function AdminBannersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => window.open(banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`, '_blank')}>
+                            <DropdownMenuItem onClick={() => window.open(banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.207.48:12122${banner.image.url}`, '_blank')}>
                               <Eye className="mr-2 h-4 w-4" />
                               Xem ảnh
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => copyUrlToClipboard(banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.180.6:12122${banner.image.url}`)}>
+                            <DropdownMenuItem onClick={() => copyUrlToClipboard(banner.image.url.startsWith('http') ? banner.image.url : `http://14.187.207.48:12122${banner.image.url}`)}>
                               <Copy className="mr-2 h-4 w-4" />
                               Copy URL
                             </DropdownMenuItem>
@@ -861,7 +861,7 @@ export default function AdminBannersPage() {
                 <Label className="text-sm text-gray-600">Banner hiện tại:</Label>
                 <div className="relative w-full h-32 border rounded-lg overflow-hidden">
                   <Image
-                    src={selectedBanner.image.url.startsWith('http') ? selectedBanner.image.url : `http://14.187.180.6:12122${selectedBanner.image.url}`}
+                    src={selectedBanner.image.url.startsWith('http') ? selectedBanner.image.url : `http://14.187.207.48:12122${selectedBanner.image.url}`}
                     alt={selectedBanner.image.alt_text || selectedBanner.title}
                     fill
                     className="object-cover"

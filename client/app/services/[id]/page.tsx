@@ -82,7 +82,7 @@ export default function ServiceDetailPage() {
 
   const fetchServiceDetail = async () => {
     try {
-      const response = await fetch(`http://14.187.180.6:12122/api/services/${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setService(data)
@@ -107,7 +107,7 @@ export default function ServiceDetailPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://14.187.180.6:12122/api/services/${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setReviews(data)
@@ -119,7 +119,7 @@ export default function ServiceDetailPage() {
 
   const fetchSuggestedServices = async () => {
     try {
-      const response = await fetch(`http://14.187.180.6:12122/api/services/suggested?current_id=${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/suggested?current_id=${params.id}`)
       if (response.ok) {
         const data = await response.json()
         setSuggestedServices(data)
@@ -247,7 +247,7 @@ export default function ServiceDetailPage() {
               >
                 <Image
                   src={service.image?.url 
-                  ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.180.6:12122${service.image.url}`)
+                  ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.207.48:12122${service.image.url}`)
                   : "/placeholder.svg?height=500&width=700"}
                   alt={service.name}
                   width={700}
@@ -549,7 +549,7 @@ export default function ServiceDetailPage() {
                       <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
                         <Image
                           src={suggestedService.image?.url 
-                          ? (suggestedService.image.url.startsWith('http') ? suggestedService.image.url : `http://14.187.180.6:12122${suggestedService.image.url}`)
+                          ? (suggestedService.image.url.startsWith('http') ? suggestedService.image.url : `http://14.187.207.48:12122${suggestedService.image.url}`)
                           : "/placeholder.svg?height=240&width=400"}
                           alt={suggestedService.name}
                           width={400}
