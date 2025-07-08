@@ -15,6 +15,7 @@ from schemas.printing import (
 from models.models import Printing, PrintingImage, User, Image
 from middlewares.auth_middleware import get_current_user, get_admin_user
 from config.settings import settings
+from utils.slug import create_slug, get_model_by_slug
 import logging
 import re
 
@@ -166,15 +167,18 @@ async def get_printings(
     
     return PrintingListResponse(items=parsed_printings, total=total)
 
-@router.get("/{printing_id}", response_model=PrintingOut)
-async def get_printing(printing_id: int, db: Session = Depends(get_db)):
-    """Lấy chi tiết một bài đăng in ấn (Public có thể truy cập)"""
-    printing = db.query(Printing).filter(Printing.id == printing_id).first()
+@router.get("/{slug}", response_model=PrintingOut)
+async def get_printing(slug: str, db: Session = Depends(get_db)):
+    """
+    Lấy chi tiết một bài đăng in ấn theo slug (Public có thể truy cập)
+    Ví dụ: /api/printing/bai-dang-in-an-moi
+    """
+    printing = get_model_by_slug(slug, Printing, db, 'title')
     
     if not printing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bài đăng với ID {printing_id} không tồn tại"
+            detail=f"Bài đăng với slug '{slug}' không tồn tại"
         )
     
     # Parse content để thay thế shortcode ảnh bằng HTML
@@ -288,9 +292,9 @@ async def create_printing(
             detail=f"Lỗi khi tạo bài đăng: {str(e)}"
         )
 
-@router.put("/{printing_id}", response_model=PrintingResponse)
+@router.put("/{slug}", response_model=PrintingResponse)
 async def update_printing(
-    printing_id: int,
+    slug: str,
     title: Optional[str] = Form(None, description="Tiêu đề bài đăng"),
     time: Optional[str] = Form(None, description="Thời gian in ấn"),
     content: Optional[str] = Form(None, description="Nội dung bài đăng"),
@@ -307,12 +311,12 @@ async def update_printing(
     """
     try:
         # Tìm bài đăng
-        db_printing = db.query(Printing).filter(Printing.id == printing_id).first()
+        db_printing = get_model_by_slug(slug, Printing, db, 'title')
         
         if not db_printing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Bài đăng với ID {printing_id} không tồn tại"
+                detail=f"Bài đăng với slug '{slug}' không tồn tại"
             )
         
         # Cập nhật các trường nếu được cung cấp
@@ -339,7 +343,7 @@ async def update_printing(
             # Lấy số ảnh hiện tại nếu giữ lại ảnh cũ
             current_image_count = 0
             if keep_existing_images:
-                current_image_count = db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).count()
+                current_image_count = db.query(PrintingImage).filter(PrintingImage.printing_id == db_printing.id).count()
             
             # Kiểm tra tổng số ảnh (cũ + mới) không quá 3
             new_image_count = len([img for img in images if img.filename])
@@ -353,7 +357,7 @@ async def update_printing(
             
             # Nếu không giữ ảnh cũ, xóa tất cả ảnh cũ
             if not keep_existing_images:
-                old_images = db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).all()
+                old_images = db.query(PrintingImage).filter(PrintingImage.printing_id == db_printing.id).all()
                 for old_img_relation in old_images:
                     # Xóa file vật lý (tùy chọn, có thể comment nếu muốn giữ file)
                     old_img = db.query(Image).filter(Image.id == old_img_relation.image_id).first()
@@ -364,7 +368,7 @@ async def update_printing(
                             pass  # Không quan trọng nếu không xóa được file
                 
                 # Xóa các record
-                db.query(PrintingImage).filter(PrintingImage.printing_id == printing_id).delete()
+                db.query(PrintingImage).filter(PrintingImage.printing_id == db_printing.id).delete()
             
             # Upload ảnh mới
             for file in images:
@@ -376,7 +380,7 @@ async def update_printing(
                         # Tạo liên kết
                         next_order = current_image_count + len(uploaded_images) if keep_existing_images else len(uploaded_images)
                         printing_image = PrintingImage(
-                            printing_id=printing_id,
+                            printing_id=db_printing.id,
                             image_id=new_image.id,
                             order=next_order
                         )
@@ -407,25 +411,25 @@ async def update_printing(
         raise
     except Exception as e:
         db.rollback()
-        logging.error(f"Lỗi khi cập nhật bài đăng in ấn {printing_id}: {str(e)}")
+        logging.error(f"Lỗi khi cập nhật bài đăng in ấn {slug}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lỗi khi cập nhật bài đăng: {str(e)}"
         )
 
-@router.delete("/{printing_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_printing(
-    printing_id: int, 
+    slug: str, 
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_admin_user)
 ):
-    """Xóa bài đăng in ấn (Chỉ ADMIN mới có quyền)"""
-    db_printing = db.query(Printing).filter(Printing.id == printing_id).first()
+    """Xóa bài đăng in ấn theo slug (Chỉ ADMIN mới có quyền)"""
+    db_printing = get_model_by_slug(slug, Printing, db, 'title')
     
     if not db_printing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bài đăng với ID {printing_id} không tồn tại"
+            detail=f"Bài đăng với slug '{slug}' không tồn tại"
         )
     
     try:
@@ -437,25 +441,25 @@ async def delete_printing(
         
     except Exception as e:
         db.rollback()
-        logging.error(f"Lỗi khi xóa bài đăng in ấn {printing_id}: {str(e)}")
+        logging.error(f"Lỗi khi xóa bài đăng in ấn {slug}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lỗi khi xóa bài đăng: {str(e)}"
         )
 
-@router.patch("/{printing_id}/visibility", response_model=PrintingResponse)
+@router.patch("/{slug}/visibility", response_model=PrintingResponse)
 async def toggle_printing_visibility(
-    printing_id: int,
+    slug: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
-    """Ẩn/hiện bài đăng in ấn (Chỉ ADMIN mới có quyền)"""
-    db_printing = db.query(Printing).filter(Printing.id == printing_id).first()
+    """Ẩn/hiện bài đăng in ấn theo slug (Chỉ ADMIN mới có quyền)"""
+    db_printing = get_model_by_slug(slug, Printing, db, 'title')
     
     if not db_printing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bài đăng với ID {printing_id} không tồn tại"
+            detail=f"Bài đăng với slug '{slug}' không tồn tại"
         )
     
     try:
@@ -474,7 +478,7 @@ async def toggle_printing_visibility(
         
     except Exception as e:
         db.rollback()
-        logging.error(f"Lỗi khi thay đổi trạng thái hiển thị bài đăng {printing_id}: {str(e)}")
+        logging.error(f"Lỗi khi thay đổi trạng thái hiển thị bài đăng {slug}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lỗi khi thay đổi trạng thái hiển thị: {str(e)}"

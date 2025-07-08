@@ -11,6 +11,7 @@ from schemas.schemas import ServiceCreate, ServiceOut, ServiceUpdate, ServiceRev
 from models.models import Service, User, ServiceReview, Image
 from middlewares.auth_middleware import get_current_user, get_admin_user
 from config.settings import settings
+from utils.slug import create_slug, get_model_by_slug
 
 router = APIRouter(prefix="/api/services", tags=["Services"])
 
@@ -164,14 +165,18 @@ async def get_suggested_services(current_id: int = Query(...), db: Session = Dep
         
     return services
 
-@router.get("/{service_id}", response_model=ServiceOut)
-async def get_service(service_id: int, db: Session = Depends(get_db)):
-    service = db.query(Service).filter(Service.id == service_id).first()
+@router.get("/{slug}", response_model=ServiceOut)
+async def get_service(slug: str, db: Session = Depends(get_db)):
+    """
+    Lấy chi tiết dịch vụ theo slug
+    Ví dụ: /api/services/thiet-ke-website
+    """
+    service = get_model_by_slug(slug, Service, db, 'name')
     
     if not service:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Dịch vụ với ID {service_id} không tồn tại"
+            detail=f"Dịch vụ với slug '{slug}' không tồn tại"
         )
     
     return service
@@ -232,9 +237,9 @@ async def create_service(
             detail=f"Lỗi khi tạo dịch vụ: {str(e)}"
         )
 
-@router.put("/{service_id}", response_model=ServiceOut)
+@router.put("/{slug}", response_model=ServiceOut)
 async def update_service(
-    service_id: int,
+    slug: str,
     name: Optional[str] = Form(None, description="Tên dịch vụ"),
     description: Optional[str] = Form(None, description="Mô tả dịch vụ"),
     price: Optional[float] = Form(None, description="Giá dịch vụ"),
@@ -252,12 +257,12 @@ async def update_service(
     - remove_image=true để xóa ảnh hiện tại
     """
     try:
-        db_service = db.query(Service).filter(Service.id == service_id).first()
+        db_service = get_model_by_slug(slug, Service, db, 'name')
         
         if not db_service:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Dịch vụ với ID {service_id} không tồn tại"
+                detail=f"Dịch vụ với slug '{slug}' không tồn tại"
             )
         
         # Xử lý ảnh mới nếu có
@@ -316,14 +321,17 @@ async def update_service(
             detail=f"Lỗi khi cập nhật dịch vụ: {str(e)}"
         )
 
-@router.delete("/{service_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_service(service_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
-    db_service = db.query(Service).filter(Service.id == service_id).first()
+@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_service(slug: str, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
+    """
+    Xóa dịch vụ theo slug (Chỉ ADMIN mới có quyền)
+    """
+    db_service = get_model_by_slug(slug, Service, db, 'name')
     
     if not db_service:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Dịch vụ với ID {service_id} không tồn tại"
+            detail=f"Dịch vụ với slug '{slug}' không tồn tại"
         )
     
     # Xóa ảnh liên quan nếu có
@@ -341,20 +349,32 @@ async def delete_service(service_id: int, db: Session = Depends(get_db), current
     
     return None
 
-@router.get("/{service_id}/reviews", response_model=List[ServiceReviewOut])
-async def get_service_reviews(service_id: int, db: Session = Depends(get_db)):
-    service = db.query(Service).filter(Service.id == service_id).first()
+@router.get("/{slug}/reviews", response_model=List[ServiceReviewOut])
+async def get_service_reviews(slug: str, db: Session = Depends(get_db)):
+    """
+    Lấy danh sách reviews của dịch vụ theo slug
+    """
+    service = get_model_by_slug(slug, Service, db, 'name')
     if not service:
-        raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
-    return db.query(ServiceReview).filter(ServiceReview.service_id == service_id).order_by(ServiceReview.created_at.desc()).all()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dịch vụ với slug '{slug}' không tồn tại"
+        )
+    return db.query(ServiceReview).filter(ServiceReview.service_id == service.id).order_by(ServiceReview.created_at.desc()).all()
 
-@router.post("/{service_id}/reviews", response_model=ServiceReviewOut)
-async def create_service_review(service_id: int, review: ServiceReviewCreate, db: Session = Depends(get_db)):
-    service = db.query(Service).filter(Service.id == service_id).first()
+@router.post("/{slug}/reviews", response_model=ServiceReviewOut)
+async def create_service_review(slug: str, review: ServiceReviewCreate, db: Session = Depends(get_db)):
+    """
+    Tạo review mới cho dịch vụ theo slug
+    """
+    service = get_model_by_slug(slug, Service, db, 'name')
     if not service:
-        raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dịch vụ với slug '{slug}' không tồn tại"
+        )
     new_review = ServiceReview(
-        service_id=service_id,
+        service_id=service.id,
         author_name=review.author_name if not review.is_anonymous else None,
         is_anonymous=review.is_anonymous,
         rating=review.rating,
