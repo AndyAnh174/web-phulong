@@ -24,8 +24,8 @@ const stats = [
   },
   {
     icon: TrendingUp,
-    number: "1000+",
-    label: "Khách hàng hài lòng",
+    number: "100+",
+    label: "Khách hàng",
     color: "from-gray-500 to-gray-600"
   },
   {
@@ -82,7 +82,7 @@ const partners = [
   },
   {
     id: 7,
-    name: "ĐH Sư Phạm Kỹ Thuật TPHCM",
+    name: "HCMUTE",
     logo: "/Logo-doitac/Logo HCMUTE_Stroke white.png",
     category: "Giáo dục",
   },
