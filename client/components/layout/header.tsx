@@ -39,7 +39,7 @@ export default function Header() {
         { name: "In ấn", href: "/pricing/in-an", icon: Printer },
       ]
     },
-    { name: "Blog", href: "/blog" },
+    { name: "Dịch vụ nổi bật", href: "/blog" },
     { name: "Đặt hàng", href: "/order" },
     { name: "Liên hệ", href: "/contact" },
   ]

@@ -198,7 +198,7 @@ export default function FeaturedServices() {
           </motion.div>
 
           <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-red-700 to-gray-800 bg-clip-text text-transparent mb-6">
-            Dịch vụ nổi bật
+          Bảng giá dịch vụ
             <motion.div 
               className="w-24 h-1.5 bg-gradient-to-r from-red-600 to-gray-500 mx-auto mt-4 rounded-full"
               initial={{ width: 0 }}

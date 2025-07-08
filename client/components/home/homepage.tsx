@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import Hero from "./hero"
 import AboutSection from "./about-section"
 import FeaturedServices from "./featured-services"
+import FeaturedBlogServices from "./featured-blog-services"
 import ContactCTA from "./contact-cta"
 import { Skeleton } from "@/components/ui/skeleton"
 import Footer from "@/components/layout/footer"
@@ -14,15 +15,20 @@ export default function Homepage() {
       {/* Hero Section - Banner lớn với ảnh nổi bật + slogan */}
       <Hero />
       
-      {/* About Section - Giới thiệu ngắn về công ty */}
-      <AboutSection />
+      {/* Dịch vụ nổi bật - Từ blog API */}
+      <Suspense fallback={<ServicesSkeleton />}>
+        <FeaturedBlogServices />
+      </Suspense>
       
-      {/* Featured Services - Danh sách dịch vụ in ấn nổi bật */}
+      {/* Bảng giá dịch vụ - Danh sách dịch vụ in ấn */}
       <Suspense fallback={<ServicesSkeleton />}>
         <FeaturedServices />
       </Suspense>
       
-      {/* Contact CTA - Call to Action với các button chính */}
+      {/* Về chúng tôi - Giới thiệu ngắn về công ty */}
+      <AboutSection />
+      
+      {/* Liên hệ chúng tôi - Call to Action với các button chính */}
       <ContactCTA />
       <Footer />
     </div>

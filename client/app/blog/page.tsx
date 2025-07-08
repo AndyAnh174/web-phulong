@@ -442,7 +442,7 @@ export default function BlogPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Blog In Ấn & Thiết Kế
+              Dịch vụ nổi bật In Ấn & Thiết Kế
             </motion.h1>
             
             <motion.p 
@@ -545,7 +545,7 @@ export default function BlogPage() {
                     <SelectItem value="all" className="rounded-md">
                       <div className="flex items-center">
                         <BookOpen className="h-4 w-4 mr-2" aria-hidden="true" />
-                        Tất cả danh mục
+                        Tất cả danh mục nổi bật
                       </div>
                     </SelectItem>
                     {/* Categories from API */}
@@ -559,10 +559,10 @@ export default function BlogPage() {
                       const Icon = predefinedCategory?.icon || BookOpen
                       
                       return (
-                        <SelectItem key={category} value={category} className="rounded-md">
-                          <div className="flex items-center">
-                            <Icon className="h-4 w-4 mr-2" aria-hidden="true" />
-                            {category}
+                        <SelectItem key={category} value={category} className="rounded-md hover:bg-red-50">
+                          <div className="flex items-center text-red-600">
+                            <Icon className="h-4 w-4 mr-2 text-red-500" aria-hidden="true" />
+                            <span className="font-medium">{category}</span>
                           </div>
                         </SelectItem>
                       )
