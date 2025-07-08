@@ -116,6 +116,43 @@ const partners = [
     logo: "/Logo-doitac/TOHIN.png",
     category: "Xây dựng",
   },
+  {
+    id: 13,
+    name: "ĐH Y Dược TP.HCM",
+    logo: "/Logo-doitac/download.jpeg",
+    category: "Giáo dục",
+  },
+  {
+    id: 14,
+    name: "R.E.P Biotech",
+    logo: "/Logo-doitac/REP-03.png",
+    category: "Công nghệ",
+  },
+  {
+    id: 15,
+    name: "R.E.P Trade ",
+    logo: "/Logo-doitac/REP-04.png",
+    category: "Công nghệ",
+  },
+  {
+    id: 16,
+    name: "Plus",
+    logo: "/Logo-doitac/REP-05.png",
+    category: "Đổi mới",
+  },
+  {
+    id: 17,
+    name: "R.E.P Aqua ",
+    logo: "/Logo-doitac/REP-06.png",
+    category: "Số hóa",
+  },
+ 
+  {
+    id: 19,
+    name: "Thú Y Cún Con",
+    logo: "/Logo-doitac/THU Y CUN CON.png",
+    category: "Thú y",
+  },
 ];
 
 const trustBadges = [
@@ -351,10 +388,6 @@ export default function PartnersLogos() {
                 <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 mb-3 text-xs">
                   {partner.category}
                 </Badge>
-                
-                <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
-                  {partner.description}
-                </p>
               </Card>
             </motion.div>
           ))}
