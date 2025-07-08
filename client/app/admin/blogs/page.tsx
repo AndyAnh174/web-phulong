@@ -566,7 +566,7 @@ export default function AdminBlogsPage() {
             height={200}
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
             onError={(e) => {
-              e.currentTarget.src = '/placeholder-blog.jpg'
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
             }}
           />
         ) : (

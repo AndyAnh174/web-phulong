@@ -2096,7 +2096,7 @@ export default function AdminServicesPage() {
                             className="h-10 w-16 object-cover rounded" 
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg?height=40&width=64';
+                              target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&q=80';
                             }}
                           />
                         ) : post.image_urls && post.image_urls.length > 0 && post.image_urls[0].trim() ? (
@@ -2106,7 +2106,7 @@ export default function AdminServicesPage() {
                             className="h-10 w-16 object-cover rounded" 
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg?height=40&width=64';
+                              target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&q=80';
                             }}
                           />
                         ) : (

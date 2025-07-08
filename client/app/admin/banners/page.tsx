@@ -578,7 +578,7 @@ export default function AdminBannersPage() {
                               fill
                               className="object-cover"
                               onError={(e) => {
-                                e.currentTarget.src = "/placeholder.svg?height=40&width=64"
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&q=80"
                               }}
                             />
                           </div>
