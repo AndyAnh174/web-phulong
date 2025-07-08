@@ -18,7 +18,8 @@ import {
   Award,
   Check,
   Zap,
-  Heart
+  Heart,
+  Info
 } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -305,8 +306,8 @@ export default function FeaturedServices() {
                     className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-lg mt-1"
                   >
                     <Link href={`/services/${service.id}`} className="flex items-center justify-center">
-                      <ShoppingCart className="mr-2 h-5 w-5" />
-                      Đặt hàng ngay
+                      <Info className="mr-2 h-5 w-5" />
+                      Xem Chi Tiết
                     </Link>
                   </Button>
                 </CardFooter>
