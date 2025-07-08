@@ -544,8 +544,8 @@ export default function BlogPage() {
                   <SelectContent className="rounded-lg border-gray-300 shadow-lg">
                     <SelectItem value="all" className="rounded-md">
                       <div className="flex items-center">
-                        <BookOpen className="h-4 w-4 mr-2" aria-hidden="true" />
-                        Tất cả danh mục nổi bật
+                        <BookOpen className="h-4 w-4 mr-2 text-red-500" aria-hidden="true" />
+                        <span className="text-red-600 font-medium">Tất cả danh mục nổi bật</span>
                       </div>
                     </SelectItem>
                     {/* Categories from API */}

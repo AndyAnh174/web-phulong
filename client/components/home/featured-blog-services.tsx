@@ -249,7 +249,7 @@ export default function FeaturedBlogServices() {
             </div>
             <Sparkles className="h-5 w-5 text-red-600 mr-2 animate-pulse" />
             <span className="text-sm font-semibold bg-gradient-to-r from-red-700 to-gray-700 bg-clip-text text-transparent">
-              Kiến thức chuyên sâu
+              Dịch vụ nổi bật
             </span>
             <TrendingUp className="h-5 w-5 text-gray-600 ml-2" />
           </motion.div>
