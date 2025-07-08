@@ -24,6 +24,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { useToast } from "@/hooks/use-toast"
 import Footer from "@/components/layout/footer"
+import { createSlug } from "@/lib/utils"
 
 // Interface definitions
 interface Service {
@@ -342,7 +343,7 @@ export default function DesignPricingPage() {
                           variant="outline"
                           className="w-full border-2 border-gray-200 hover:border-red-300 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-300 font-medium"
                         >
-                          <Link href={`/services/${service.id}`} className="flex items-center justify-center">
+                                                      <Link href={`/services/${createSlug(service.name)}`} className="flex items-center justify-center">
                             <FileText className="h-4 w-4 mr-2" />
                             Xem chi tiết
                             <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />

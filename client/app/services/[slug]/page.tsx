@@ -32,6 +32,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { useFavorites } from "@/hooks/use-favorites"
 import { motion } from "framer-motion"
+import { createSlug } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -73,16 +74,16 @@ export default function ServiceDetailPage() {
   const { toggleFavorite, isFavorite } = useFavorites()
 
   useEffect(() => {
-    if (params.id) {
+    if (params.slug) {
       fetchServiceDetail()
       fetchReviews()
       fetchSuggestedServices()
     }
-  }, [params.id])
+  }, [params.slug])
 
   const fetchServiceDetail = async () => {
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/services/${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/${params.slug}`)
       if (response.ok) {
         const data = await response.json()
         setService(data)
@@ -107,7 +108,7 @@ export default function ServiceDetailPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/services/${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/${params.slug}/reviews`)
       if (response.ok) {
         const data = await response.json()
         setReviews(data)
@@ -119,7 +120,7 @@ export default function ServiceDetailPage() {
 
   const fetchSuggestedServices = async () => {
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/services/suggested?current_id=${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/suggested?current_slug=${params.slug}`)
       if (response.ok) {
         const data = await response.json()
         setSuggestedServices(data)
@@ -593,7 +594,7 @@ export default function ServiceDetailPage() {
                       </div>
                       
                       <Button asChild className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-300 text-xs sm:text-sm h-8 sm:h-10">
-                        <Link href={`/services/${suggestedService.id}`} className="flex items-center justify-center">
+                        <Link href={`/services/${createSlug(suggestedService.name)}`} className="flex items-center justify-center">
                           <Eye className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Xem chi tiết</span>
                           <span className="sm:hidden">Xem</span>

@@ -22,6 +22,7 @@ import {
   Info
 } from "lucide-react"
 import { motion } from "framer-motion"
+import { createSlug } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -305,7 +306,7 @@ export default function FeaturedServices() {
                     asChild
                     className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-lg mt-1"
                   >
-                    <Link href={`/services/${service.id}`} className="flex items-center justify-center">
+                    <Link href={`/services/${createSlug(service.name)}`} className="flex items-center justify-center">
                       <Info className="mr-2 h-5 w-5" />
                       Xem Chi Tiết
                     </Link>

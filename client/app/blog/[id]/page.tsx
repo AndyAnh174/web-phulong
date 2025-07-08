@@ -113,11 +113,11 @@ export default function BlogDetailPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (params.id) {
+    if (params.slug) {
       fetchBlogDetail()
       setStartReadTime(new Date())
     }
-  }, [params.id])
+  }, [params.slug])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,7 +134,7 @@ export default function BlogDetailPage() {
 
   const fetchBlogDetail = async () => {
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/blogs/${params.id}`)
+      const response = await fetch(`http://14.187.207.48:12122/api/blogs/${params.slug}`)
       if (response.ok) {
         const data = await response.json()
         const enhancedBlog = {
@@ -169,12 +169,16 @@ export default function BlogDetailPage() {
 
   const fetchRelatedBlogs = async (category: string) => {
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/blogs?category=${category}&limit=3`)
+      const response = await fetch(`http://14.187.207.48:12122/api/blogs?category=${category}&limit=4`)
       if (response.ok) {
         const data = await response.json()
         const blogData = Array.isArray(data) ? data : data.items || data.data || []
+        // Import createSlug function for comparison
+        const { createSlug } = await import('@/lib/utils')
+        const currentSlug = params.slug as string
+        
         const filtered = blogData
-          .filter((b: any) => b.id !== parseInt(params.id as string))
+          .filter((b: any) => createSlug(b.title) !== currentSlug)
           .slice(0, 3)
           .map((b: any) => ({
             ...b,

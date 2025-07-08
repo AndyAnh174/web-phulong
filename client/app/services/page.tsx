@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
+import { createSlug } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -458,7 +459,7 @@ export default function ServicesPage() {
                             asChild
                             className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform group-hover:scale-105 transition-all duration-300"
                           >
-                            <Link href={`/services/${service.id}`} className="flex items-center justify-center">
+                            <Link href={`/services/${createSlug(service.name)}`} className="flex items-center justify-center">
                               <Zap className="mr-2 h-4 w-4" />
                               Xem chi tiết 
                               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
@@ -509,7 +510,7 @@ export default function ServicesPage() {
                               </span>
                               
                               <Button asChild className="bg-red-600 hover:bg-red-700">
-                                <Link href={`/services/${service.id}`}>
+                                <Link href={`/services/${createSlug(service.name)}`}>
                                   Xem chi tiết
                                   <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
