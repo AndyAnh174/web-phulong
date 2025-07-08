@@ -42,48 +42,91 @@ const stats = [
   }
 ]
 
+// Logo đối tác thực tế từ thư mục Logo-doitac
 const partners = [
   {
     id: 1,
-    name: "FPT Corporation",
-    logo: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-    category: "Công nghệ",
-    description: "Đối tác chiến lược trong lĩnh vực công nghệ"
-  },
-  {
-    id: 2,
-    name: "Vingroup",
-    logo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-    category: "Tập đoàn",
-    description: "Hợp tác dài hạn trong các dự án lớn"
-  },
-  {
-    id: 3,
-    name: "Vietcombank",
-    logo: "https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+    name: "Agribank",
+    logo: "/Logo-doitac/Argibank_logo.svg.png",
     category: "Ngân hàng",
     description: "Đối tác tài chính đáng tin cậy"
   },
   {
+    id: 2,
+    name: "AvaKid",
+    logo: "/Logo-doitac/avakid.png",
+    category: "Giáo dục",
+    description: "Hợp tác in ấn chuyên nghiệp"
+  },
+  {
+    id: 3,
+    name: "BILCO",
+    logo: "/Logo-doitac/BILCO.jpg",
+    category: "Công nghiệp",
+    description: "Cung cấp giải pháp in ấn toàn diện"
+  },
+  {
     id: 4,
-    name: "Samsung Vietnam",
-    logo: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-    category: "Điện tử",
-    description: "Cung cấp giải pháp in ấn chuyên nghiệp"
+    name: "Datalogic",
+    logo: "/Logo-doitac/datalogic.png",
+    category: "Công nghệ",
+    description: "Đối tác công nghệ hàng đầu"
   },
   {
     id: 5,
-    name: "Grab Vietnam",
-    logo: "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-    category: "Công nghệ",
+    name: "KoreMart",
+    logo: "/Logo-doitac/koremart.png",
+    category: "Thương mại",
     description: "Đồng hành trong chiến dịch marketing"
   },
   {
     id: 6,
-    name: "Unilever Vietnam",
-    logo: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-    category: "FMCG",
-    description: "Hỗ trợ in ấn cho các sản phẩm tiêu dùng"
+    name: "LILAMA",
+    logo: "/Logo-doitac/LILAMA.png",
+    category: "Xây dựng",
+    description: "Hỗ trợ in ấn cho dự án xây dựng"
+  },
+  {
+    id: 7,
+    name: "ĐH Bách Khoa TP.HCM",
+    logo: "/Logo-doitac/Logo HCMUTE_Stroke white.png",
+    category: "Giáo dục",
+    description: "Đối tác giáo dục uy tín"
+  },
+  {
+    id: 8,
+    name: "Mobile World",
+    logo: "/Logo-doitac/MWG.png",
+    category: "Bán lẻ",
+    description: "Hợp tác in ấn quy mô lớn"
+  },
+  {
+    id: 9,
+    name: "TATU",
+    logo: "/Logo-doitac/TATU.png",
+    category: "Dệt may",
+    description: "Cung cấp giải pháp in ấn chuyên nghiệp"
+  },
+  {
+    id: 10,
+    name: "TCI",
+    logo: "/Logo-doitac/tci.png",
+    category: "Vận tải",
+    description: "Đối tác logistics tin cậy"
+  },
+  {
+    id: 11,
+    name: "ThinkSmart",
+    logo: "/Logo-doitac/thinksmart.png",
+    category: "Công nghệ",
+    description: "Đối tác giải pháp thông minh"
+  },
+  {
+    id: 12,
+    name: "TOHIN",
+    logo: "/Logo-doitac/TOHIN.png",
+    category: "Xây dựng",
+    description: "Hợp tác dài hạn trong dự án lớn"
   }
 ]
 
@@ -119,8 +162,7 @@ export default function PartnersLogos() {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        ease: "easeOut"
+        duration: 0.6
       }
     }
   }
@@ -157,13 +199,13 @@ export default function PartnersLogos() {
       </div>
 
       <div className="container mx-auto px-6 lg:px-8 max-w-7xl relative z-10">
-        {/* Stats Section */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -179,6 +221,31 @@ export default function PartnersLogos() {
             <TrendingUp className="h-5 w-5 text-red-600 ml-2" />
           </motion.div>
 
+          <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-red-700 to-gray-800 bg-clip-text text-transparent mb-6">
+            ĐỐI TÁC THƯỜNG XUYÊN
+            <motion.div 
+              className="w-32 h-1.5 bg-gradient-to-r from-gray-500 to-red-600 mx-auto mt-4 rounded-full"
+              initial={{ width: 0 }}
+              whileInView={{ width: 128 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            />
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Chúng tôi tự hào được 
+            <span className="text-red-600 font-semibold"> đồng hành</span> cùng những 
+            <span className="text-gray-700 font-semibold"> thương hiệu hàng đầu</span> Việt Nam
+          </p>
+        </motion.div>
+
+        {/* Stats Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-20"
+        >
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {stats.map((stat, index) => (
               <motion.div
@@ -204,34 +271,63 @@ export default function PartnersLogos() {
           </div>
         </motion.div>
 
-        {/* Partners Section */}
+        {/* Thanh chạy logo - Scrolling Partners Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="mb-20"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-red-700 to-gray-800 bg-clip-text text-transparent mb-6">
-            Đối tác tin cậy
-            <motion.div 
-              className="w-24 h-1.5 bg-gradient-to-r from-gray-500 to-red-600 mx-auto mt-4 rounded-full"
-              initial={{ width: 0 }}
-              whileInView={{ width: 96 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            />
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Chúng tôi tự hào được 
-            <span className="text-red-600 font-semibold"> đồng hành</span> cùng những 
-            <span className="text-gray-700 font-semibold"> thương hiệu hàng đầu</span> Việt Nam
-          </p>
+          <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-8 overflow-hidden">
+            {/* Gradient overlays */}
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white/90 to-transparent z-10"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white/90 to-transparent z-10"></div>
+            
+            {/* Scrolling container */}
+            <div className="overflow-hidden">
+              <motion.div
+                className="flex space-x-12 items-center"
+                animate={{
+                  x: [0, -1920],
+                }}
+                transition={{
+                  x: {
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    duration: 30,
+                    ease: "linear",
+                  },
+                }}
+              >
+                {/* Duplicate partners array for seamless loop */}
+                {[...partners, ...partners].map((partner, index) => (
+                  <div
+                    key={`${partner.id}-${index}`}
+                    className="flex-shrink-0 w-40 h-20 relative group"
+                  >
+                    <div className="w-full h-full bg-gray-50 rounded-xl p-4 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all duration-300 shadow-sm group-hover:shadow-md">
+                      <Image
+                        src={partner.logo}
+                        alt={partner.name}
+                        fill
+                        className="object-contain p-2 filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-logo.png';
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+          </div>
         </motion.div>
 
         {/* Partners Grid */}
         <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 max-w-5xl mx-auto"
+          className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-20 max-w-6xl mx-auto"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -244,27 +340,31 @@ export default function PartnersLogos() {
               whileHover={{ y: -5, scale: 1.02 }}
               className="group"
             >
-              <Card className="relative p-8 border-0 shadow-lg hover:shadow-xl transition-all duration-500 bg-white/90 backdrop-blur-sm text-center group-hover:bg-white">
+              <Card className="relative p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-500 bg-white/90 backdrop-blur-sm text-center group-hover:bg-white">
                 {/* Company logo */}
-                <div className="relative w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-2xl overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <div className="relative w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-xl overflow-hidden group-hover:scale-110 transition-transform duration-300">
                   <Image
                     src={partner.logo}
                     alt={partner.name}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-2"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder-logo.png';
+                    }}
                   />
                 </div>
 
                 {/* Company info */}
-                <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors duration-300">
+                <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors duration-300">
                   {partner.name}
                 </h3>
                 
-                <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 mb-3">
+                <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 mb-3 text-xs">
                   {partner.category}
                 </Badge>
                 
-                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+                <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
                   {partner.description}
                 </p>
               </Card>
@@ -280,33 +380,9 @@ export default function PartnersLogos() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-center"
         >
-          <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-8">
-            Chứng nhận & Giải thưởng
-          </h3>
+         
           
-          <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
-            {trustBadges.map((badge, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="group"
-              >
-                <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm min-w-[200px]">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${badge.color} mx-auto w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <badge.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <h4 className="font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors duration-300">
-                    {badge.title}
-                  </h4>
-                  <p className="text-sm text-gray-600">{badge.subtitle}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          
         </motion.div>
       </div>
     </section>

@@ -442,7 +442,7 @@ export default function BlogPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Dịch vụ nổi bật In Ấn & Thiết Kế
+              Sản phẩm In Ấn & Thiết Kế
             </motion.h1>
             
             <motion.p 
@@ -545,7 +545,7 @@ export default function BlogPage() {
                     <SelectItem value="all" className="rounded-md">
                       <div className="flex items-center">
                         <BookOpen className="h-4 w-4 mr-2 text-red-500" aria-hidden="true" />
-                        <span className="text-red-600 font-medium">Tất cả danh mục nổi bật</span>
+                        <span className="text-red-600 font-medium">Danh mục sản phẩm</span>
                       </div>
                     </SelectItem>
                     {/* Categories from API */}

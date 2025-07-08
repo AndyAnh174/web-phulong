@@ -5,6 +5,7 @@ import Hero from "./hero"
 import AboutSection from "./about-section"
 import FeaturedServices from "./featured-services"
 import FeaturedBlogServices from "./featured-blog-services"
+import PartnersLogos from "./partners-logos"
 import ContactCTA from "./contact-cta"
 import { Skeleton } from "@/components/ui/skeleton"
 import Footer from "@/components/layout/footer"
@@ -28,8 +29,12 @@ export default function Homepage() {
       {/* Về chúng tôi - Giới thiệu ngắn về công ty */}
       <AboutSection />
       
+      {/* Đối tác thường xuyên - Thanh chạy logo */}
+    
+      
       {/* Liên hệ chúng tôi - Call to Action với các button chính */}
       <ContactCTA />
+      <PartnersLogos />
       <Footer />
     </div>
   )

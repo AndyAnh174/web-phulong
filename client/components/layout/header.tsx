@@ -29,19 +29,19 @@ export default function Header() {
   }, [])
 
   const navigation = [
-    { name: "Trang chủ", href: "/" },
+    { name: "TRANG CHỦ", href: "/" },
     { 
-      name: "Bảng giá", 
+      name: "BẢNG GIÁ", 
       href: "/pricing",
       hasDropdown: true,
       dropdownItems: [
-        { name: "Thiết kế", href: "/pricing/thiet-ke", icon: Palette },
-        { name: "In ấn", href: "/pricing/in-an", icon: Printer },
+        { name: "THIẾT KẾ", href: "/pricing/thiet-ke", icon: Palette },
+        { name: "IN ẤN", href: "/pricing/in-an", icon: Printer },
       ]
     },
-    { name: "Dịch vụ nổi bật", href: "/blog" },
-    { name: "Đặt hàng", href: "/order" },
-    { name: "Liên hệ", href: "/contact" },
+    { name: "SẢN PHẨM", href: "/blog" },
+    { name: "ĐẶT HÀNG", href: "/order" },
+    { name: "LIÊN HỆ", href: "/contact" },
   ]
 
   const handleMouseEnter = (itemName: string) => {

@@ -1108,7 +1108,7 @@ export default function BlogDetailPage() {
                   <Send className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Theo dõi dịch vụ nổi bật của chúng tôi
+                  Theo dõi Sản phẩm của chúng tôi
                 </h3>
                 <p className="text-gray-600 mb-8 text-lg">
                   Nhận thông báo về những bài viết mới nhất về in ấn, thiết kế và marketing. 
