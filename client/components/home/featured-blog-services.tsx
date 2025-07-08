@@ -22,6 +22,7 @@ import {
   Palette
 } from "lucide-react"
 import { motion } from "framer-motion"
+import { createSlug } from "@/lib/utils"
 
 interface BlogService {
   id: number
@@ -347,7 +348,7 @@ export default function FeaturedBlogServices() {
                   </CardContent>
 
                   <CardFooter className="pt-0">
-                    <Link href={`/blog/${service.id}`} className="w-full">
+                    <Link href={`/blog/${createSlug(service.title)}`} className="w-full">
                       <Button 
                         className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 group-hover:scale-105"
                       >

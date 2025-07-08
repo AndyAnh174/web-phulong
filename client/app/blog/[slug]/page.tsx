@@ -54,6 +54,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
+import { createSlug } from "@/lib/utils"
 
 interface Blog {
   id: number
@@ -652,7 +653,7 @@ export default function BlogDetailPage() {
         <meta property="og:description" content={blog.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...'} />
         <meta property="og:image" content={blog.image_url} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${blog.id}`} />
+        <meta property="og:url" content={`${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${createSlug(blog.title)}`} />
         <meta property="article:author" content={blog.author} />
         <meta property="article:published_time" content={blog.created_at} />
         <meta property="article:modified_time" content={blog.updated_at} />
@@ -663,7 +664,7 @@ export default function BlogDetailPage() {
         <meta name="twitter:description" content={blog.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...'} />
         <meta name="twitter:image" content={blog.image_url} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href={`/blog/${blog.id}`} />
+        <link rel="canonical" href={`/blog/${createSlug(blog.title)}`} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -1044,7 +1045,7 @@ export default function BlogDetailPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
                       >
-                        <Link href={`/blog/${relatedBlog.id}`}>
+                        <Link href={`/blog/${createSlug(relatedBlog.title)}`}>
                           <Card className="h-full hover:shadow-xl transition-all duration-300 group border border-gray-200 hover:-translate-y-1">
                             <div className="relative h-48 overflow-hidden">
                               <Image

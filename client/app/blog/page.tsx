@@ -35,6 +35,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
 import Footer from "@/components/layout/footer";
+import { createSlug } from "@/lib/utils"
 interface Blog {
   id: number
   title: string
@@ -196,7 +197,7 @@ export default function BlogPage() {
   // Initial fetch and when filters change
   useEffect(() => {
     fetchBlogs(true)
-  }, [selectedCategory, debouncedSearchTerm, sortBy])
+  }, [selectedCategory, debouncedSearchTerm, sortBy, fetchBlogs])
 
   // Load more function
   const loadMore = () => {
@@ -357,7 +358,7 @@ export default function BlogPage() {
 
   // Quick share functionality
   const handleQuickShare = async (blog: Blog) => {
-    const url = `${window.location.origin}/blog/${blog.id}`
+    const url = `${window.location.origin}/blog/${createSlug(blog.title)}`
     try {
       await navigator.clipboard.writeText(url)
       toast({
@@ -735,7 +736,7 @@ export default function BlogPage() {
                             <CardHeader className="p-6 flex-1 flex flex-col">
                               {/* Enhanced Title */}
                               <CardTitle className="text-xl font-bold text-gray-900 mb-4 group-hover:text-red-600 transition-colors duration-300 line-clamp-2 leading-tight min-h-[3.5rem]">
-                                <Link href={`/blog/${blog.id}`} className="hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded">
+                                <Link href={`/blog/${createSlug(blog.title)}`} className="hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded">
                                   {blog.title}
                                 </Link>
                               </CardTitle>
@@ -762,7 +763,7 @@ export default function BlogPage() {
                               </div>
 
                               {/* Enhanced Read More Button */}
-                              <Link href={`/blog/${blog.id}`} className="w-full">
+                              <Link href={`/blog/${createSlug(blog.title)}`} className="w-full">
                                 <Button className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-[1.02] h-12 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                   <span className="mr-2 font-medium">Đọc bài viết</span>
                                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" aria-hidden="true" />

@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import ReactMarkdown from "react-markdown"
 import Footer from "@/components/layout/footer"
+import { createSlug } from "@/lib/utils"
 
 export default function PrintingPricingPage() {
   const [printingPosts, setPrintingPosts] = useState<any[]>([])
@@ -252,7 +253,7 @@ export default function PrintingPricingPage() {
                     transition: { duration: 0.3 }
                   }}
                   className="group cursor-pointer"
-                  onClick={() => router.push(`/pricing/${post.id}`)}
+                  onClick={() => router.push(`/pricing/${createSlug(post.title)}`)}
                 >
                   <Card className="overflow-hidden shadow-lg hover:shadow-2xl border-0 bg-white/90 backdrop-blur-sm transition-all duration-500 h-full">
                     {/* Ảnh đại diện */}
