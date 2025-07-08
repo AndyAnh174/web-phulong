@@ -50,6 +50,7 @@ import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { createSlug } from "@/lib/utils"
 
 // Import MDEditor dynamically to avoid SSR issues
 const MDEditor = dynamic(
@@ -377,7 +378,8 @@ export default function AdminBlogsPage() {
 
     try {
       setSubmitting(true)
-      const response = await fetch(`${API_BASE_URL}/blogs/${selectedBlog.id}`, {
+      const slug = createSlug(selectedBlog.title)
+      const response = await fetch(`${API_BASE_URL}/blogs/${slug}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

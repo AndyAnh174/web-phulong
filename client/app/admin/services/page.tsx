@@ -47,6 +47,7 @@ import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
 import dynamic from "next/dynamic"
+import { createSlug } from "@/lib/utils"
 
 interface Service {
   id: number
@@ -454,7 +455,8 @@ export default function AdminServicesPage() {
     if (!selectedService) return
 
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/services/${selectedService.id}`, {
+      const slug = createSlug(selectedService.name)
+      const response = await fetch(`http://14.187.207.48:12122/api/services/${slug}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -881,7 +883,8 @@ export default function AdminServicesPage() {
   const handleDeletePrinting = async (post: PrintingPost) => {
     if (!confirm('Xoá bài đăng này?')) return;
     try {
-      const res = await fetch(`http://14.187.207.48:12122/api/printing/${post.id}`, {
+      const slug = createSlug(post.title)
+      const res = await fetch(`http://14.187.207.48:12122/api/printing/${slug}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
