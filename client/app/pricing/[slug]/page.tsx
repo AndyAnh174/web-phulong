@@ -165,7 +165,7 @@ export default function PrintingDetailPage() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg?height=400&width=600';
+                        target.src = 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
                       }}
                     />
                     
@@ -214,7 +214,7 @@ export default function PrintingDetailPage() {
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg?height=80&width=80';
+                              target.src = 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&q=80';
                             }}
                           />
                         </button>

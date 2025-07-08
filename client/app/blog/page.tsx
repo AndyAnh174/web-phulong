@@ -675,7 +675,7 @@ export default function BlogPage() {
                             {/* Enhanced Image Container */}
                             <div className="relative h-56 overflow-hidden">
                               <Image
-                                src={blog.image_url || "/api/placeholder/400/250"}
+                                src={blog.image_url || "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"}
                                 alt={blog.title}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"

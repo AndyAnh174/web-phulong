@@ -364,7 +364,7 @@ export default function ServicesPage() {
                               <Image
                                 src={service.image?.url 
                           ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.207.48:12122${service.image.url}`)
-                          : "/placeholder.svg?height=256&width=400"}
+                          : "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"}
                                 alt={service.name}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -475,7 +475,7 @@ export default function ServicesPage() {
                             <Image
                               src={service.image?.url 
                           ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.207.48:12122${service.image.url}`)
-                          : "/placeholder.svg?height=128&width=128"}
+                          : "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"}
                               alt={service.name}
                               fill
                               className="object-cover group-hover:scale-110 transition-transform duration-500"

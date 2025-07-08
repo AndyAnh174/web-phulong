@@ -804,7 +804,7 @@ export default function BlogDetailPage() {
           {/* Featured Image */}
           <div className="relative h-64 md:h-80 group">
             <Image
-              src={blog.image_url || "/api/placeholder/800/400"}
+              src={blog.image_url || "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
               alt={blog.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -1049,7 +1049,7 @@ export default function BlogDetailPage() {
                           <Card className="h-full hover:shadow-xl transition-all duration-300 group border border-gray-200 hover:-translate-y-1">
                             <div className="relative h-48 overflow-hidden">
                               <Image
-                                src={relatedBlog.image_url || "/api/placeholder/400/250"}
+                                src={relatedBlog.image_url || "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"}
                                 alt={relatedBlog.title}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-500"
