@@ -241,7 +241,7 @@ export default function PartnersLogos() {
           >
             <Handshake className="h-5 w-5 text-gray-600 mr-2" />
             <span className="text-sm font-semibold bg-gradient-to-r from-gray-700 to-red-700 bg-clip-text text-transparent">
-              Đối tác & Thành tựu
+              Đối tác
             </span>
             <TrendingUp className="h-5 w-5 text-red-600 ml-2" />
           </motion.div>
