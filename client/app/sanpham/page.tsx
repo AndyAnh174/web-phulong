@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import Head from "next/head"
@@ -97,8 +97,16 @@ export default function BlogPage() {
     }
   }, [searchTerm])
 
+  // Tính toán thời gian đọc tối ưu hơn
+  const calculateReadingTime = useCallback((content: string) => {
+    const wordsPerMinute = 200
+    const words = content.replace(/<[^>]*>/g, "").split(/\s+/).filter(word => word.length > 0).length
+    const minutes = Math.ceil(words / wordsPerMinute)
+    return Math.max(1, minutes) // Tối thiểu 1 phút
+  }, [])
+
   // Fetch blogs function
-  const fetchBlogs = async (reset = false) => {
+  const fetchBlogs = useCallback(async (reset = false) => {
     try {
       if (reset) {
         setLoading(true)
@@ -192,12 +200,12 @@ export default function BlogPage() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }
+  }, [selectedCategory, debouncedSearchTerm, sortBy, currentPage, bookmarkedBlogs, calculateReadingTime, toast])
 
   // Initial fetch and when filters change
   useEffect(() => {
     fetchBlogs(true)
-  }, [selectedCategory, debouncedSearchTerm, sortBy, fetchBlogs])
+  }, [selectedCategory, debouncedSearchTerm, sortBy])
 
   // Load more function
   const loadMore = () => {
@@ -229,13 +237,7 @@ export default function BlogPage() {
     fetchBlogs(true)
   }
 
-  // Tính toán thời gian đọc tối ưu hơn
-  const calculateReadingTime = (content: string) => {
-    const wordsPerMinute = 200
-    const words = content.replace(/<[^>]*>/g, "").split(/\s+/).filter(word => word.length > 0).length
-    const minutes = Math.ceil(words / wordsPerMinute)
-    return Math.max(1, minutes) // Tối thiểu 1 phút
-  }
+
 
   // Xử lý description từ markdown/html content với cache
   const getCleanDescription = useMemo(() => {
@@ -358,7 +360,7 @@ export default function BlogPage() {
 
   // Quick share functionality
   const handleQuickShare = async (blog: Blog) => {
-    const url = `${window.location.origin}/blog/${createSlug(blog.title)}`
+    const url = `${window.location.origin}/sanpham/${createSlug(blog.title)}`
     try {
       await navigator.clipboard.writeText(url)
       toast({
@@ -410,7 +412,7 @@ export default function BlogPage() {
         <meta property="og:description" content="Khám phá những kiến thức chuyên sâu về in ấn, thiết kế đồ họa và xu hướng marketing" />
         <meta property="og:type" content="website" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href="/blog" />
+        <link rel="canonical" href="/sanpham" />
       </Head>
 
       <div className="min-h-screen bg-white relative overflow-hidden">
@@ -736,7 +738,7 @@ export default function BlogPage() {
                             <CardHeader className="p-6 flex-1 flex flex-col">
                               {/* Enhanced Title */}
                               <CardTitle className="text-xl font-bold text-gray-900 mb-4 group-hover:text-red-600 transition-colors duration-300 line-clamp-2 leading-tight min-h-[3.5rem]">
-                                <Link href={`/blog/${createSlug(blog.title)}`} className="hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded">
+                                <Link href={`/sanpham/${createSlug(blog.title)}`} className="hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded">
                                   {blog.title}
                                 </Link>
                               </CardTitle>
@@ -763,7 +765,7 @@ export default function BlogPage() {
                               </div>
 
                               {/* Enhanced Read More Button */}
-                              <Link href={`/blog/${createSlug(blog.title)}`} className="w-full">
+                              <Link href={`/sanpham/${createSlug(blog.title)}`} className="w-full">
                                 <Button className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-[1.02] h-12 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                   <span className="mr-2 font-medium">Đọc bài viết</span>
                                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" aria-hidden="true" />

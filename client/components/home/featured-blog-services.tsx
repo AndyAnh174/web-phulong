@@ -348,7 +348,7 @@ export default function FeaturedBlogServices() {
                   </CardContent>
 
                   <CardFooter className="pt-0">
-                    <Link href={`/blog/${createSlug(service.title)}`} className="w-full">
+                    <Link href={`/sanpham/${createSlug(service.title)}`} className="w-full">
                       <Button 
                         className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 shadow-lg hover:shadow-xl transform transition-all duration-300 group-hover:scale-105"
                       >
@@ -371,7 +371,7 @@ export default function FeaturedBlogServices() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center"
         >
-          <Link href="/blog">
+                          <Link href="/sanpham">
             <Button 
               size="lg"
               className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white px-8 py-3 rounded-xl shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:scale-105"

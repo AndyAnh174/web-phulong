@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Static pages
   const staticPages = [
     '',
-    '/blog',
+    '/sanpham',
     '/services',
     '/pricing',
     '/contact',
@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Bạn có thể fetch data từ API để tạo dynamic routes
   // const blogPosts = await fetch('your-api/blogs').then(res => res.json())
   // const blogRoutes = blogPosts.map((post: any) => ({
-  //   url: `${baseUrl}/blog/${post.id}`,
+      //   url: `${baseUrl}/sanpham/${post.id}`,
   //   lastModified: new Date(post.updated_at),
   //   changeFrequency: 'monthly' as const,
   //   priority: 0.6,

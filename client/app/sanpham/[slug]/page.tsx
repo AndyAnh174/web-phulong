@@ -653,7 +653,7 @@ export default function BlogDetailPage() {
         <meta property="og:description" content={blog.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...'} />
         <meta property="og:image" content={blog.image_url} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${createSlug(blog.title)}`} />
+        <meta property="og:url" content={`${typeof window !== 'undefined' ? window.location.origin : ''}/sanpham/${createSlug(blog.title)}`} />
         <meta property="article:author" content={blog.author} />
         <meta property="article:published_time" content={blog.created_at} />
         <meta property="article:modified_time" content={blog.updated_at} />
@@ -664,7 +664,7 @@ export default function BlogDetailPage() {
         <meta name="twitter:description" content={blog.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...'} />
         <meta name="twitter:image" content={blog.image_url} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href={`/blog/${createSlug(blog.title)}`} />
+        <link rel="canonical" href={`/sanpham/${createSlug(blog.title)}`} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -758,7 +758,7 @@ export default function BlogDetailPage() {
         >
           <div className="flex items-center justify-between mb-6">
             <Button variant="ghost" asChild className="hover:bg-gray-100 hover:text-gray-800 rounded-lg transition-all duration-300 group">
-              <Link href="/blog" className="flex items-center">
+              <Link href="/sanpham" className="flex items-center">
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
                 Quay lại danh sách bài viết
               </Link>
@@ -1045,7 +1045,7 @@ export default function BlogDetailPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
                       >
-                        <Link href={`/blog/${createSlug(relatedBlog.title)}`}>
+                        <Link href={`/sanpham/${createSlug(relatedBlog.title)}`}>
                           <Card className="h-full hover:shadow-xl transition-all duration-300 group border border-gray-200 hover:-translate-y-1">
                             <div className="relative h-48 overflow-hidden">
                               <Image
