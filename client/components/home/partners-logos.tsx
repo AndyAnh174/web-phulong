@@ -49,86 +49,74 @@ const partners = [
     name: "Agribank",
     logo: "/Logo-doitac/Argibank_logo.svg.png",
     category: "Ngân hàng",
-    description: "Đối tác tài chính đáng tin cậy"
   },
   {
     id: 2,
     name: "AvaKid",
     logo: "/Logo-doitac/avakid.png",
     category: "Giáo dục",
-    description: "Hợp tác in ấn chuyên nghiệp"
   },
   {
     id: 3,
     name: "BILCO",
     logo: "/Logo-doitac/BILCO.jpg",
-    category: "Công nghiệp",
-    description: "Cung cấp giải pháp in ấn toàn diện"
+    category: "Xây dựng",
   },
   {
     id: 4,
     name: "Datalogic",
     logo: "/Logo-doitac/datalogic.png",
     category: "Công nghệ",
-    description: "Đối tác công nghệ hàng đầu"
   },
   {
     id: 5,
     name: "KoreMart",
     logo: "/Logo-doitac/koremart.png",
-    category: "Thương mại",
-    description: "Đồng hành trong chiến dịch marketing"
+    category: "Bán lẻ",
   },
   {
     id: 6,
     name: "LILAMA",
     logo: "/Logo-doitac/LILAMA.png",
     category: "Xây dựng",
-    description: "Hỗ trợ in ấn cho dự án xây dựng"
   },
   {
     id: 7,
-    name: "ĐH Bách Khoa TP.HCM",
+    name: "ĐH Sư Phạm Kỹ Thuật TPHCM",
     logo: "/Logo-doitac/Logo HCMUTE_Stroke white.png",
     category: "Giáo dục",
-    description: "Đối tác giáo dục uy tín"
   },
   {
     id: 8,
     name: "Mobile World",
     logo: "/Logo-doitac/MWG.png",
     category: "Bán lẻ",
-    description: "Hợp tác in ấn quy mô lớn"
   },
   {
     id: 9,
     name: "TATU",
     logo: "/Logo-doitac/TATU.png",
     category: "Dệt may",
-    description: "Cung cấp giải pháp in ấn chuyên nghiệp"
   },
   {
     id: 10,
     name: "TCI",
     logo: "/Logo-doitac/tci.png",
-    category: "Vận tải",
-    description: "Đối tác logistics tin cậy"
+    category: "Công nghệ",
   },
   {
     id: 11,
     name: "ThinkSmart",
     logo: "/Logo-doitac/thinksmart.png",
     category: "Công nghệ",
-    description: "Đối tác giải pháp thông minh"
   },
   {
     id: 12,
     name: "TOHIN",
     logo: "/Logo-doitac/TOHIN.png",
     category: "Xây dựng",
-    description: "Hợp tác dài hạn trong dự án lớn"
-  }
-]
+  },
+];
 
 const trustBadges = [
   {
