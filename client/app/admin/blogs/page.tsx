@@ -335,7 +335,8 @@ export default function AdminBlogsPage() {
         is_active: formData.is_active,
       }
 
-      const response = await fetch(`${API_BASE_URL}/blogs/${selectedBlog.id}`, {
+      const slug = createSlug(selectedBlog.title)
+      const response = await fetch(`${API_BASE_URL}/blogs/${slug}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
