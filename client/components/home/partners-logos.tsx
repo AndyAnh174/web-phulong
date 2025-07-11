@@ -329,14 +329,14 @@ export default function PartnersLogos() {
                 {[...partners, ...partners].map((partner, index) => (
                   <div
                     key={`${partner.id}-${index}`}
-                    className="flex-shrink-0 w-40 h-20 relative group"
+                    className="flex-shrink-0 w-52 h-28 relative group"
                   >
-                    <div className="w-full h-full bg-gray-50 rounded-xl p-4 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all duration-300 shadow-sm group-hover:shadow-md">
+                    <div className="w-full h-full bg-gray-50 rounded-xl p-4 flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300 shadow-sm group-hover:shadow-lg">
                       <Image
                         src={partner.logo}
                         alt={partner.name}
                         fill
-                        className="object-contain p-2 filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                        className="object-contain p-2 transition-all duration-300 group-hover:scale-105"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-logo.png';
@@ -351,47 +351,7 @@ export default function PartnersLogos() {
         </motion.div>
 
         {/* Partners Grid */}
-        <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-20 max-w-6xl mx-auto"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          {partners.map((partner, index) => (
-            <motion.div
-              key={partner.id}
-              variants={itemVariants}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="group"
-            >
-              <Card className="relative p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-500 bg-white/90 backdrop-blur-sm text-center group-hover:bg-white">
-                {/* Company logo */}
-                <div className="relative w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-xl overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                  <Image
-                    src={partner.logo}
-                    alt={partner.name}
-                    fill
-                    className="object-contain p-2"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder-logo.png';
-                    }}
-                  />
-                </div>
-
-                {/* Company info */}
-                <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors duration-300">
-                  {partner.name}
-                </h3>
-                
-                <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 mb-3 text-xs">
-                  {partner.category}
-                </Badge>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+       
 
         {/* Trust Badges */}
         <motion.div
