@@ -94,9 +94,9 @@ const partners = [
   },
   {
     id: 9,
-    name: "TATU",
+    name: "TATU School",
     logo: "/Logo-doitac/TATU.png",
-    category: "Dệt may",
+    category: "Giáo dục",
   },
   {
     id: 10,
