@@ -849,7 +849,7 @@ export default function AdminServicesPage() {
         }
       }
       
-      const url = printingForm.id ? `http://14.187.207.48:12122/api/printing/${printingForm.id}` : 'http://14.187.207.48:12122/api/printing';
+      const url = printingForm.id ? `http://14.187.207.48:12122/api/printing/${createSlug(printingForm.title)}` : 'http://14.187.207.48:12122/api/printing';
       const method = printingForm.id ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
@@ -901,7 +901,8 @@ export default function AdminServicesPage() {
 
   const handleToggleVisible = async (post: PrintingPost) => {
     try {
-      const res = await fetch(`http://14.187.207.48:12122/api/printing/${post.id}/visibility`, {
+      const slug = createSlug(post.title);
+      const res = await fetch(`http://14.187.207.48:12122/api/printing/${slug}/visibility`, {
         method: 'PATCH', headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
