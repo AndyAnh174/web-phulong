@@ -69,6 +69,11 @@ interface Blog {
   author?: string
   views?: number
   tags?: string[]
+  
+  // SEO fields
+  meta_title?: string
+  meta_description?: string
+  meta_keywords?: string
 }
 
 interface PaginationInfo {
@@ -84,6 +89,11 @@ interface FormData {
   image_url: string
   category: string
   is_active: boolean
+  
+  // SEO fields
+  meta_title: string
+  meta_description: string
+  meta_keywords: string
 }
 
 interface FormErrors {
@@ -91,6 +101,11 @@ interface FormErrors {
   content?: string
   image_url?: string
   category?: string
+  
+  // SEO validation errors
+  meta_title?: string
+  meta_description?: string
+  meta_keywords?: string
 }
 
 const API_BASE_URL =  'http://14.187.207.48:12122/api'
@@ -124,6 +139,11 @@ export default function AdminBlogsPage() {
     image_url: "",
     category: "",
     is_active: true,
+    
+    // SEO fields
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: "",
   })
   const [formErrors, setFormErrors] = useState<FormErrors>({})
 
@@ -265,6 +285,11 @@ export default function AdminBlogsPage() {
         image_url: formData.image_url.trim(),
         category: formData.category.trim(),
         is_active: formData.is_active,
+        
+        // SEO fields
+        meta_title: formData.meta_title.trim(),
+        meta_description: formData.meta_description.trim(),
+        meta_keywords: formData.meta_keywords.trim(),
       }
 
       console.log("Creating blog with data:", requestBody)
@@ -333,6 +358,11 @@ export default function AdminBlogsPage() {
         image_url: formData.image_url.trim(),
         category: formData.category.trim(),
         is_active: formData.is_active,
+        
+        // SEO fields
+        meta_title: formData.meta_title.trim(),
+        meta_description: formData.meta_description.trim(),
+        meta_keywords: formData.meta_keywords.trim(),
       }
 
       const slug = createSlug(selectedBlog.title)
@@ -422,6 +452,11 @@ export default function AdminBlogsPage() {
       image_url: blog.image_url,
       category: blog.category,
       is_active: blog.is_active,
+      
+      // SEO fields
+      meta_title: blog.meta_title || "",
+      meta_description: blog.meta_description || "",
+      meta_keywords: blog.meta_keywords || "",
     })
     setFormErrors({})
     setIsEditDialogOpen(true)
@@ -439,6 +474,11 @@ export default function AdminBlogsPage() {
       image_url: "",
       category: "",
       is_active: true,
+      
+      // SEO fields
+      meta_title: "",
+      meta_description: "",
+      meta_keywords: "",
     })
     setFormErrors({})
     setSelectedBlog(null)
@@ -1034,6 +1074,66 @@ export default function AdminBlogsPage() {
               </p>
             </div>
             
+            {/* SEO Section */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 space-y-4">
+              <div className="flex items-center text-green-800 font-medium mb-3">
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Tối ưu SEO
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="meta_title" className="text-sm font-medium text-green-800">
+                  Meta Title (SEO) - Tối đa 60 ký tự
+                </Label>
+                <Input
+                  id="meta_title"
+                  value={formData.meta_title}
+                  onChange={(e) => handleInputChange("meta_title", e.target.value)}
+                  placeholder="Tiêu đề tối ưu cho search engine (nếu để trống sẽ dùng tiêu đề chính)"
+                  className="border-green-300 focus:border-green-500"
+                  maxLength={60}
+                />
+                <p className="text-xs text-green-600">
+                  {formData.meta_title.length}/60 ký tự
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="meta_description" className="text-sm font-medium text-green-800">
+                  Meta Description (SEO) - Tối đa 160 ký tự
+                </Label>
+                <Textarea
+                  id="meta_description"
+                  value={formData.meta_description}
+                  onChange={(e) => handleInputChange("meta_description", e.target.value)}
+                  placeholder="Mô tả ngắn gọn về bài viết, hiển thị trên kết quả tìm kiếm Google"
+                  className="border-green-300 focus:border-green-500 min-h-[80px]"
+                  maxLength={160}
+                />
+                <p className="text-xs text-green-600">
+                  {formData.meta_description.length}/160 ký tự
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="meta_keywords" className="text-sm font-medium text-green-800">
+                  Meta Keywords (SEO) - Phân cách bằng dấu phẩy
+                </Label>
+                <Input
+                  id="meta_keywords"
+                  value={formData.meta_keywords}
+                  onChange={(e) => handleInputChange("meta_keywords", e.target.value)}
+                  placeholder="VD: in ấn, thiết kế, marketing, digital"
+                  className="border-green-300 focus:border-green-500"
+                />
+                <p className="text-xs text-green-600">
+                  Từ khóa giúp tối ưu hóa tìm kiếm (tối đa 10 từ khóa)
+                </p>
+              </div>
+            </div>
+            
             <div className="flex items-center space-x-2 pt-2">
               <Switch
                 id="is_active"
@@ -1243,6 +1343,66 @@ export default function AdminBlogsPage() {
               <p className="text-xs text-gray-500">
                 Hỗ trợ Markdown: **bold**, *italic*, `code`, # headers, - lists, [links](url), ![images](url)
               </p>
+            </div>
+            
+            {/* SEO Section */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 space-y-4">
+              <div className="flex items-center text-green-800 font-medium mb-3">
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Tối ưu SEO
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-meta_title" className="text-sm font-medium text-green-800">
+                  Meta Title (SEO) - Tối đa 60 ký tự
+                </Label>
+                <Input
+                  id="edit-meta_title"
+                  value={formData.meta_title}
+                  onChange={(e) => handleInputChange("meta_title", e.target.value)}
+                  placeholder="Tiêu đề tối ưu cho search engine (nếu để trống sẽ dùng tiêu đề chính)"
+                  className="border-green-300 focus:border-green-500"
+                  maxLength={60}
+                />
+                <p className="text-xs text-green-600">
+                  {formData.meta_title.length}/60 ký tự
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-meta_description" className="text-sm font-medium text-green-800">
+                  Meta Description (SEO) - Tối đa 160 ký tự
+                </Label>
+                <Textarea
+                  id="edit-meta_description"
+                  value={formData.meta_description}
+                  onChange={(e) => handleInputChange("meta_description", e.target.value)}
+                  placeholder="Mô tả ngắn gọn về bài viết, hiển thị trên kết quả tìm kiếm Google"
+                  className="border-green-300 focus:border-green-500 min-h-[80px]"
+                  maxLength={160}
+                />
+                <p className="text-xs text-green-600">
+                  {formData.meta_description.length}/160 ký tự
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-meta_keywords" className="text-sm font-medium text-green-800">
+                  Meta Keywords (SEO) - Phân cách bằng dấu phẩy
+                </Label>
+                <Input
+                  id="edit-meta_keywords"
+                  value={formData.meta_keywords}
+                  onChange={(e) => handleInputChange("meta_keywords", e.target.value)}
+                  placeholder="VD: in ấn, thiết kế, marketing, digital"
+                  className="border-green-300 focus:border-green-500"
+                />
+                <p className="text-xs text-green-600">
+                  Từ khóa giúp tối ưu hóa tìm kiếm (tối đa 10 từ khóa)
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center space-x-2 pt-2">

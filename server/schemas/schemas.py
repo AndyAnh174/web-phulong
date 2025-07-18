@@ -154,6 +154,11 @@ class BlogBase(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
     is_active: bool = True
+    
+    # SEO fields
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None  
+    meta_keywords: Optional[str] = None
 
 class BlogCreate(BlogBase):
     pass
@@ -164,6 +169,11 @@ class BlogUpdate(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
     is_active: Optional[bool] = None
+    
+    # SEO fields for update
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    meta_keywords: Optional[str] = None
 
 class BlogOut(BlogBase):
     id: int

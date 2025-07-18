@@ -79,6 +79,12 @@ class Blog(Base):
     image_url = Column(String, nullable=True)
     category = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    
+    # SEO fields
+    meta_title = Column(String(255), nullable=True)  # SEO title (tối đa 255 ký tự)
+    meta_description = Column(Text, nullable=True)  # SEO description (khuyến nghị 160 ký tự)
+    meta_keywords = Column(String(500), nullable=True)  # SEO keywords (phân cách bằng dấu phẩy)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

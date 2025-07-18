@@ -45,7 +45,11 @@ async def create_blog(blog: BlogCreate, db: Session = Depends(get_db), current_u
         content=blog.content,
         image_url=blog.image_url,
         category=blog.category,
-        is_active=blog.is_active
+        is_active=blog.is_active,
+        # SEO fields
+        meta_title=blog.meta_title,
+        meta_description=blog.meta_description,
+        meta_keywords=blog.meta_keywords
     )
     
     db.add(new_blog)
@@ -83,6 +87,14 @@ async def update_blog(
         db_blog.category = blog.category
     if blog.is_active is not None:
         db_blog.is_active = blog.is_active
+    
+    # Cập nhật SEO fields
+    if blog.meta_title is not None:
+        db_blog.meta_title = blog.meta_title
+    if blog.meta_description is not None:
+        db_blog.meta_description = blog.meta_description
+    if blog.meta_keywords is not None:
+        db_blog.meta_keywords = blog.meta_keywords
     
     db.commit()
     db.refresh(db_blog)
