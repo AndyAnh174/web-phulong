@@ -66,7 +66,7 @@ export default function PrintingPricingPage() {
     try {
       setPrintingLoading(true)
       setPrintingError("")
-      const API_BASE_URL = 'http://14.187.207.48:12122'
+      const API_BASE_URL = 'http://14.187.218.183:12122'
       
       const res = await fetch(`${API_BASE_URL}/api/printing?is_visible=true&skip=${(printingPage-1)*PRINTING_LIMIT}&limit=${PRINTING_LIMIT}`)
       
@@ -273,7 +273,7 @@ export default function PrintingPricingPage() {
                         />
                       ) : post.images && post.images.length > 0 ? (
                         <img
-                          src={post.images[0].image.url.startsWith('http') ? post.images[0].image.url : `http://14.187.207.48:12122${post.images[0].image.url}`}
+                          src={post.images[0].image.url.startsWith('http') ? post.images[0].image.url : `http://14.187.218.183:12122${post.images[0].image.url}`}
                           alt={post.images[0].image.alt_text || post.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           onError={(e) => {
@@ -353,7 +353,7 @@ export default function PrintingPricingPage() {
                             post.images?.slice(1, 4).map((img: any, idx: number) => (
                               <div key={img.id} className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                                 <img
-                                  src={img.image.url.startsWith('http') ? img.image.url : `http://14.187.207.48:12122${img.image.url}`}
+                                  src={img.image.url.startsWith('http') ? img.image.url : `http://14.187.218.183:12122${img.image.url}`}
                                   alt={img.image.alt_text || `${post.title} ${idx + 2}`}
                                   className="w-full h-full object-cover"
                                   onError={(e) => {

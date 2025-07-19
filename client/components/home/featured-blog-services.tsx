@@ -45,7 +45,7 @@ export default function FeaturedBlogServices() {
   useEffect(() => {
     const fetchBlogServices = async () => {
       try {
-        const response = await fetch("http://14.187.207.48:12122/api/blogs?is_active=true&limit=6")
+        const response = await fetch("http://14.187.218.183:12122/api/blogs?is_active=true&limit=6")
         if (response.ok) {
           const data = await response.json()
           

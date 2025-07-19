@@ -68,7 +68,7 @@ export default function Hero() {
       try {
         console.log('🔄 Fetching banners from API...')
         // Sử dụng domain gốc
-        const response = await fetch('http://14.187.207.48:12122/api/banners?is_active=true')
+        const response = await fetch('http://14.187.218.183:12122/api/banners?is_active=true')
         console.log('📡 Response status:', response.status)
         
         if (response.ok) {
@@ -97,7 +97,7 @@ export default function Hero() {
           console.error('❌ Failed to fetch banners:', response.status, response.statusText)
           // Fallback: thử endpoint không có filter
           try {
-            const fallbackResponse = await fetch('http://14.187.207.48:12122/api/banners')
+            const fallbackResponse = await fetch('http://14.187.218.183:12122/api/banners')
             if (fallbackResponse.ok) {
               const fallbackData = await fallbackResponse.json()
               console.log('🔄 Fallback data:', fallbackData)
@@ -337,7 +337,7 @@ export default function Hero() {
                     const isActive = index === currentBannerIndex
                     const imageUrl = banner.image?.url?.startsWith('http') 
                       ? banner.image.url 
-                      : `http://14.187.207.48:12122${banner.image?.url}`
+                      : `http://14.187.218.183:12122${banner.image?.url}`
                     
                     // Debug log cho banner hiện tại
                     if (isActive) {

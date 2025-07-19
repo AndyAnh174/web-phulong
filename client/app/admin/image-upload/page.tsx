@@ -67,7 +67,7 @@ export default function ImageUploadPage() {
       formData.append('category', 'upload-tool')
       formData.append('alt_text', `Upload từ image tool - ${file.name}`)
 
-      const response = await fetch('http://14.187.207.48:12122/api/images/upload', {
+      const response = await fetch('http://14.187.218.183:12122/api/images/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -154,7 +154,7 @@ export default function AdminOrdersPage() {
       if (statusFilter !== 'all') params.append('status', statusFilter)
       if (serviceFilter !== 'all') params.append('service_id', serviceFilter)
 
-      const response = await fetch(`http://14.187.207.48:12122/api/orders?${params}`, {
+      const response = await fetch(`http://14.187.218.183:12122/api/orders?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -200,7 +200,7 @@ export default function AdminOrdersPage() {
     if (!token) return
     
     try {
-      const response = await fetch('http://14.187.207.48:12122/api/services?limit=100', {
+      const response = await fetch('http://14.187.218.183:12122/api/services?limit=100', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -266,7 +266,7 @@ export default function AdminOrdersPage() {
     if (!selectedOrder || !newStatus) return
 
     try {
-      const response = await fetch(`http://14.187.207.48:12122/api/orders/${selectedOrder.id}`, {
+      const response = await fetch(`http://14.187.218.183:12122/api/orders/${selectedOrder.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -310,7 +310,7 @@ export default function AdminOrdersPage() {
       if (serviceFilter !== 'all') params.append('service_id', serviceFilter)
       params.append('token', token!)
 
-      const response = await fetch(`http://14.187.207.48:12122/api/orders/export/csv?${params}`, {
+      const response = await fetch(`http://14.187.218.183:12122/api/orders/export/csv?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

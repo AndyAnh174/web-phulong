@@ -206,7 +206,7 @@ export default function AdminServicesPage() {
       }
       
       const skip = (currentPage - 1) * itemsPerPage
-      let url = `http://14.187.207.48:12122/api/services?skip=${skip}&limit=${itemsPerPage}`
+      let url = `http://14.187.218.183:12122/api/services?skip=${skip}&limit=${itemsPerPage}`
       
       // Add filters to URL (search is handled on frontend)
       if (categoryFilter !== "all") {
@@ -291,7 +291,7 @@ export default function AdminServicesPage() {
   const fetchPosts = async () => {
     try {
       setImageLoading(true)
-      const API_BASE = 'http://14.187.207.48:12122'
+      const API_BASE = 'http://14.187.218.183:12122'
       const res = await fetch(`${API_BASE}/api/printing?limit=100`, {
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -350,7 +350,7 @@ export default function AdminServicesPage() {
       
       console.log('Creating service with FormData')
       
-      const response = await fetch("http://14.187.207.48:12122/api/services/", {
+      const response = await fetch("http://14.187.218.183:12122/api/services/", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -413,7 +413,7 @@ export default function AdminServicesPage() {
       
       console.log('Updating service with FormData')
       
-      const response = await fetch(`http://14.187.207.48:12122/api/services/${selectedService.id}`, {
+      const response = await fetch(`http://14.187.218.183:12122/api/services/${selectedService.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -456,7 +456,7 @@ export default function AdminServicesPage() {
 
     try {
       const slug = createSlug(selectedService.name)
-      const response = await fetch(`http://14.187.207.48:12122/api/services/${slug}`, {
+      const response = await fetch(`http://14.187.218.183:12122/api/services/${slug}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -622,7 +622,7 @@ export default function AdminServicesPage() {
       )
       
       // Call API với PUT và full data + is_active
-      const response = await fetch(`http://14.187.207.48:12122/api/services/${service.id}`, {
+      const response = await fetch(`http://14.187.218.183:12122/api/services/${service.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -700,7 +700,7 @@ export default function AdminServicesPage() {
       )
       
       // Thử call API với PATCH method trước
-      let response = await fetch(`http://14.187.207.48:12122/api/services/${service.id}`, {
+      let response = await fetch(`http://14.187.218.183:12122/api/services/${service.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -714,7 +714,7 @@ export default function AdminServicesPage() {
       // Nếu PATCH không work, thử PUT với full data + featured
       if (!response.ok) {
         console.log('PATCH failed, trying PUT with full data...')
-        response = await fetch(`http://14.187.207.48:12122/api/services/${service.id}`, {
+        response = await fetch(`http://14.187.218.183:12122/api/services/${service.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -849,7 +849,7 @@ export default function AdminServicesPage() {
         }
       }
       
-      const url = printingForm.id ? `http://14.187.207.48:12122/api/printing/${createSlug(printingForm.title)}` : 'http://14.187.207.48:12122/api/printing';
+      const url = printingForm.id ? `http://14.187.218.183:12122/api/printing/${createSlug(printingForm.title)}` : 'http://14.187.218.183:12122/api/printing';
       const method = printingForm.id ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
@@ -884,7 +884,7 @@ export default function AdminServicesPage() {
     if (!confirm('Xoá bài đăng này?')) return;
     try {
       const slug = createSlug(post.title)
-      const res = await fetch(`http://14.187.207.48:12122/api/printing/${slug}`, {
+      const res = await fetch(`http://14.187.218.183:12122/api/printing/${slug}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -902,7 +902,7 @@ export default function AdminServicesPage() {
   const handleToggleVisible = async (post: PrintingPost) => {
     try {
       const slug = createSlug(post.title);
-      const res = await fetch(`http://14.187.207.48:12122/api/printing/${slug}/visibility`, {
+      const res = await fetch(`http://14.187.218.183:12122/api/printing/${slug}/visibility`, {
         method: 'PATCH', headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -995,7 +995,7 @@ export default function AdminServicesPage() {
       formData.append('category', category);
       formData.append('is_visible', 'true');
 
-      const response = await fetch('http://14.187.207.48:12122/api/images/upload', {
+      const response = await fetch('http://14.187.218.183:12122/api/images/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1677,7 +1677,7 @@ export default function AdminServicesPage() {
                 {selectedService?.image && !removeCurrentImage && !selectedImage && (
                   <div className="relative">
                     <img 
-                      src={selectedService.image.url.startsWith('http') ? selectedService.image.url : `http://14.187.207.48:12122${selectedService.image.url}`}
+                      src={selectedService.image.url.startsWith('http') ? selectedService.image.url : `http://14.187.218.183:12122${selectedService.image.url}`}
                       alt={selectedService.image.alt_text || 'Current image'} 
                       className="h-32 w-32 object-cover rounded border"
                     />
@@ -1965,7 +1965,7 @@ export default function AdminServicesPage() {
                         {existingImages.map((img) => (
                           <div key={img.id} className="relative group">
                             <img 
-                              src={img.image?.url?.startsWith('http') ? img.image.url : `http://14.187.207.48:12122${img.image?.url}`}
+                              src={img.image?.url?.startsWith('http') ? img.image.url : `http://14.187.218.183:12122${img.image?.url}`}
                               alt={img.image?.alt_text || 'Existing image'} 
                               className="h-16 w-16 object-cover rounded border"
                             />
@@ -2095,7 +2095,7 @@ export default function AdminServicesPage() {
                         {/* Hiển thị ảnh từ images array hoặc image_urls backup */}
                         {post.images && post.images.length > 0 ? (
                           <img 
-                            src={post.images[0].image.url.startsWith('http') ? post.images[0].image.url : `http://14.187.207.48:12122${post.images[0].image.url}`}
+                            src={post.images[0].image.url.startsWith('http') ? post.images[0].image.url : `http://14.187.218.183:12122${post.images[0].image.url}`}
                             alt={post.images[0].image.alt_text || "thumb"} 
                             className="h-10 w-16 object-cover rounded" 
                             onError={(e) => {
