@@ -47,7 +47,7 @@ interface FormErrors {
   role?: string
 }
 
-const API_BASE_URL =  'http://14.187.218.183:12122/api'
+const API_BASE_URL =  'http://14.187.198.210:12122/api'
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])

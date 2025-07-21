@@ -51,7 +51,7 @@ export default function FeaturedServices() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://14.187.218.183:12122/api/services?featured=true&limit=6")
+        const response = await fetch("http://14.187.198.210:12122/api/services?featured=true&limit=6")
         const data = await response.json()
         setServices(data)
       } catch (error) {
@@ -236,7 +236,7 @@ export default function FeaturedServices() {
                 <div className="relative h-56 bg-gray-100 flex items-center justify-center overflow-hidden">
                   {service.image?.url ? (
                     <Image
-                      src={service.image.url.startsWith('http') ? service.image.url : `http://14.187.218.183:12122${service.image.url}`}
+                      src={service.image.url.startsWith('http') ? service.image.url : `http://14.187.198.210:12122${service.image.url}`}
                       alt={service.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"

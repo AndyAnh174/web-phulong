@@ -114,9 +114,9 @@ export default function AdminDashboardPage() {
 
       // Fetch all data in parallel for better performance
       const [summaryResponse, ordersResponse, servicesResponse] = await Promise.all([
-        fetch("http://14.187.218.183:12122/api/dashboard/summary", { headers }),
-        fetch("http://14.187.218.183:12122/api/dashboard/recent-orders?limit=5", { headers }),
-        fetch("http://14.187.218.183:12122/api/dashboard/popular-services?limit=5", { headers })
+        fetch("http://14.187.198.210:12122/api/dashboard/summary", { headers }),
+        fetch("http://14.187.198.210:12122/api/dashboard/recent-orders?limit=5", { headers }),
+        fetch("http://14.187.198.210:12122/api/dashboard/popular-services?limit=5", { headers })
       ])
 
       if (summaryResponse.ok) {

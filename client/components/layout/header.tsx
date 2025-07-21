@@ -22,7 +22,7 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    fetch("http://14.187.218.183:12122/api/config/env")
+    fetch("http://14.187.198.210:12122/api/config/env")
       .then((res) => res.json())
       .then((data) => setConfig(data))
       .catch(console.error)

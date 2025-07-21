@@ -1,4 +1,4 @@
-const API_BASE_URL =  'http://14.187.218.183:12122/api'
+const API_BASE_URL =  'http://14.187.198.210:12122/api'
 
 // Helper function để tạo slug từ text tiếng Việt
 export function createSlug(text: string): string {

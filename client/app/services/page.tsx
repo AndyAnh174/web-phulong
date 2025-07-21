@@ -68,7 +68,7 @@ export default function ServicesPage() {
   const fetchServices = useCallback(async () => {
     try {
       setLoading(true)
-      let url = "http://14.187.218.183:12122/api/services?"
+      let url = "http://14.187.198.210:12122/api/services?"
 
       if (selectedCategory !== "all") {
         url += `category=${selectedCategory}&`
@@ -363,7 +363,7 @@ export default function ServicesPage() {
                             <div className="relative h-64 bg-gray-100">
                               <Image
                                 src={service.image?.url 
-                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.218.183:12122${service.image.url}`)
+                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.198.210:12122${service.image.url}`)
                           : "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"}
                                 alt={service.name}
                                 fill
@@ -474,7 +474,7 @@ export default function ServicesPage() {
                           <div className="relative w-32 h-32 rounded-lg overflow-hidden mr-6 shrink-0">
                             <Image
                               src={service.image?.url 
-                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.218.183:12122${service.image.url}`)
+                          ? (service.image.url.startsWith('http') ? service.image.url : `http://14.187.198.210:12122${service.image.url}`)
                           : "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"}
                               alt={service.name}
                               fill

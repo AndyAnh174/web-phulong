@@ -76,7 +76,7 @@ export default function DesignPricingPage() {
   const fetchAllServices = async () => {
     try {
       setLoading(true)
-      const API_BASE_URL = 'http://14.187.218.183:12122/api'
+      const API_BASE_URL = 'http://14.187.198.210:12122/api'
       
       const response = await fetch(`${API_BASE_URL}/services?is_active=true&limit=1000`, {
         method: 'GET',

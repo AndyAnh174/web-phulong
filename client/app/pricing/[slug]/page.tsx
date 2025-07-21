@@ -35,7 +35,7 @@ export default function PrintingDetailPage() {
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    fetch(`http://14.187.218.183:12122/api/printing/${slug}`)
+    fetch(`http://14.187.198.210:12122/api/printing/${slug}`)
       .then(res => {
         if (!res.ok) throw new Error("Không tìm thấy bài đăng");
         return res.json();
@@ -92,7 +92,7 @@ export default function PrintingDetailPage() {
     })),
     ...(data.images || []).map((img: any) => ({
       type: 'api',
-      src: img.image.url.startsWith('http') ? img.image.url : `http://14.187.218.183:12122${img.image.url}`,
+      src: img.image.url.startsWith('http') ? img.image.url : `http://14.187.198.210:12122${img.image.url}`,
       alt: img.image.alt_text || data.title
     }))
   ];
