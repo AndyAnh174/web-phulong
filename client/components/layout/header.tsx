@@ -71,12 +71,19 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="bg-white shadow border-b sticky top-0 z-50">
+    <header className={cn(
+      "sticky top-0 z-50 transition-all duration-300",
+      pathname === "/" 
+        ? "bg-white/80 backdrop-blur-md border-b border-white/20" 
+        : "bg-white shadow border-b"
+    )}>
       {/* Top bar */}
      
 
       {/* Main nav */}
-      <div className="bg-white">
+      <div className={cn(
+        pathname === "/" ? "bg-transparent" : "bg-white"
+      )}>
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between py-3 relative">
           {/* Logo bên trái */}
           <div className="flex items-center gap-2">
@@ -88,7 +95,12 @@ export default function Header() {
                 height={20}
                 className="object-contain"
               />
-              <span className="text-lg font-semibold ml-2 text-gray-800 hidden sm:block">
+              <span className={cn(
+                "text-lg font-semibold ml-2 hidden sm:block",
+                pathname === "/" 
+                  ? "text-gray-800 drop-shadow-sm" 
+                  : "text-gray-800"
+              )}>
                 {config?.SITE_NAME || "Phú Long"}
               </span>
             </Link>
@@ -111,7 +123,8 @@ export default function Header() {
                     <button
                       className={cn(
                         "flex items-center gap-1 text-sm font-medium transition-colors hover:text-red-600",
-                        isActive ? "text-red-600" : "text-gray-700"
+                        isActive ? "text-red-600" : "text-gray-700",
+                        pathname === "/" ? "drop-shadow-sm" : ""
                       )}
                     >
                       {item.name}
@@ -155,7 +168,8 @@ export default function Header() {
                   href={item.href}
                   className={cn(
                     "text-sm font-medium transition-colors",
-                    pathname === item.href ? "text-red-600" : "text-gray-700 hover:text-red-600"
+                    pathname === item.href ? "text-red-600" : "text-gray-700 hover:text-red-600",
+                    pathname === "/" ? "drop-shadow-sm" : ""
                   )}
                 >
                   {item.name}
@@ -169,7 +183,10 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-red-50 hover:text-red-600 h-9 w-9"
+              className={cn(
+                "hover:bg-red-50 hover:text-red-600 h-9 w-9",
+                pathname === "/" ? "drop-shadow-sm" : ""
+              )}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -179,7 +196,12 @@ export default function Header() {
 
         {/* Mobile menu dropdown */}
         {isMenuOpen && (
-          <div className="md:hidden px-4 pb-3 space-y-1 border-t">
+          <div className={cn(
+            "md:hidden px-4 pb-3 space-y-1 border-t",
+            pathname === "/" 
+              ? "bg-white/90 backdrop-blur-md border-white/20" 
+              : "bg-white"
+          )}>
             {navigation.map((item) => {
               if (item.hasDropdown && item.dropdownItems) {
                 return (
